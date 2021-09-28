@@ -1,0 +1,13 @@
+identifier: csk6001
+name: CSK
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - gpio
+  - uart
+ram: 320
+flash: 8000

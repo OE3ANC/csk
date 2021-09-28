@@ -95,6 +95,8 @@ source "drivers/gpio/Kconfig.cy8c95xx"
 
 source "drivers/gpio/Kconfig.creg_gpio"
 
+source "drivers/gpio/Kconfig.csk6001"
+
 source "drivers/gpio/Kconfig.stmpe1600"
 
 source "drivers/gpio/Kconfig.pca953x"

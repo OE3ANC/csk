@@ -1,0 +1,14 @@
+# ESP32 board configuration
+
+
+if SOC_CSK6001
+
+
+config SOC
+	default "csk6001"
+
+config NUM_IRQS
+	default 32
+
+
+endif

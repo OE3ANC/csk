@@ -21,6 +21,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
+    - name: gitlab_zephyr_group
+      url-base: git@git.iflyos.cn:venus/zephyr
 
   #
   # Please add items below based on alphabetical order
@@ -70,6 +72,12 @@ manifest:
     - name: hal_infineon
       revision: f1fa8241f8786198ba41155413243de36ed878a5
       path: modules/hal/infineon
+      groups:
+        - hal
+    - name: hal_listenai
+      remote: gitlab_zephyr_group
+      revision: 6dfb9274f549803174639ae91097ce5a38bb6552
+      path: modules/hal/listenai
       groups:
         - hal
     - name: hal_microchip
