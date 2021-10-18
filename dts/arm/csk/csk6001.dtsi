@@ -32,8 +32,18 @@
 
 		gpio0: gpio@45900000 {
 			compatible = "listenai,csk-gpio";
-			reg = <0x45900000 0x4c>;
+			reg = <0x45900000 0x100000>;
+			interrupts = <17 2>;
 			label = "GPIO_A";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpio1: gpio@45A00000 {
+			compatible = "listenai,csk-gpio";
+			reg = <0x45A00000 0x100000>;
+			interrupts = <18 2>;
+			label = "GPIO_B";
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
