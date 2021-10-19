@@ -26,23 +26,31 @@
 	soc {
 		uart0: uart@45000000 {
 			compatible = "listenai,csk-uart";
-			reg = <0x45000000 0x4c>;
+			reg = <0x45000000 0x100000>;
+			interrupts = <8 2>;
 			label = "UART_0";
 		};
 
-		pinmux0: pinmux0 {
-			compatible = "listenai,csk-pinmux";
-			ph-reg = <&gpio0>;
-			label = "PINMUX_0";
-			#pinmux-cells = <2>;
-		};	
+		uart1: uart@45100000 {
+			compatible = "listenai,csk-uart";
+			reg = <0x45100000 0x100000>;
+			interrupts = <9 2>;
+			label = "UART_1";
+		};
 
-		pinmux1: pinmux1 {
+		uart2: uart@45200000 {
+			compatible = "listenai,csk-uart";
+			reg = <0x45200000 0x100000>;
+			interrupts = <10 2>;
+			label = "UART_2";
+		};
+
+		pinmux: pinmux@46200000 {
 			compatible = "listenai,csk-pinmux";
-			ph-reg = <&gpio1>;
-			label = "PINMUX_1";
+			reg = <0x46200000 0x100000>;
+			label = "PINMUX";
 			#pinmux-cells = <2>;
-		};	
+		};
 
 		gpio0: gpio@45900000 {
 			compatible = "listenai,csk-gpio";
