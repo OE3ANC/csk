@@ -1,0 +1,10 @@
+# CSK6001 Pin mux configuration options
+
+# Copyright (c) 2017 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+config PINMUX_CSK6001
+	bool "CSK6001 Pin multiplexer driver"
+	depends on SOC_CSK6001
+	help
+	  Enable driver for CSK6001 Pin multiplexer.
