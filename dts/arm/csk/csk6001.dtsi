@@ -93,6 +93,24 @@
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
+
+		spi0: spi@45400000 {
+			compatible = "listenai,csk-spi";
+			reg = <0x45400000 0x100000>;
+			interrupts = <12 2>;
+			label = "SPI_0";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+        spi1: spi@45500000 {
+            compatible = "listenai,csk-spi";
+            reg = <0x45500000 0x100000>;
+            interrupts = <13 2>;
+            label = "SPI_1";
+            #address-cells = <1>;
+            #size-cells = <0>;
+        };
 	};
 };
 
