@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#include <mem.h>
 #include <arm/armv8-m.dtsi>
 
 / {
@@ -14,16 +15,30 @@
 		};
 	};
 
-	flash0: flash@18000000 {
-		reg = <0x18000000 (8000*1024)>;
-	};
-
 	sram0: memory@80000 {
 		compatible = "mmio-sram";
 		reg = <0x00080000 (320*1024)>;
 	};
 
 	soc {
+
+		flash: flash-controller@46400000 {
+			compatible = "listenai,csk-flash-controller";
+			label = "FLASH_CTRL";
+			reg = <0x46400000 DT_SIZE_M(1)>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+
+			flash0: flash@18000000 {
+				compatible = "listenai,csk-nv-flash","soc-nv-flash";
+				label = "FLASH_INN";
+				reg = <0x18000000 DT_SIZE_M(8)>;
+				write-block-size = <1>;
+				erase-block-size = <4096>;
+			};
+
+		};
 		uart0: uart@45000000 {
 			compatible = "listenai,csk-uart";
 			reg = <0x45000000 0x4c>;
