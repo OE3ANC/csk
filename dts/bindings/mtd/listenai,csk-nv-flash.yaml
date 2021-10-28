@@ -1,0 +1,14 @@
+description: |
+  LISTENAI flash memory. This binding is for the flash memory itself, not
+  the flash controller peripheral. For that, see the
+  "listenai,csk-flash-controller" binding.
+
+include: soc-nv-flash.yaml
+
+compatible: listenai,csk-nv-flash
+
+properties:
+    max-erase-time:
+     type: int
+     description: max erase time(millisecond) of a flash sector or page or half-page
+     required: true
