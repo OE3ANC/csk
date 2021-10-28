@@ -36,8 +36,6 @@
 				reg = <0x18000000 DT_SIZE_M(8)>;
 				write-block-size = <1>;
 				erase-block-size = <4096>;
-				/* maximum erase time for a 4K sector */
-				max-erase-time = <100>;
 			};
 
 		};
