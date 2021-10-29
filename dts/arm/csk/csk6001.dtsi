@@ -41,8 +41,30 @@
 		};
 		uart0: uart@45000000 {
 			compatible = "listenai,csk-uart";
-			reg = <0x45000000 0x4c>;
+			reg = <0x45000000 0x100000>;
+			interrupts = <8 2>;
 			label = "UART_0";
+		};
+
+		uart1: uart@45100000 {
+			compatible = "listenai,csk-uart";
+			reg = <0x45100000 0x100000>;
+			interrupts = <9 2>;
+			label = "UART_1";
+		};
+
+		uart2: uart@45200000 {
+			compatible = "listenai,csk-uart";
+			reg = <0x45200000 0x100000>;
+			interrupts = <10 2>;
+			label = "UART_2";
+		};
+
+		pinmux: pinmux@46200000 {
+			compatible = "listenai,csk-pinmux";
+			reg = <0x46200000 0x100000>;
+			label = "PINMUX";
+			#pinmux-cells = <2>;
 		};
 
 		gpio0: gpio@45900000 {
@@ -54,9 +76,9 @@
 			#gpio-cells = <2>;
 		};
 
-		gpio1: gpio@45A00000 {
+		gpio1: gpio@45a00000 {
 			compatible = "listenai,csk-gpio";
-			reg = <0x45A00000 0x100000>;
+			reg = <0x45a00000 0x100000>;
 			interrupts = <18 2>;
 			label = "GPIO_B";
 			gpio-controller;
