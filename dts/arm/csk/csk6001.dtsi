@@ -208,6 +208,24 @@
 				#pwm-cells = <2>;
 			};
 		};
+		
+		i2c0: i2c@45600000 {
+			compatible = "listenai,csk-i2c";
+			reg = <0x45600000 0x100000>;
+			interrupts = <14 2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			label = "I2C_0";
+		};
+
+		i2c1: i2c@45700000 {
+			compatible = "listenai,csk-i2c";
+			reg = <0x45700000 0x100000>;
+			interrupts = <15 2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			label = "I2C_1";
+		};
 	};
 };
 
