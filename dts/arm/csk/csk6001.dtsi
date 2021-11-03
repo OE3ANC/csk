@@ -60,11 +60,20 @@
 			label = "UART_2";
 		};
 
-		pinmux: pinmux@46200000 {
+		pinmux0: pinmux0@46200000 {
 			compatible = "listenai,csk-pinmux";
-			reg = <0x46200000 0x100000>;
-			label = "PINMUX";
+			reg = <0x46200000 0x80>;
 			#pinmux-cells = <2>;
+			label = "PINMUX_A";
+			status = "okay";
+		};
+
+		pinmux1: pinmux@46200080 {
+			compatible = "listenai,csk-pinmux";
+			reg = <0x46200080 0xc0>;
+			#pinmux-cells = <2>;
+			label = "PINMUX_B";
+			status = "okay";
 		};
 
 		gpio0: gpio@45900000 {
