@@ -30,6 +30,12 @@
 		reg = <0x00080000 (300*1024)>;
 	};
 
+    itcm0: code@10000 {
+        compatible = "listenai,csk-itcm";
+        reg = <0x00010000 (12*1024)>;
+        label = "itcm CODE";
+    };
+
 	soc {
 
 		flash: flash-controller@46400000 {
@@ -49,6 +55,15 @@
 			};
 
 		};
+
+		dma0: dma-controller@40000000 {
+			compatible = "listenai,csk-dma";
+			reg = <0x40000000 0x1000000>;
+			interrupts = <0 0>;
+			label = "DMA_0";
+			#dma-cells = <1>;
+		};
+
 		uart0: uart@45000000 {
 			compatible = "listenai,csk-uart";
 			reg = <0x45000000 0x100000>;
