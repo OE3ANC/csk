@@ -21,6 +21,7 @@
                 zephyr,sram = &sram0;
                 zephyr,itcm = &itcm0;
                 zephyr,flash = &flash0;
+                zephyr,code-partition = &slot0_partition;
                 /* other chosen settings  for your hardware */
         };
 
@@ -123,4 +124,55 @@
 &dma0 {
 	dma-channels = <6>;
 	status = "okay";
+};
+
+&flash0 {
+        /*
+         * For more information, see:
+         * http: //docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
+         */
+        partitions {
+                compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
+
+                /* 256KB for bootloader */
+                boot_partition: partition@0 {
+                        label = "mcuboot";
+                        reg = <0x0 0x40000>;
+                        read-only;
+                };
+
+                /* application image slot: 512KB */
+                slot0_partition: partition@40000 {
+                        label = "image-0";
+                        reg = <0x40000 0x80000>;
+                };
+
+                /* backup slot: 512KB */
+                slot1_partition: partition@c0000 {
+                        label = "image-1";
+                        reg = <0xc0000 0x80000>;
+                };
+
+                /* swap slot: 128KB */
+                scratch_partition: partition@140000 {
+                        label = "image-scratch";
+                        reg = <0x140000 0x20000>;
+                };
+
+                /* storage: 6.625MB for storage */
+                storage_partition: partition@160000 {
+                        label = "storage";
+                        reg = <0x160000 0x6a0000>;
+                };
+
+        };
+};
+
+zephyr_udc0: &usbotg {
+        status = "okay";
+        num-bidir-endpoints = <6>;
+        num-in-endpoints = <6>;
+        num-out-endpoints = <6>;
 };

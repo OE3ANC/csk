@@ -5,6 +5,9 @@
 
 
 / {
+	chosen {
+		zephyr,flash-controller = &flash;
+	};
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -225,6 +228,16 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			label = "I2C_1";
+		};
+		
+		usbotg: usbd@41000000 {
+			compatible = "listenai,csk-usbd";
+			reg = <0x41000000 0x1000000>;
+			interrupts = <1 2>;
+			interrupt-names = "usb_otg";
+			num-bidir-endpoints = <6>;
+			status = "disabled";
+			label = "USBD";
 		};
 	};
 };
