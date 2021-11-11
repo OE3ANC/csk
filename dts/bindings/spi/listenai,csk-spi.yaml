@@ -1,0 +1,30 @@
+# Copyright (c) 2018, I-SENSE group of ICCS
+# SPDX-License-Identifier: Apache-2.0
+
+description: listenai csk spi controller
+
+include: spi-controller.yaml
+
+compatible: "listenai,csk-spi"
+
+properties:
+    reg:
+      required: true
+
+    interrupts:
+      required: true
+
+    miso-gpios:
+      type: phandle-array
+      required: false
+      description: MISO pin
+
+    mosi-gpios:
+      type: phandle-array
+      required: false
+      description: MOSI pin
+
+    sclk-gpios:
+      type: phandle-array
+      required: false
+      description: SPI generated clock pin
