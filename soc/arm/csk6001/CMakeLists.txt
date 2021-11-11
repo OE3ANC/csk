@@ -18,4 +18,5 @@ zephyr_sources(
   soc.c
   )
 
+zephyr_sources_ifdef(CONFIG_HAS_EXTERNAL_CACHE cache.c)
 zephyr_linker_sources(SECTIONS csk6001_private.ld)
