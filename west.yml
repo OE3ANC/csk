@@ -76,7 +76,7 @@ manifest:
         - hal
     - name: hal_listenai
       remote: gitlab_zephyr_group
-      revision: 0981425768d21dddaab4437109649cba40c89205
+      revision: 45eda65c2eb90b0a585cc9e9b8ea15b7dda5910b
       path: modules/hal/listenai
       groups:
         - hal
