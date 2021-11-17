@@ -111,6 +111,15 @@
             #address-cells = <1>;
             #size-cells = <0>;
         };
+
+		mailbox0: mailbox@46100000 {
+			compatible = "listenai,csk-mailbox";
+			reg = <0x46100000 0x100000>;
+			interrupts = <21 2>;
+			label = "MAILBOX_0";
+			status = "disabled";
+		};
+
 	};
 };
 

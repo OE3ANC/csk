@@ -20,6 +20,13 @@ config IPM_IMX
 	help
 	  Driver for NXP i.MX messaging unit
 
+config IPM_CSK
+	bool "CSK IPM driver"
+	default y
+	depends on HAS_CSK6001
+	help
+	  Driver for CSK6001 mailbox
+
 choice
 	prompt "IMX IPM max data size"
 	default IPM_IMX_MAX_DATA_SIZE_16
