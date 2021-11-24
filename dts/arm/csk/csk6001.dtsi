@@ -12,12 +12,21 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-m33";
 			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			
+			mpu: mpu@e000ed90 {
+				compatible = "arm,armv8m-mpu";
+				reg = <0xe000ed90 0x40>;
+				arm,num-mpu-regions = <8>;
+			};
+
 		};
 	};
 
 	sram0: memory@80000 {
 		compatible = "mmio-sram";
-		reg = <0x00080000 (320*1024)>;
+		reg = <0x00080000 (300*1024)>;
 	};
 
 	soc {
@@ -119,7 +128,6 @@
 			label = "MAILBOX_0";
 			status = "disabled";
 		};
-
 	};
 };
 

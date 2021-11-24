@@ -18,5 +18,6 @@ zephyr_sources(
   soc.c
   )
 
-zephyr_sources_ifdef(CONFIG_HAS_EXTERNAL_CACHE cache.c)
+zephyr_sources_ifdef(CONFIG_CPU_HAS_CUSTOM_FIXED_SOC_MPU_REGIONS mpu_regions.c)
+zephyr_sources_ifdef(CONFIG_CACHE_MANAGEMENT cache.c)
 zephyr_linker_sources(SECTIONS csk6001_private.ld)

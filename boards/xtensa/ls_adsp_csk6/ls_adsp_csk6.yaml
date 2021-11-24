@@ -1,0 +1,10 @@
+identifier: ls_adsp_csk6
+name: CSK6 DSP
+type: mcu
+arch: xtensa
+toolchain:
+  - xcc
+testing:
+  only_tags:
+     - kernel
+     - sof

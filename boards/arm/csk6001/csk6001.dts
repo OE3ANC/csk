@@ -78,3 +78,7 @@
 &green_led {
 	status = "okay";
 };
+
+&mailbox0 {
+	status = "okay";
+};

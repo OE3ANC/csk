@@ -257,6 +257,12 @@ _cleanup:
 
 void main(void)
 {
+
+#ifdef CONFIG_SOC_LS_ADSP_CSK6
+	xthal_set_cache_prefetch(XTHAL_PREFETCH_DISABLE);
+	xthal_set_region_attribute((int *)CONFIG_OPENAMP_IPC_SHM_BASE_ADDRESS, CONFIG_OPENAMP_IPC_SHM_SIZE, XCHAL_CA_BYPASS, 0);
+#endif
+
 	printk("Starting application thread!\n");
 	k_thread_create(&thread_data, thread_stack, APP_TASK_STACK_SIZE,
 			(k_thread_entry_t)app_task,

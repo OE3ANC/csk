@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, LISTENAI
+ * Copyright (c) 2018, LISTENAI
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -12,7 +12,7 @@
 #include <drivers/ipm.h>
 #include "hal/Driver_MBX.h"
 #include "hal/reg/cmn_mailbox_reg_venus.h"
-#ifdef CONFIG_SOC_LS_CSK6
+#ifdef CONFIG_SOC_LS_ADSP_CSK6
 #include "hal/venus_cp.h"
 #endif
 
@@ -49,7 +49,7 @@ static void csk_mailbox_isr(const struct device *dev)
     uint32_t received_channel = 0; 
 #ifdef CONFIG_SOC_CSK6001
 	status = config->mbx_base->REG_CP_MAILBOX_IRQ.all;
-#elif CONFIG_SOC_LS_CSK6
+#elif CONFIG_SOC_LS_ADSP_CSK6
 	status = config->mbx_base->REG_AP_MAILBOX_IRQ.all;
 #endif
 	/* send completion notification */
@@ -57,7 +57,7 @@ static void csk_mailbox_isr(const struct device *dev)
 		k_sem_give(&data_sem);
 #ifdef CONFIG_SOC_CSK6001
 		config->mbx_base->REG_CP_MAILBOX_IRQ.all = CSK_MBX_CH(CSK_MBOX_SEND_COMPLETE_REG);  
-#elif CONFIG_SOC_LS_CSK6
+#elif CONFIG_SOC_LS_ADSP_CSK6
 		config->mbx_base->REG_AP_MAILBOX_IRQ.all = CSK_MBX_CH(CSK_MBOX_SEND_COMPLETE_REG);
 #endif
 		status &= ~CSK_MBX_CH(CSK_MBOX_SEND_COMPLETE_REG);
@@ -77,7 +77,7 @@ static void csk_mailbox_isr(const struct device *dev)
 			data->rx_buf[1] = config->mbx_base->REG_0X034.all;
 			data->rx_buf[2] = config->mbx_base->REG_0X038.all;
 			data->rx_buf[3] = config->mbx_base->REG_0X03C.all;
-#elif CONFIG_SOC_LS_CSK6
+#elif CONFIG_SOC_LS_ADSP_CSK6
 			data->rx_buf[0] = config->mbx_base->REG_0X010.all;
 			data->rx_buf[1] = config->mbx_base->REG_0X014.all;
 			data->rx_buf[2] = config->mbx_base->REG_0X018.all;
@@ -88,7 +88,7 @@ static void csk_mailbox_isr(const struct device *dev)
 			config->mbx_base->REG_CP_MAILBOX_IRQ.all = 0x1U << received_channel;  
 			/* Use channel 16 as send completion notification */
 			config->mbx_base->REG_AP_MAILBOX_CTRL.all |= 0x1U << (CSK_IPM_MAX_ID_VAL + CSK_MBOX_SEND_NOTIFY_OFFSET);  
-#elif CONFIG_SOC_LS_CSK6
+#elif CONFIG_SOC_LS_ADSP_CSK6
 			config->mbx_base->REG_AP_MAILBOX_IRQ.all = 0x1U << received_channel;  
 			config->mbx_base->REG_CP_MAILBOX_CTRL.all |= 0x1U << (CSK_IPM_MAX_ID_VAL + CSK_MBOX_SEND_NOTIFY_OFFSET);  
 #endif 
