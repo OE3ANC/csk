@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) 2021 ListenAI
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <listenai/ls_csk6.dtsi>
+
+/ {
+	model = "ls_adsp_csk6";
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,console = &uart0;
+	};
+
+	soc {
+		uart0: uart@45000000 {
+			compatible = "listenai,csk-uart";
+			reg = <0x45000000 0x100000>;
+			label = "UART_0";
+		};
+
+		gpio0: gpio@45900000 {
+			compatible = "listenai,csk-gpio";
+			reg = <0x45900000 0x100000>;
+			label = "GPIO_A";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+};
+
+&uart0 {
+	current-speed = <115200>;
+	pinmuxs = <&pinmux0 2 2>, <&pinmux0 3 2>;
+	pinmux-names = "RXD", "TXD";
+	status = "okay";
+};

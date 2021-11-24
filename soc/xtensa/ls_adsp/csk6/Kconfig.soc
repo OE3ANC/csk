@@ -1,0 +1,18 @@
+# Copyright (c) 2021 ListenAI
+# SPDX-License-Identifier: Apache-2.0
+
+choice
+	prompt "LS CSK SoC Selection"
+
+	config SOC_LS_ADSP_CSK6
+		bool "ListenAI CSK6 SoC"
+		depends on SOC_SERIES_LS_CSK6
+		select HAS_CSK6001
+
+endchoice
+
+
+config HAS_CSK6001
+	bool
+	depends on SOC_LS_ADSP_CSK6
+	

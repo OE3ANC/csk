@@ -9,5 +9,6 @@ toolchain:
 supported:
   - gpio
   - uart
+  - ipm
 ram: 320
 flash: 8000

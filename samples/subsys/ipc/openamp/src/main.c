@@ -19,6 +19,9 @@
 #include <metal/device.h>
 
 #include "common.h"
+#ifdef CONFIG_SOC_CSK6001
+#include "hal/PSRAMManager.h"
+#endif
 
 #define APP_TASK_STACK_SIZE (1024)
 K_THREAD_STACK_DEFINE(thread_stack, APP_TASK_STACK_SIZE);
@@ -283,6 +286,11 @@ _cleanup:
 
 void main(void)
 {
+	
+#ifdef CONFIG_SOC_CSK6001
+	PSRAM_Initialize();
+#endif
+
 	printk("Starting application thread!\n");
 	k_thread_create(&thread_data, thread_stack, APP_TASK_STACK_SIZE,
 			(k_thread_entry_t)app_task,

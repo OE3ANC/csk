@@ -23,6 +23,8 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: gitlab_zephyr_group
       url-base: git@git.iflyos.cn:venus/zephyr
+    - name: gitlab_zephyr_hal_group
+      url-base: git@git.iflyos.cn:venus/zephyr/hal
 
   #
   # Please add items below based on alphabetical order
@@ -76,7 +78,7 @@ manifest:
         - hal
     - name: hal_listenai
       remote: gitlab_zephyr_group
-      revision: 45eda65c2eb90b0a585cc9e9b8ea15b7dda5910b
+      revision: d1405a5e31ae5e0f9d36eb0f213156cee0bf3a8f
       path: modules/hal/listenai
       groups:
         - hal
@@ -142,7 +144,8 @@ manifest:
       groups:
         - hal
     - name: libmetal
-      revision: 39d049d4ae68e6f6d595fce7de1dcfc1024fb4eb
+      remote: gitlab_zephyr_hal_group
+      revision: c37e260df0ac1fa588d369e5549c4a36c1e621ff
       path: modules/hal/libmetal
       groups:
         - hal
@@ -188,7 +191,8 @@ manifest:
       revision: a47e326ca772ddd14cc3b9d4ca30a9ab44ecca16
       path: modules/bsim_hw_models/nrf_hw_models
     - name: open-amp
-      revision: 6010f0523cbc75f551d9256cf782f173177acdef
+      remote: gitlab_zephyr_group
+      revision: cfd050ff38a9d028dc211690b2ec35971128e45e
       path: modules/lib/open-amp
     - name: openthread
       revision: 5d706547ebcb0a85e11412bcd88e80e2af98c74d
@@ -199,7 +203,8 @@ manifest:
       groups:
         - debug
     - name: sof
-      revision: 76feb11d1b8f425021b5691668af2250fee444ac
+      remote: gitlab_zephyr_group
+      revision: 5165f2fa619ff1cd691df6e1c80f5e8be565999c
       path: modules/audio/sof
     - name: tflite-micro
       revision: 9156d050927012da87079064db59d07f03b8baf6

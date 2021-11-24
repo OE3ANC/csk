@@ -5,7 +5,7 @@ config UART_CSK6001
 	default y
 	select SERIAL_HAS_DRIVER
 	select SERIAL_SUPPORT_INTERRUPT
-	select PINMUX_CSK6001
+	select PINMUX
 	depends on HAS_CSK6001
 	help
 	  Enable the csk6001 UART driver.

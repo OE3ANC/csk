@@ -14,6 +14,12 @@ config IPM_MCUX
 	help
 	  Driver for MCUX mailbox
 
+config IPM_CSK
+	bool "CSK IPM driver"
+	depends on HAS_CSK6001
+	help
+	  Driver for MCUX mailbox
+
 config IPM_IMX
 	bool "IMX IPM driver"
 	depends on HAS_IMX_HAL
