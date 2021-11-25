@@ -8,6 +8,7 @@
 #include <storage/flash_map.h>
 #include <device.h>
 #include <stdio.h>
+#include <string.h>
 
 #if DT_NODE_HAS_STATUS(DT_INST(0, listenai_csk_flash_controller), okay)
 #define FLASH_DEVICE DT_LABEL(DT_INST(0, listenai_csk_flash_controller))
@@ -30,6 +31,8 @@
 
 #define FLASH_TEST_OFFSET2 0x41234
 #define FLASH_TEST_PAGE_IDX 37
+
+#define FLASH_WRITE_DATA_STORE_INTERNAL_FLASH (1)
 
 void main(void)
 {
@@ -178,4 +181,34 @@ void main(void)
 
 	printf("\nTest 8: Write block size API\n");
 	printf("   write-block-size = %u\n", flash_get_write_block_size(flash_dev));
+
+#if defined(FLASH_WRITE_DATA_STORE_INTERNAL_FLASH)
+	char flashStr[128];
+	const char* pstring = "This is a string stored in the internal Flash space that will be further written to the internal Flash";
+	printf("\nTest 9: Write data form internal flash address area\n");
+	if (flash_erase(flash_dev, FLASH_TEST_OFFSET, FLASH_PAGE_SIZE) != 0) {
+		printf("   Flash erase failed!\n");
+		return;
+	} else {
+		printf("   Flash erase succeeded!\n");
+	}
+
+	offset = FLASH_TEST_OFFSET;
+	if (flash_write(flash_dev, offset, pstring, strlen(pstring)+1) != 0) {
+		printf("   Flash write failed!\n");
+		return;
+	}
+	printf("   Attempting to read 0x%x\n", offset);
+	if (flash_read(flash_dev, offset, flashStr, sizeof(flashStr)) != 0) {
+		printf("   Flash read failed!\n");
+		return;
+	}
+
+	if(0 == strcmp(pstring,flashStr)){
+		printf("   Data read matches data written. Good!\n");
+	}
+	else{
+		printf("   Data read does not match data written!\n");
+	}
+#endif
 }
