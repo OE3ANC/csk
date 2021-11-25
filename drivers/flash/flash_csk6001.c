@@ -12,6 +12,7 @@
 #define FLASH_CHIP_SZ DT_REG_SIZE_BY_IDX(SOC_NV_FLASH_NODE, 0)
 #define FLASH_BASE_ADDRESS DT_REG_ADDR_BY_IDX(SOC_NV_FLASH_NODE, 0)
 
+#include <string.h>
 #include <kernel.h>
 #include <drivers/flash.h>
 #include "hal/spiflash.h"
@@ -57,6 +58,28 @@ static int flash_csk6001_read(const struct device *dev, off_t address, void *buf
 	return iret;
 }
 
+/*If from data address in soc flash area ,copy to ram area first*/
+#define ADDRESS_IS_IN_SOC_FLASH_AREA(address) (((address >= FLASH_BASE_ADDRESS)&&(address < FLASH_BASE_ADDRESS + FLASH_CHIP_SZ))?1:0)
+static int inline flash_csk6001_write_with_cp(const struct device *dev, off_t address, const void *buffer,size_t length){
+
+	char cbuffer[32];
+	char* pos = (char*) buffer;
+	char* pTail = (char*)buffer + length;
+	int iret = 0;
+	int32_t cpLen = 0;
+
+	do{
+		cpLen = (pTail - pos)>sizeof(cbuffer)?sizeof(cbuffer):(pTail - pos);
+		memcpy(cbuffer,pos,cpLen);
+		if (0 != sflash_write((void *)dev->config, FLASH_BASE_ADDRESS + address+(pos - (char*)buffer), cbuffer, cpLen)) {
+			iret = -EIO;
+			break;
+		} 		
+		pos += cpLen;
+	}while((uint32_t)pos < (uint32_t)buffer + length);
+
+	return iret;
+}
 static int flash_csk6001_write(const struct device *dev, off_t address, const void *buffer,
 			       size_t length)
 {
@@ -72,10 +95,15 @@ static int flash_csk6001_write(const struct device *dev, off_t address, const vo
 
 	FLASH_OPT_ENTER();
 	sflash_write_protection_set((void *)dev->config, false);
-	if (0 != sflash_write((void *)dev->config, FLASH_BASE_ADDRESS + address, buffer, length)) {
-		iret = -EIO;
-	} else {
-		iret = 0;
+	if(0 != ADDRESS_IS_IN_SOC_FLASH_AREA((uint32_t)buffer)){
+		iret = flash_csk6001_write_with_cp(dev,address,buffer,length);
+	}
+	else{
+		if (0 != sflash_write((void *)dev->config, FLASH_BASE_ADDRESS + address, buffer, length)) {
+			iret = -EIO;
+		} else {
+			iret = 0;
+		}
 	}
 	sflash_write_protection_set((void *)dev->config, true);
 	FLASH_OPT_EXIT();
