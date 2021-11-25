@@ -181,7 +181,7 @@ const unsigned Xthal_intlevel_mask[16] = {
 
 // mask for level 1 to N interrupts
 const unsigned Xthal_intlevel_andbelow_mask[16] = { 
-    XCHAL_INTLEVEL_ANDBELOW_MASKS
+    _XCHAL_INTLEVEL_ANDBELOW_MASKS
 };
 
 
