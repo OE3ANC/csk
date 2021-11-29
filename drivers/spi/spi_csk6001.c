@@ -36,6 +36,7 @@ typedef enum {
 } spi_ctrl_opcode_t;
 
 typedef struct {
+	void *queue_reserved;
 	spi_ctrl_opcode_t opcode;
 	const struct device *dev;
 	const void *tx_buf;
@@ -266,7 +267,7 @@ do {                     \
     const int sclk_gpio_label_len = strlen(sclk_gpio_label);                                      \
     int sclk_pad_num = (sclk_gpio_label[sclk_gpio_label_len - 1] == 'A')? 0 :                     \
                         (sclk_gpio_label[sclk_gpio_label_len - 1] == 'B')? 1 : -1;                \
-    assert(mosi_pad_num != -1 && mosi_pad_num != -1 && sclk_pad_num != -1)                        \
+    assert(mosi_pad_num != -1 && mosi_pad_num != -1 && sclk_pad_num != -1);                       \
     IOMuxManager_PinConfigure(mosi_pad_num, DT_PHA_BY_IDX(DT_NODELABEL(spi##n), mosi_gpios, 0, pin), func);	\
     IOMuxManager_PinConfigure(miso_pad_num, DT_PHA_BY_IDX(DT_NODELABEL(spi##n), miso_gpios, 0, pin), func);	\
     IOMuxManager_PinConfigure(sclk_pad_num, DT_PHA_BY_IDX(DT_NODELABEL(spi##n), sclk_gpios, 0, pin), func); \
