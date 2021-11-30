@@ -182,6 +182,7 @@ PROVIDE(_memmap_cacheattr_reset = _memmap_cacheattr_wb_trapnull);
 
 _EXT_MAN_ALIGN_ = 16;
 
+_IRAM_LOAD_OFFSET_ = ORIGIN(vector_reset_lit)  + LENGTH(vector_reset_lit) - ORIGIN(vector_base_text);
 SECTIONS
 {
 
@@ -208,146 +209,148 @@ SECTIONS
     _ResetHandler_text_end = ABSOLUTE(.);
   } >vector_reset_lit :vector_reset_lit_phdr
 
-  .WindowVectors.text : ALIGN(4)
+  .WindowVectors.text : AT(ORIGIN(vector_base_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _WindowVectors_text_start = ABSOLUTE(.);
     KEEP (*(.WindowVectors.text))
     _WindowVectors_text_end = ABSOLUTE(.);
   } >vector_base_text :vector_base_text_phdr
 
-  .Level2InterruptVector.literal : ALIGN(4)
+  .Level2InterruptVector.literal : AT(ORIGIN(vector_int2_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level2InterruptVector_literal_start = ABSOLUTE(.);
     *(.Level2InterruptVector.literal)
     _Level2InterruptVector_literal_end = ABSOLUTE(.);
   } >vector_int2_lit :vector_int2_lit_phdr
 
-  .Level2InterruptVector.text : ALIGN(4)
+  .Level2InterruptVector.text : AT(ORIGIN(vector_int2_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level2InterruptVector_text_start = ABSOLUTE(.);
     KEEP (*(.Level2InterruptVector.text))
     _Level2InterruptVector_text_end = ABSOLUTE(.);
   } >vector_int2_text :vector_int2_text_phdr
 
-  .Level3InterruptVector.literal : ALIGN(4)
+  .Level3InterruptVector.literal : AT(ORIGIN(vector_int3_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level3InterruptVector_literal_start = ABSOLUTE(.);
     *(.Level3InterruptVector.literal)
     _Level3InterruptVector_literal_end = ABSOLUTE(.);
   } >vector_int3_lit :vector_int3_lit_phdr
 
-  .Level3InterruptVector.text : ALIGN(4)
+  .Level3InterruptVector.text : AT(ORIGIN(vector_int3_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level3InterruptVector_text_start = ABSOLUTE(.);
     KEEP (*(.Level3InterruptVector.text))
     _Level3InterruptVector_text_end = ABSOLUTE(.);
   } >vector_int3_text :vector_int3_text_phdr
 
-  .Level4InterruptVector.literal : ALIGN(4)
+  .Level4InterruptVector.literal : AT(ORIGIN(vector_int4_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level4InterruptVector_literal_start = ABSOLUTE(.);
     *(.Level4InterruptVector.literal)
     _Level4InterruptVector_literal_end = ABSOLUTE(.);
   } >vector_int4_lit :vector_int4_lit_phdr
 
-  .Level4InterruptVector.text : ALIGN(4)
+  .Level4InterruptVector.text : AT(ORIGIN(vector_int4_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level4InterruptVector_text_start = ABSOLUTE(.);
     KEEP (*(.Level4InterruptVector.text))
     _Level4InterruptVector_text_end = ABSOLUTE(.);
   } >vector_int4_text :vector_int4_text_phdr
 
-  .Level5InterruptVector.literal : ALIGN(4)
+  .Level5InterruptVector.literal : AT(ORIGIN(vector_int5_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level5InterruptVector_literal_start = ABSOLUTE(.);
     *(.Level5InterruptVector.literal)
     _Level5InterruptVector_literal_end = ABSOLUTE(.);
   } >vector_int5_lit :vector_int5_lit_phdr
 
-  .Level5InterruptVector.text : ALIGN(4)
+  .Level5InterruptVector.text : AT(ORIGIN(vector_int5_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _Level5InterruptVector_text_start = ABSOLUTE(.);
     KEEP (*(.Level5InterruptVector.text))
     _Level5InterruptVector_text_end = ABSOLUTE(.);
   } >vector_int5_text :vector_int5_text_phdr
 
-  .DebugExceptionVector.literal : ALIGN(4)
+  .DebugExceptionVector.literal : AT(ORIGIN(vector_debug_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _DebugExceptionVector_literal_start = ABSOLUTE(.);
     *(.DebugExceptionVector.literal)
     _DebugExceptionVector_literal_end = ABSOLUTE(.);
   } >vector_debug_lit :vector_debug_lit_phdr
 
-  .DebugExceptionVector.text : ALIGN(4)
+  .DebugExceptionVector.text : AT(ORIGIN(vector_debug_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _DebugExceptionVector_text_start = ABSOLUTE(.);
     KEEP (*(.DebugExceptionVector.text))
     _DebugExceptionVector_text_end = ABSOLUTE(.);
   } >vector_debug_text :vector_debug_text_phdr
 
-  .NMIExceptionVector.literal : ALIGN(4)
+  .NMIExceptionVector.literal : AT(ORIGIN(vector_nmi_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _NMIExceptionVector_literal_start = ABSOLUTE(.);
     *(.NMIExceptionVector.literal)
     _NMIExceptionVector_literal_end = ABSOLUTE(.);
   } >vector_nmi_lit :vector_nmi_lit_phdr
 
-  .NMIExceptionVector.text : ALIGN(4)
+  .NMIExceptionVector.text : AT(ORIGIN(vector_nmi_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _NMIExceptionVector_text_start = ABSOLUTE(.);
     KEEP (*(.NMIExceptionVector.text))
     _NMIExceptionVector_text_end = ABSOLUTE(.);
   } >vector_nmi_text :vector_nmi_text_phdr
 
-  .KernelExceptionVector.literal : ALIGN(4)
+  .KernelExceptionVector.literal : AT(ORIGIN(vector_kernel_lit) + _IRAM_LOAD_OFFSET_)  ALIGN(4)
   {
     _KernelExceptionVector_literal_start = ABSOLUTE(.);
     *(.KernelExceptionVector.literal)
     _KernelExceptionVector_literal_end = ABSOLUTE(.);
   } >vector_kernel_lit :vector_kernel_lit_phdr
 
-  .KernelExceptionVector.text : ALIGN(4)
+  .KernelExceptionVector.text : AT(ORIGIN(vector_kernel_text) + _IRAM_LOAD_OFFSET_)  ALIGN(4)
   {
     _KernelExceptionVector_text_start = ABSOLUTE(.);
     KEEP (*(.KernelExceptionVector.text))
     _KernelExceptionVector_text_end = ABSOLUTE(.);
   } >vector_kernel_text :vector_kernel_text_phdr
 
-  .UserExceptionVector.literal : ALIGN(4)
+  .UserExceptionVector.literal : AT(ORIGIN(vector_user_lit) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _UserExceptionVector_literal_start = ABSOLUTE(.);
     *(.UserExceptionVector.literal)
     _UserExceptionVector_literal_end = ABSOLUTE(.);
   } >vector_user_lit :vector_user_lit_phdr
 
-  .UserExceptionVector.text : ALIGN(4)
+  .UserExceptionVector.text :  AT(ORIGIN(vector_user_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _UserExceptionVector_text_start = ABSOLUTE(.);
     KEEP (*(.UserExceptionVector.text))
     _UserExceptionVector_text_end = ABSOLUTE(.);
   } >vector_user_text :vector_user_text_phdr
 
-  .DoubleExceptionVector.literal : ALIGN(4)
+  .DoubleExceptionVector.literal : AT(ORIGIN(vector_double_lit) + _IRAM_LOAD_OFFSET_)  ALIGN(4)
   {
     _DoubleExceptionVector_literal_start = ABSOLUTE(.);
     *(.DoubleExceptionVector.literal)
     _DoubleExceptionVector_literal_end = ABSOLUTE(.);
   } >vector_double_lit :vector_double_lit_phdr
 
-  .DoubleExceptionVector.text : ALIGN(4)
+  .DoubleExceptionVector.text : AT(ORIGIN(vector_double_text) + _IRAM_LOAD_OFFSET_) ALIGN(4)
   {
     _DoubleExceptionVector_text_start = ABSOLUTE(.);
     KEEP (*(.DoubleExceptionVector.text))
     _DoubleExceptionVector_text_end = ABSOLUTE(.);
   } >vector_double_text :vector_double_text_phdr
 
+  . = ORIGIN(sdram0);
+  _IRAM_TEXT_LOAD_START_ = .;
   .iram.text : ALIGN(4)
   {
     _stext = .;
     _iram_text_start = ABSOLUTE(.);
     *(.iram0.literal .iram.literal .iram.text.literal .iram0.text .iram.text)
     _iram_text_end = ABSOLUTE(.);
-  } >iram_text_start :iram_text_start_phdr
+  } >iram_text_start AT > sdram0 :iram_text_start_phdr
 
   .rtos.rodata : ALIGN(4)
   {
@@ -520,6 +523,32 @@ SECTIONS
     . = ALIGN (8);
     _bss_end = ABSOLUTE(.);
   } >sdram0 :sdram0_phdr
+
+
+  .copy.table :
+  {
+    . = ALIGN(4);
+    __iram_vector_text_lma = XCHAL_RESET_VECTOR0_PADDR_IRAM + MEM_RESET_TEXT_SIZE + MEM_RESET_LIT_SIZE;
+    __iram_vector_text_vma = XCHAL_VECBASE_RESET_PADDR_IRAM;
+    __iram_vector_text_size = (XCHAL_DOUBLEEXC_VECTOR_PADDR_IRAM + MEM_VECT_TEXT_SIZE) -XCHAL_VECBASE_RESET_PADDR_IRAM;
+
+    __iram_code_text_lma = _IRAM_TEXT_LOAD_START_;
+    __iram_code_text_vma = _iram_text_start;
+    __iram_code_text_size = _iram_text_end - _iram_text_start;  
+
+    __copy_table_start__ = .;
+    LONG (XCHAL_RESET_VECTOR0_PADDR_IRAM + MEM_RESET_TEXT_SIZE + MEM_RESET_LIT_SIZE) 
+    LONG  (XCHAL_VECBASE_RESET_PADDR_IRAM)
+    LONG ((XCHAL_DOUBLEEXC_VECTOR_PADDR_IRAM + MEM_VECT_TEXT_SIZE) -XCHAL_VECBASE_RESET_PADDR_IRAM) 
+    /* Add each additional data section here */
+
+    LONG (_IRAM_TEXT_LOAD_START_)
+    LONG (_iram_text_start)
+    LONG (_iram_text_end - _iram_text_start)
+
+    __copy_table_end__ = .;
+  } > sdram0 :sdram0_phdr
+
 
   .heap_mem (NOLOAD) : ALIGN(8)
   {
