@@ -44,6 +44,25 @@ int z_soc_irq_is_enabled(unsigned int irq)
 
 	return ret;
 }
+void __memmap_init(void)
+{
+	typedef struct {
+		uint32_t const *src;
+		uint32_t *dest;
+		uint32_t wlen;
+	} __copy_table_t;
+
+	extern const __copy_table_t __copy_table_start__;
+	extern const __copy_table_t __copy_table_end__;
+
+	for (__copy_table_t const *pTable = &__copy_table_start__; pTable < &__copy_table_end__;
+	     ++pTable) {
+		for (uint32_t i = 0u; i < pTable->wlen/4; ++i) {
+			pTable->dest[i] = pTable->src[i];
+		}
+	}
+
+}
 
 void xtensa_real_exit(int status){
 	#include <xtensa/simcall.h>
