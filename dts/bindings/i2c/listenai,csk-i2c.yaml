@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: CSK I2C node
+
+compatible: "listenai,csk-i2c"
+
+include: i2c-controller.yaml
+
+properties:
+    reg:
+      required: true
+
+    interrupts:
+      required: true
+
+    pinmuxs:
+      type: phandle-array
+      required: true
+      description: SCL and SDA pinmux
+
+    pinmux-names:
+      type: string-array
+      required: true
+      description: I2C pins names
+
+

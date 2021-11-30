@@ -5,13 +5,15 @@
 #include <dt-bindings/pwm/pwm.h>
 
 / {
-     model = "csk6001 devkit";
-     compatible = "csk,csk6001devkit";
-     aliases {
-		led0 = &green_led;
+        model = "csk6001 devkit";
+        compatible = "csk,csk6001devkit";
+        aliases {
+                led0 = &green_led;
                 sw0 = &user_button_0;
                 pwm-led0 = &green_pwm_led;
-	};
+                i2c-0 = &i2c0;
+                i2c-1 = &i2c1;
+        };
 
         chosen {
                 zephyr,console = &uart0;
@@ -40,16 +42,16 @@
 	};
 
         gpio_keys {
-		compatible = "gpio-keys";
-		user_button_0: button_0 {
-			label = "User SW0";
-			gpios = <&gpio1 6 0>;
-		};
-	};
+                compatible = "gpio-keys";
+                user_button_0: button_0 {
+                        label = "User SW0";
+                        gpios = <&gpio1 6 0>;
+                };
+        };
 
-     /*
-      * Your board-specific hardware: buttons, LEDs, sensors, etc.
-      */
+        /*
+         * Your board-specific hardware: buttons, LEDs, sensors, etc.
+         */
 };
 
 &gpt0 {
@@ -72,10 +74,10 @@
 };
 
 &uart0 {
-	current-speed = <115200>;
-	pinmuxs = <&pinmux0 2 2>, <&pinmux0 3 2>;
-	pinmux-names = "RXD", "TXD";
-	status = "okay";
+        current-speed = <115200>;
+        pinmuxs = <&pinmux0 2 2>, <&pinmux0 3 2>;
+        pinmux-names = "RXD", "TXD";
+        status = "okay";
 };
 
 &uart1 {
@@ -98,8 +100,20 @@
     status = "disabled";
 };
 
+&i2c0 {
+        status = "okay";
+        pinmuxs = <&pinmux0 4 8>, <&pinmux0 5 8>;
+        pinmux-names = "SCL", "SDA";
+};
+
+&i2c1 {
+        status = "okay";
+        pinmuxs = <&pinmux0 6 9>, <&pinmux0 7 9>;
+        pinmux-names = "SCL", "SDA";
+};
+
 &green_led {
-	status = "okay";
+        status = "okay";
 };
 
 &mailbox0 {
