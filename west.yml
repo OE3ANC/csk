@@ -21,11 +21,9 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://cloud.listenai.com/zephyr-mirror
-    - name: gitlab_zephyr_group
-      url-base: git@git.iflyos.cn:venus/zephyr
-    - name: gitlab_zephyr_hal_group
-      url-base: git@git.iflyos.cn:venus/zephyr/hal
-
+    - name: gitlab_zephyr_module_group
+      url-base: git@git.iflyos.cn:venus/zephyr/modules
+      
   #
   # Please add items below based on alphabetical order
   projects:
@@ -74,12 +72,6 @@ manifest:
     - name: hal_infineon
       revision: f1fa8241f8786198ba41155413243de36ed878a5
       path: modules/hal/infineon
-      groups:
-        - hal
-    - name: hal_listenai
-      remote: gitlab_zephyr_group
-      revision: 21608c347eac764e3a53a79d82a553b1c9c921a7
-      path: modules/hal/listenai
       groups:
         - hal
     - name: hal_microchip
@@ -143,12 +135,6 @@ manifest:
       path: modules/hal/xtensa
       groups:
         - hal
-    - name: libmetal
-      remote: gitlab_zephyr_hal_group
-      revision: c37e260df0ac1fa588d369e5549c4a36c1e621ff
-      path: modules/hal/libmetal
-      groups:
-        - hal
     - name: littlefs
       path: modules/fs/littlefs
       groups:
@@ -190,10 +176,6 @@ manifest:
     - name: nrf_hw_models
       revision: a47e326ca772ddd14cc3b9d4ca30a9ab44ecca16
       path: modules/bsim_hw_models/nrf_hw_models
-    - name: open-amp
-      remote: gitlab_zephyr_group
-      revision: cfd050ff38a9d028dc211690b2ec35971128e45e
-      path: modules/lib/open-amp
     - name: openthread
       revision: 5d706547ebcb0a85e11412bcd88e80e2af98c74d
       path: modules/lib/openthread
@@ -202,10 +184,6 @@ manifest:
       path: modules/debug/segger
       groups:
         - debug
-    - name: sof
-      remote: gitlab_zephyr_group
-      revision: 5165f2fa619ff1cd691df6e1c80f5e8be565999c
-      path: modules/audio/sof
     - name: tflite-micro
       revision: 9156d050927012da87079064db59d07f03b8baf6
       path: modules/lib/tflite-micro
@@ -229,6 +207,28 @@ manifest:
       groups:
         - tee
 
+### modified by listanai
+    - name: hal_listenai
+      remote: gitlab_zephyr_module_group
+      revision: a3aafeb0dfc1f235338510c3d597389c2db72ef8
+      path: modules/hal/listenai
+      groups:
+        - hal  
+    - name: libmetal
+      remote: gitlab_zephyr_module_group
+      revision: 05bdf74c271cceba33385cb8b6793448b25ab4ec
+      path: modules/hal/libmetal
+      groups:
+        - hal
+    - name: open-amp
+      remote: gitlab_zephyr_module_group
+      revision: 22c45c67ba372c054102b536e3ee036c1b8a12bd
+      path: modules/lib/open-amp 
+    - name: sof
+      remote: gitlab_zephyr_module_group
+      revision: 5165f2fa619ff1cd691df6e1c80f5e8be565999c
+      path: modules/audio/sof
+    
   self:
     path: zephyr
     west-commands: scripts/west-commands.yml
