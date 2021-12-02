@@ -216,7 +216,7 @@ static int csk_dma_init(const struct device *dev)
     }
 
 	data->channels_info = k_calloc(config->dma_channels_num, sizeof(struct channel_info));
-	if (data->channels_info) {
+	if (data->channels_info == NULL) {
 		return -ENOMEM;
 	}
     IRQ_CONNECT(DT_INST_IRQN(0),DT_INST_IRQ(0, priority),
