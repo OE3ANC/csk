@@ -222,7 +222,7 @@ manifest:
         - hal
     - name: open-amp
       remote: gitlab_zephyr_module_group
-      revision: 22c45c67ba372c054102b536e3ee036c1b8a12bd
+      revision: cfd050ff38a9d028dc211690b2ec35971128e45e
       path: modules/lib/open-amp 
     - name: sof
       remote: gitlab_zephyr_module_group
