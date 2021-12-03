@@ -177,7 +177,6 @@ manifest:
       revision: a47e326ca772ddd14cc3b9d4ca30a9ab44ecca16
       path: modules/bsim_hw_models/nrf_hw_models
     - name: open-amp
-      remote: gitlab_zephyr_group
       revision: cfd050ff38a9d028dc211690b2ec35971128e45e
       path: modules/lib/open-amp
     - name: openthread
