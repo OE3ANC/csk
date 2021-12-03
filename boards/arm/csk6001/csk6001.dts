@@ -27,7 +27,7 @@
         leds {
                 compatible = "gpio-leds";
                 green_led: led_1 {
-                        gpios = <&gpio0 16 0>;
+                        gpios = <&gpioa 16 0>;
                         label = "User LED_GREEN";
                 };
         };
@@ -45,7 +45,7 @@
                 compatible = "gpio-keys";
                 user_button_0: button_0 {
                         label = "User SW0";
-                        gpios = <&gpio1 6 0>;
+                        gpios = <&gpiob 6 0>;
                 };
         };
 
@@ -58,24 +58,24 @@
 	status = "okay";
 
 	pwm0: pwm0 {
-                pinmuxs = <&pinmux0 16 11>;
+                pinmuxs = <&pinmuxa 16 11>;
                 clock-prescaler = <128>;
                 status = "okay";
 	};
 
 };
 
-&gpio0 {
+&gpioa {
         status = "okay";
 };
 
-&gpio1 {
+&gpiob {
         status = "okay";
 };
 
 &uart0 {
         current-speed = <115200>;
-        pinmuxs = <&pinmux0 2 2>, <&pinmux0 3 2>;
+        pinmuxs = <&pinmuxa 2 2>, <&pinmuxa 3 2>;
         pinmux-names = "RXD", "TXD";
         status = "okay";
 };
@@ -89,10 +89,10 @@
 };
 
 &spi0 {
-    miso-gpios = <&gpio0 17 0>;
-    mosi-gpios = <&gpio0 18 0>;
-    sclk-gpios = <&gpio0 19 0>;
-    cs-gpios = <&gpio0 20 0>;
+    miso-gpios = <&gpioa 17 0>;
+    mosi-gpios = <&gpioa 18 0>;
+    sclk-gpios = <&gpioa 19 0>;
+    cs-gpios = <&gpioa 20 0>;
     status = "okay";
 };
 
@@ -102,13 +102,13 @@
 
 &i2c0 {
         status = "okay";
-        pinmuxs = <&pinmux0 4 8>, <&pinmux0 5 8>;
+        pinmuxs = <&pinmuxa 4 8>, <&pinmuxa 5 8>;
         pinmux-names = "SCL", "SDA";
 };
 
 &i2c1 {
         status = "okay";
-        pinmuxs = <&pinmux0 6 9>, <&pinmux0 7 9>;
+        pinmuxs = <&pinmuxa 6 9>, <&pinmuxa 7 9>;
         pinmux-names = "SCL", "SDA";
 };
 
