@@ -22,15 +22,12 @@ LOG_MODULE_REGISTER(csk6001_spi, CONFIG_SPI_LOG_LEVEL);
 #include "hal/Driver_SPI.h"
 #include "hal/IOMuxManager.h"
 
-#define SPI_CTRL_STACK_SIZE 1024
-#define SPI_CTRL_PRIORITY 5
-
 static void spi_control_thread(void *, void *, void *);
 
 K_QUEUE_DEFINE(spi_control_queue);
-K_THREAD_DEFINE(my_tid, SPI_CTRL_STACK_SIZE,
+K_THREAD_DEFINE(spi_ctrl_thread_id, CONFIG_SPI_CTRL_STACK_SIZE,
                 spi_control_thread, NULL, NULL, NULL,
-                SPI_CTRL_PRIORITY, 0, 0);
+                CONFIG_SPI_CTRL_PRIORITY, 0, 0);
 
 typedef enum {
 	SPI_OP_TRANSMIT,
@@ -130,8 +127,18 @@ static int csk_spi_configure(const struct device *dev, const struct spi_config *
 	uint32_t spi_bits_order = (spi_cfg->operation & SPI_TRANSFER_LSB) ?
 								CSK_SPI_LSB_MSB : CSK_SPI_MSB_LSB;
 
+	uint32_t spi_dma_en_mask = 0;
+
+#if	!CONFIG_SPI_TX_DMA
+	spi_dma_en_mask |= CSK_SPI_TXIO_PIO;
+#endif
+
+#if	!CONFIG_SPI_RX_DMA
+	spi_dma_en_mask |= CSK_SPI_RXIO_PIO;
+#endif
+
 	SPI_Control(data->driver_context, spi_op_mode | spi_sample_mode | spi_word_size_mask |
-                spi_bits_order | CSK_SPI_TXIO_PIO | CSK_SPI_RXIO_PIO, spi_cfg->frequency);
+                spi_bits_order | spi_dma_en_mask, spi_cfg->frequency);
 
 	data->ctx.config = spi_cfg;
     spi_context_cs_configure(&data->ctx);
