@@ -1,6 +1,4 @@
-# Makefile - STM32Cube SDK
-#
-# Copyright (c) 2020 Linaro Limited
+# Copyright (c) 2021 listenai Intelligent Technology (anhui) Co., Ltd.
 #
 # SPDX-License-Identifier: Apache-2.0
 

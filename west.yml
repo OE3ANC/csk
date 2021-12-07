@@ -213,7 +213,7 @@ manifest:
 ### modified by listanai
     - name: hal_listenai
       remote: gitlab_zephyr_module_group
-      revision: 07a538dd53fa271217d699eed69df865c520d4a2
+      revision: 7e8e914f35abb4fd96826c8aa4d58c6065498743
       path: modules/hal/listenai
       groups:
         - hal  
