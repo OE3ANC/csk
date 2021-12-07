@@ -227,6 +227,14 @@ manifest:
       remote: gitlab_zephyr_module_group
       revision: 5165f2fa619ff1cd691df6e1c80f5e8be565999c
       path: modules/audio/sof
+    - name: protobuf-c
+      remote: gitlab_zephyr_module_group
+      revision: 033eb51d64cde459bcbd69c5ab5e09267975485e
+      path: modules/lib/protobuf-c
+    - name: esp-hosted
+      remote: gitlab_zephyr_module_group
+      revision: 70bf286d245c4c7deb513cb29b8cf62264e6d1d4
+      path: modules/lib/esp-hosted
     
   self:
     path: zephyr
