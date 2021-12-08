@@ -18,7 +18,6 @@ static void ipm_callback(const struct device *dev, void *context,
 			 uint32_t id, volatile void *data)
 {
 	int i;
-	int status;
 	uint32_t *data32 = (uint32_t *)data;
 
 	printk("[MASTER]: %s: id = %u, data = ", __func__, id);

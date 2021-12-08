@@ -42,8 +42,6 @@ int remote_core_loadFw(struct remoteproc *rproc)
 	uint32_t fw_size;
 	char *boot_address = (char *)PSRAM_FW_WR_ADDRESS;
 
-	uint32_t remainlen = 0;
-
 	if (rproc == NULL)
 		return -EINVAL;
 

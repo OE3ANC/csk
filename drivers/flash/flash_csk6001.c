@@ -83,7 +83,6 @@ static int inline flash_csk6001_write_with_cp(const struct device *dev, off_t ad
 static int flash_csk6001_write(const struct device *dev, off_t address, const void *buffer,
 			       size_t length)
 {
-	unsigned int key;
 	int iret = 0;
 
 	if (length == 0) {
@@ -113,7 +112,6 @@ static int flash_csk6001_write(const struct device *dev, off_t address, const vo
 
 static int flash_csk6001_erase(const struct device *dev, off_t start, size_t len)
 {
-	unsigned int key;
 	int iret;
 
 	if (start > FLASH_CHIP_SZ || start + len > FLASH_CHIP_SZ) {

@@ -40,6 +40,15 @@ struct csk_wifi_config {
     wifi_mode_t mode;
 };
 
+/* TODO: Remove this macro */
+#ifdef CONFIG_CSK_WIFI_STATION
+static struct csk_wifi_data csk_wifi_sta_data;
+#endif
+
+#ifdef CONFIG_CSK_WIFI_SOFTAP
+static struct csk_wifi_data csk_wifi_ap_data;
+#endif
+
 static inline int wifi_give_result(csk_wifi_result_t *result)
 {
     if (!k_msgq_num_free_get(&wifi_result_msgq)) {
@@ -81,9 +90,17 @@ static inline int wifi_get_message(csk_wifi_ctrl_msg_t *msg, k_timeout_t timeout
 const struct device * wifi_get_dev(wifi_mode_t mode)
 {
     if (mode == WIFI_MODE_STA) {
+    #ifdef CONFIG_CSK_WIFI_STATION
         return csk_wifi_sta_data.dev;
+    #else
+        return NULL;
+    #endif
     } else if (mode == WIFI_MODE_AP) {
+    #ifdef CONFIG_CSK_WIFI_SOFTAP
         return csk_wifi_ap_data.dev;
+    #else 
+        return NULL;
+    #endif
     } else {
         return NULL;
     }

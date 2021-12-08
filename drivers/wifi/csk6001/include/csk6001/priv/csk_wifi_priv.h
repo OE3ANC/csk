@@ -30,9 +30,6 @@ struct csk_wifi_data {
     hosted_event_callback_t hosted_event_cb;
 };
 
-static struct csk_wifi_data csk_wifi_sta_data;
-static struct csk_wifi_data csk_wifi_ap_data;
-
 typedef enum {
     WIFI_CMD_STA_INIT,
     WIFI_CMD_STA_CONNECT,

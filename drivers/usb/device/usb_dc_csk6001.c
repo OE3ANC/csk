@@ -440,6 +440,7 @@ static int32_t usb_dma_get_free_channel(uint8_t *pch)
 	return (found ? 0 : -1);
 }
 
+/*
 static int usb_venus_dma_single_packet_setting(uint8_t ep, uint32_t address, uint32_t length)
 {
 	uint32_t ep_idx, dir;
@@ -491,6 +492,7 @@ static int usb_venus_dma_single_packet_setting(uint8_t ep, uint32_t address, uin
 
 	return 0;
 }
+*/
 
 static int usb_venus_dma_multiple_packet_setting(uint8_t ep, uint32_t address, uint32_t length)
 {
@@ -513,7 +515,7 @@ static int usb_venus_dma_multiple_packet_setting(uint8_t ep, uint32_t address, u
 			return 0;
 	}
 
-	uint8_t dma_channel;
+	uint8_t dma_channel = 0;
 	int ret;
 	ret = usb_dma_get_free_channel(&dma_channel);
 	if (ret != 0) {
@@ -806,8 +808,6 @@ int usb_dc_ep_clear_stall(const uint8_t ep)
 
 int usb_dc_ep_halt(const uint8_t ep)
 {
-	uint8_t ep_idx = USB_EP_GET_IDX(ep);
-
 	if (!usb_venus_ctrl.attached || !usb_venus_ep_is_valid(ep)) {
 		LOG_ERR("Not attached / Invalid endpoint: EP 0x%x", ep);
 		return -EINVAL;
@@ -1445,7 +1445,7 @@ static inline void usb_venus_int_iep_handler(uint32_t intsr)
 static void usb_venus_dma_isr(uint32_t dmaintsr)
 {
 	LOG_DBG("usb_venus_dma_isr");
-	uint32_t dma_channel, ep_idx, start, end;
+	uint32_t ep_idx, start, end;
 
 	for (uint32_t dma_channel = 0; dma_channel < 6; dma_channel++) {
 		if (((CSK_USBC->USB_DMA[dma_channel].CNTL & USB_VENUS_DMA_CNTL_DMAIE) >>

@@ -2,6 +2,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+
 #define DT_DRV_COMPAT listenai_csk_spi
 
 #include <assert.h>
@@ -213,7 +216,6 @@ static void csk_spi_isr_callback(uint32_t event, uint32_t usr_param)
 {
 	const struct device *dev = (const struct device *)usr_param;
 	struct csk_spi_data *data = dev->data;
-	struct spi_context *ctx = &data->ctx;
 	if (event & CSK_SPI_EVENT_TRANSFER_COMPLETE) {
 		spi_context_update_tx(&data->ctx, 1, data->current_transfer_len);
 		spi_context_update_rx(&data->ctx, 1, data->current_transfer_len);
@@ -244,6 +246,7 @@ do {                     \
     int cs_pad_num = (cs_gpio_label[cs_gpio_label_len - 1] == 'A')? 0 :                         \
                         (cs_gpio_label[cs_gpio_label_len - 1] == 'B')? 1 : -1;                  \
     assert(cs_pad_num != -1);  \
+	ARG_UNUSED(cs_pad_num);	\
     IOMuxManager_PinConfigure(sclk_pad_num, DT_PHA_BY_IDX(DT_NODELABEL(spi##n), cs_gpios, 0, pin), func);\
 } while (0)
 
@@ -323,3 +326,5 @@ SPI_CSK_SPI_INIT(0);
 #define SPI1_CONFIG_PINS(n)  SPI_CONFIG_PINS(n, CSK_IOMUX_FUNC_ALTER7)
 SPI_CSK_SPI_INIT(1);
 #endif
+
+#pragma GCC pop_options
