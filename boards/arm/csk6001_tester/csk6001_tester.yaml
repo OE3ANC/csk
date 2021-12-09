@@ -1,4 +1,4 @@
-identifier: csk6001
+identifier: csk6001_tester
 name: CSK
 type: mcu
 arch: arm

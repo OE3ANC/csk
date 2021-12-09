@@ -1,8 +1,0 @@
-if BOARD_CSK6001
-
-config BOARD
-   default "csk6001"
-
-
-
-endif # BOARD_CSK6001
