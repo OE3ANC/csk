@@ -49,9 +49,7 @@ static FATFS s_fat_fs;
 
 static void fssys_show(struct fs_mount_t *mp)
 {
-	unsigned int id = (uintptr_t)mp->storage_dev;
 	struct fs_statvfs sbuf;
-	const struct flash_area *pfa;
 	int rc;
 
 	rc = fs_statvfs(mp->mnt_point, &sbuf);
@@ -95,7 +93,6 @@ out:
 static int fs_init(void)
 {
 	struct fs_mount_t *mp;
-	int rc;
 
 #if defined(CONFIG_SECOND_CORE_LOAD_BY_LITTLEFS)
 	mp = p_g_fs_mount;
@@ -103,7 +100,7 @@ static int fs_init(void)
 #if !DT_NODE_EXISTS(PARTITION_NODE) ||                                                             \
 	!(FSTAB_ENTRY_DT_MOUNT_FLAGS(PARTITION_NODE) & FS_MOUNT_FLAG_AUTOMOUNT)
 
-	rc = fs_mount(mp);
+	int rc = fs_mount(mp);
 	if (rc < 0) {
 		printk("FAIL: mount id %" PRIuPTR " at %s: %d\n", (uintptr_t)mp->storage_dev,
 		       mp->mnt_point, rc);
@@ -126,7 +123,7 @@ static int fs_init(void)
 	mp->flags |= FS_MOUNT_FLAG_NO_FORMAT;
 	mp->fs_data = &s_fat_fs;
 	mp->mnt_point = FS_MOUNT_POINT;
-	rc = fs_mount(mp);
+	int rc = fs_mount(mp);
 	if (rc < 0) {
 		printk("FAIL: mount id %" PRIuPTR " at %s: %d\n", (uintptr_t)mp->storage_dev,
 		       mp->mnt_point, rc);
@@ -214,7 +211,6 @@ void main(void)
 {
 	int status = 0;
 	int ret;
-	struct metal_device *device;
 	struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
 
 	metal_params.log_level = METAL_LOG_DEBUG;

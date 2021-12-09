@@ -75,7 +75,6 @@ static int i2c_csk_configure(const struct device *dev, uint32_t dev_config)
 	struct i2c_csk_data *data = DEV_DATA(dev);
 	void *I2C_Handler = DEV_HANDLER(dev);
 	uint32_t arg = 0;
-	uint32_t ctrl;
 
 	if (!(I2C_MODE_MASTER & dev_config)) { /* slave mode */
 

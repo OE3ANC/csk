@@ -47,7 +47,6 @@ void main(void)
         .max_connections = CONFIG_EXAMPLE_WIFI_MAX_CONNECTTION,
     };
 
-    int retry_count = 0;
     csk_wifi_result_t wifi_result;
     csk_wifi_ap_start(&ap_config, &wifi_result, K_FOREVER);
 

@@ -114,7 +114,6 @@ int csk_wifi_ap_stop(csk_wifi_result_t *result, k_timeout_t timeout)
     int ret = 0;
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
     const struct device *dev = wifi_get_dev(WIFI_MODE_AP);
-    struct csk_wifi_data *data = dev->data;
     ret = wifi_send_command(dev, WIFI_CMD_AP_STOP, K_NO_WAIT);
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(result, timeout);

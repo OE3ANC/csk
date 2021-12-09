@@ -238,4 +238,4 @@ DEVICE_DT_INST_DEFINE(0,					                    \
                     &csk_dma_0_config,                          \
                     POST_KERNEL,                                \
                     CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,        \
-                    &csk_dma_driver_api);			            \
+                    &csk_dma_driver_api);

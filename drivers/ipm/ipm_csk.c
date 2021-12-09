@@ -115,7 +115,6 @@ static int csk_mailbox_ipm_send(const struct device *dev, int wait, uint32_t id,
 	uint8_t flags;
 	int ret;
 	int sem_status;
-	k_timeout_t timeout;
     if (id > CSK_IPM_MAX_ID_VAL) {
 		return -EINVAL;
 	}
@@ -175,7 +174,6 @@ static int csk_mailbox_ipm_set_enabled(const struct device *dev, int enable)
 
 static int csk_mailbox_init(const struct device *dev)
 {
-	const struct csk_mailbox_config *config = dev->config;
 	MBX_Initialize(NULL, NULL);
 	csk_mailbox_config_func(dev);
 	return 0;

@@ -62,7 +62,6 @@ void main(void)
     }
 
     dma_config(dma, 1, &dma_cfg);
-    int channel_index = 0;
     while (1) {
         test_dma_copy(dma, src_buffer, dst_buffer, BUFFER_SIZE);
         test_std_memcpy(src_buffer, dst_buffer, BUFFER_SIZE);

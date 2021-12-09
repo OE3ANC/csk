@@ -10,7 +10,7 @@ manifest:
   projects:
     - name: hal_listenai
       remote: listenai
-      revision: 7e8e914f35abb4fd96826c8aa4d58c6065498743
+      revision: 1f727fd1e2717963c8c3653049943d07f24cf586
       path: modules/hal/listenai
       groups:
         - hal
@@ -30,7 +30,7 @@ manifest:
       path: modules/lib/protobuf-c
     - name: esp-hosted
       remote: listenai
-      revision: 70bf286d245c4c7deb513cb29b8cf62264e6d1d4
+      revision: 7b98f726cc6b5bf0907b04b7b19d00076120b959
       path: modules/lib/esp-hosted
 
   self:

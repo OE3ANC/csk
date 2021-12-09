@@ -44,7 +44,7 @@ static void *csk6001_rproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
 {
 	struct remoteproc_mem *mem;
 	struct rproc_priv *priv;
-	metal_phys_addr_t lpa, lda, lda_end;
+	metal_phys_addr_t lpa, lda;
 
 	priv = rproc->priv;
 
@@ -135,7 +135,6 @@ static int csk6001_rproc_stop(struct remoteproc *rproc)
 static int csk6001_rproc_shutdown(struct remoteproc *rproc)
 {
 	struct rproc_priv *priv;
-	int ret;
 	struct remoteproc_mem *mem;
 	struct metal_list *node;
 	SYSCFG_RegDef *cmn_sys_ctrl = (SYSCFG_RegDef *)CMN_SYSCTRL_BASE;

@@ -144,14 +144,13 @@ void main(void)
 	/* create master and slave thread */
 	int pri = k_thread_priority_get(k_current_get());
 
-	k_tid_t slave_tid = k_thread_create(&slave_thread_data, slave_stack_area,
-					    K_THREAD_STACK_SIZEOF(slave_stack_area),
-					    i2c_slave_thread, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
+	k_thread_create(&slave_thread_data, slave_stack_area,
+					K_THREAD_STACK_SIZEOF(slave_stack_area),
+					i2c_slave_thread, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
 
-	k_tid_t master_tid =
-		k_thread_create(&master_thread_data, master_stack_area,
-				K_THREAD_STACK_SIZEOF(master_stack_area), i2c_master_thread, NULL,
-				NULL, NULL, pri, 0, K_NO_WAIT);
+	k_thread_create(&master_thread_data, master_stack_area,
+					K_THREAD_STACK_SIZEOF(master_stack_area), i2c_master_thread, NULL,
+					NULL, NULL, pri, 0, K_NO_WAIT);
 
 	printk("i2c thread creaeted\n");
 
