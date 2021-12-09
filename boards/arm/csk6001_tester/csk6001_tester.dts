@@ -5,10 +5,10 @@
 #include <dt-bindings/pwm/pwm.h>
 
 / {
-        model = "csk6001 devkit";
-        compatible = "csk,csk6001devkit";
+        model = "csk6001 tester";
+        compatible = "csk,csk6001_tester";
         aliases {
-                led0 = &green_led;
+                led0 = &board_led_2;
                 sw0 = &user_button_0;
                 pwm-led0 = &green_pwm_led;
                 i2c-0 = &i2c0;
@@ -27,9 +27,9 @@
 
         leds {
                 compatible = "gpio-leds";
-                green_led: led_1 {
+                board_led_2: board_led_2 {
                         gpios = <&gpioa 16 0>;
-                        label = "User LED_GREEN";
+                        label = "User BOARD_LED_2";
                 };
         };
 
@@ -37,7 +37,7 @@
 		compatible = "pwm-leds";
 		green_pwm_led: green_pwm_led {
 			pwms = <&pwm0 0 PWM_POLARITY_NORMAL>;
-			label = "User LED_GREEN - PWM0";
+			label = "User BOARD_LED_2 - PWM0";
 		};
 
 	};
@@ -113,7 +113,7 @@
         pinmux-names = "SCL", "SDA";
 };
 
-&green_led {
+&board_led_2 {
         status = "okay";
 };
 

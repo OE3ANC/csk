@@ -1,0 +1,8 @@
+if BOARD_CSK6001_TESTER
+
+config BOARD
+   default "csk6001_tester"
+
+
+
+endif # BOARD_CSK6001_TESTER
