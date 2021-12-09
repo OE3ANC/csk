@@ -21,9 +21,7 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://cloud.listenai.com/zephyr-mirror
-    - name: gitlab_zephyr_module_group
-      url-base: git@git.iflyos.cn:venus/zephyr/modules
-      
+
   #
   # Please add items below based on alphabetical order
   projects:
@@ -135,6 +133,11 @@ manifest:
       path: modules/hal/xtensa
       groups:
         - hal
+    - name: libmetal
+      revision: 39d049d4ae68e6f6d595fce7de1dcfc1024fb4eb
+      path: modules/hal/libmetal
+      groups:
+        - hal
     - name: littlefs
       path: modules/fs/littlefs
       groups:
@@ -177,7 +180,7 @@ manifest:
       revision: a47e326ca772ddd14cc3b9d4ca30a9ab44ecca16
       path: modules/bsim_hw_models/nrf_hw_models
     - name: open-amp
-      revision: cfd050ff38a9d028dc211690b2ec35971128e45e
+      revision: 6010f0523cbc75f551d9256cf782f173177acdef
       path: modules/lib/open-amp
     - name: openthread
       revision: 5d706547ebcb0a85e11412bcd88e80e2af98c74d
@@ -187,6 +190,9 @@ manifest:
       path: modules/debug/segger
       groups:
         - debug
+    - name: sof
+      revision: 76feb11d1b8f425021b5691668af2250fee444ac
+      path: modules/audio/sof
     - name: tflite-micro
       revision: 9156d050927012da87079064db59d07f03b8baf6
       path: modules/lib/tflite-micro
@@ -210,32 +216,6 @@ manifest:
       groups:
         - tee
 
-### modified by listanai
-    - name: hal_listenai
-      remote: gitlab_zephyr_module_group
-      revision: 7e8e914f35abb4fd96826c8aa4d58c6065498743
-      path: modules/hal/listenai
-      groups:
-        - hal  
-    - name: libmetal
-      remote: gitlab_zephyr_module_group
-      revision: 05bdf74c271cceba33385cb8b6793448b25ab4ec
-      path: modules/hal/libmetal
-      groups:
-        - hal
-    - name: sof
-      remote: gitlab_zephyr_module_group
-      revision: 5165f2fa619ff1cd691df6e1c80f5e8be565999c
-      path: modules/audio/sof
-    - name: protobuf-c
-      remote: gitlab_zephyr_module_group
-      revision: 033eb51d64cde459bcbd69c5ab5e09267975485e
-      path: modules/lib/protobuf-c
-    - name: esp-hosted
-      remote: gitlab_zephyr_module_group
-      revision: 70bf286d245c4c7deb513cb29b8cf62264e6d1d4
-      path: modules/lib/esp-hosted
-    
   self:
     path: zephyr
     west-commands: scripts/west-commands.yml

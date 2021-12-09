@@ -1,0 +1,41 @@
+# 内部开发用 manifest
+# 外部开发者请使用 https://cloud.listenai.com/zephyr/manifest
+
+manifest:
+
+  remotes:
+    - name: listenai
+      url-base: git@git.iflyos.cn:venus/zephyr/modules
+
+  projects:
+    - name: hal_listenai
+      remote: listenai
+      revision: 7e8e914f35abb4fd96826c8aa4d58c6065498743
+      path: modules/hal/listenai
+      groups:
+        - hal
+    - name: libmetal
+      remote: listenai
+      revision: 05bdf74c271cceba33385cb8b6793448b25ab4ec
+      path: modules/hal/libmetal
+      groups:
+        - hal
+    - name: sof
+      remote: listenai
+      revision: 5165f2fa619ff1cd691df6e1c80f5e8be565999c
+      path: modules/audio/sof
+    - name: protobuf-c
+      remote: listenai
+      revision: 033eb51d64cde459bcbd69c5ab5e09267975485e
+      path: modules/lib/protobuf-c
+    - name: esp-hosted
+      remote: listenai
+      revision: 70bf286d245c4c7deb513cb29b8cf62264e6d1d4
+      path: modules/lib/esp-hosted
+
+  self:
+    import:
+      file: west.yml
+      name-blocklist:
+        - libmetal
+        - sof
