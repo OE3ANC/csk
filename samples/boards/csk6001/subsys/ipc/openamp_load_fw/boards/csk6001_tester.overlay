@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-///delete-node/ &storage_partition;
+/delete-node/ &storage_partition;
 
 / {
 	chosen {
@@ -45,27 +45,21 @@
 
 };
 
- 
 &flash0 {
 	partitions {
 		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		/*
-		 * 0x000000-0x0000fffff  = 1MB for code area
-		 * 0x100000-0x0007effff  = 6.9375MB for file system
-		 * 0x7f0000-0x0007fffff  = 0.0625MB for storage(NVS or easyFlash)
-		 */
-		filesystem_part: partition@100000 {
+		filesystem_part: partition@160000 {
 			label = "filesystem";
-			reg = <0x100000 0x006f0000>;
+			reg = <0x160000 0x00600000>;
 		};
 		/*
-		 * Reserve the final 64 KiB for file system partition
+		 * Reserve the final 640 KiB for file system partition
 		 */
-		storage_partition: partition@7f0000 {
+		storage_partition: partition@760000 {
 			label = "storage";
-			reg = <0x7f0000 0x00010000>;
+			reg = <0x760000 0x00a0000>;
 		};
 
 
