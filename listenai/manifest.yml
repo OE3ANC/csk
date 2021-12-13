@@ -1,5 +1,5 @@
-# 内部开发用 manifest
-# 外部开发者请使用 https://cloud.listenai.com/zephyr/manifest
+# this file only use by listenai inner developer
+# listenai cloud developer shoule use https://cloud.listenai.com/zephyr/manifest
 
 manifest:
 
@@ -32,6 +32,10 @@ manifest:
       remote: listenai
       revision: 7b98f726cc6b5bf0907b04b7b19d00076120b959
       path: modules/lib/esp-hosted
+    - name: mcuboot
+      remote: listenai
+      revision: bbaf9b159a6e3a751eed79896c364d00367e1a47
+      path: bootloader/mcuboot
 
   self:
     import:
@@ -39,3 +43,4 @@ manifest:
       name-blocklist:
         - libmetal
         - sof
+        - mcuboot
