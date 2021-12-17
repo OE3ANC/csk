@@ -1,8 +1,8 @@
 sample:
   name: SoC Flash on csk6001
 tests:
-  sample.drivers.flash.soc_flash_nrf:
-    platform_allow: csk6001
+  sample.board.csk6001.driver.soc_flash_listenai:
+    platform_allow: csk6001_tester
     tags: flash csk6001
     harness: console
     harness_config:
