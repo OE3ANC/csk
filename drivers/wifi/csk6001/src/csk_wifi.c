@@ -296,6 +296,7 @@ static void wifi_control_thread(void *arg1, void *arg2, void *arg3)
         wifi_get_message(&msg, K_FOREVER);
         const struct device *dev = msg.dev;
         if (msg.type == WIFI_COMMAND) {
+            /* This function maybe will here block thread for a long time */
             wifi_command_handler(dev, msg.command);
         } else if (msg.type == WIFI_EVENT) {
             wifi_event_handler(dev, msg.event);

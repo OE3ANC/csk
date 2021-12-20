@@ -50,6 +50,16 @@
                 };
         };
 
+        wifi_module: esp32c3 {
+                compatible = "wifi,esp32c3";
+                label = "WiFi module";
+                spi_port = <0>;
+                dataready-gpios = <&gpioa 15 0>;
+                handshake-gpios = <&gpioa 16 0>;
+                reset-gpios = <&gpiob 9 0>;
+                status = "okay";
+        };
+
         /*
          * Your board-specific hardware: buttons, LEDs, sensors, etc.
          */

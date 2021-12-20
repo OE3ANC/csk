@@ -5,23 +5,6 @@ menuconfig ESP_HOSTED
 
 if ESP_HOSTED
 
-config HOSTED_DATA_READY_PIN
-	int "Data Ready Pin"
-	default 4
-
-config HOSTED_HANDSHAKE_PIN
-	int "Handshake pin"
-	default 5
-
-config HOSTED_RESET_PIN
-	int "Reset pin"
-	default 9
-
-config HOSTED_SPI_NUM
-	int "SPI number"
-	default 0
-	range 0 1
-
 config HOSTED_TRANSACTION_STACK
 	int "Hosted Transaction Thread Stack"
 	default 2048
