@@ -110,7 +110,7 @@
 &i2c1 {
         status = "okay";
         pinmuxs = <&pinmuxa 6 9>, <&pinmuxa 7 9>;
-        pinmux-names = "SCL", "SDA";
+        pinmux-names = "SDA", "SCL";
 };
 
 &board_led_2 {
