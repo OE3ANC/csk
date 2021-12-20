@@ -5,7 +5,7 @@
 #include <dt-bindings/pwm/pwm.h>
 
 / {
-        model = "csk6001 tester";
+        model = "csk6001 pico";
         compatible = "csk,csk6001_pico";
         aliases {
                 led0 = &board_led_2;
@@ -110,7 +110,7 @@
 &i2c1 {
         status = "okay";
         pinmuxs = <&pinmuxa 6 9>, <&pinmuxa 7 9>;
-        pinmux-names = "SCL", "SDA";
+        pinmux-names = "SDA", "SCL";
 };
 
 &board_led_2 {
