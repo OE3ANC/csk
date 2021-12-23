@@ -1,38 +1,38 @@
-.. _i2c_fujitsu_fram:
 
-I2C Fujitsu FRAM
-################
+CSK6001 I2C Master/Slave transimit/recieve
+##########################################
 
 Overview
 ********
-This is a sample app to read and write the Fujitsu MB85RC256V FRAM chip via I2C
-on the Quark SE Sensor Subsystem.
 
-This assumes the slave address of FRAM is 0x50, where A0, A1, and A2 are all
-tied to ground.
+This sample demonstrates how to use CSK6001 i2c peripheral to transimit/recieve data.
+
+Requirements
+************
+
+This sample use two group i2c pins which i2c0(GPIO_A_04, GPIO_A_05) is as master, i2c1(GPIO_A_06, GPIO_A_07) 
+as slave. make sure to connect GPIO_A_04 to GPIO_A_07, GPIO_A_05 to GPIO_A_06 all with pull-up resistor.
 
 Building and Running
 ********************
 
-This project can be built and executed on as follows:
+Make sure you have the csk6001_pico connected over Jlink debuger.
 
-.. zephyr-app-commands::
-   :zephyr-app: samples/drivers/i2c_fujitsu_fram
-   :host-os: unix
-   :board: quark_se_c1000_devboard
-   :goals: run
-   :compact:
+The sample can be built and flashed as follows:
 
+.. code-block:: console
+
+   west build -b csk6001_xxx samples/boards/csk6001/drivers/i2c/master_slave
+   west flash
 
 Sample Output
 =============
 
 .. code-block:: console
 
-    Wrote 0xAE to address 0x00.
-    Wrote 0x86 to address 0x01.
-    Read 0xAE from address 0x00.
-    Read 0x86 from address 0x01.
-    Wrote 16 bytes to address 0x00.
-    Read 16 bytes from address 0x00.
-    Data comparison successful.
+    *** Booting Zephyr OS build ab4367d4514a  ***
+    I2C START TEST
+    i2c thread creaeted
+    master send, slave receive
+    master receive, slave send
+    I2C TEST DONE
