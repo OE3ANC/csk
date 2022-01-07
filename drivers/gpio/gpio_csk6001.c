@@ -104,7 +104,7 @@ static int csk_gpio_port_set_bits_raw(const struct device *dev, gpio_port_pins_t
     const struct csk_gpio_config *config = dev->config;
     gpio_driver_ctx_t driver_context = csk_gpio_get_driver_ctx(config->driver_num);
     GPIO_RegDef *gpio_reg = ((GPIO_RESOURCES *)driver_context)->reg;
-    gpio_reg->REG_DATAOUT.all = pins;
+    gpio_reg->REG_DATAOUT.all |= pins;
     return 0;
 }
 
