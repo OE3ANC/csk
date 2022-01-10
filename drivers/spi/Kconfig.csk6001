@@ -9,14 +9,6 @@ menuconfig SPI_CSK6001
 
 if SPI_CSK6001
 
-config SPI_CTRL_STACK_SIZE
-	int "Control Task Stack Size"
-	default 1024
-
-config SPI_CTRL_PRIORITY
-	int "Control Task Priority"
-	default 5
-
 config SPI_TX_DMA
 	bool "Enable SPI TX DMA"
 	default y

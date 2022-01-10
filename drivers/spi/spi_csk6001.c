@@ -22,28 +22,6 @@ LOG_MODULE_REGISTER(csk6001_spi, CONFIG_SPI_LOG_LEVEL);
 #include "hal/Driver_SPI.h"
 #include "hal/IOMuxManager.h"
 
-static void spi_control_thread(void *, void *, void *);
-
-K_QUEUE_DEFINE(spi_control_queue);
-K_THREAD_DEFINE(spi_ctrl_thread_id, CONFIG_SPI_CTRL_STACK_SIZE,
-                spi_control_thread, NULL, NULL, NULL,
-                CONFIG_SPI_CTRL_PRIORITY, 0, 0);
-
-typedef enum {
-	SPI_OP_TRANSMIT,
-	SPI_OP_RECEIVE,
-	SPI_OP_TRANSCEIVE,
-} spi_ctrl_opcode_t;
-
-typedef struct {
-	void *queue_reserved;
-	spi_ctrl_opcode_t opcode;
-	const struct device *dev;
-	const void *tx_buf;
-	void *rx_buf;
-	uint32_t trans_len;
-} spi_control_msg_t;
-
 typedef void *spi_driver_ctx_t;
 
 struct csk_spi_data {
@@ -51,49 +29,6 @@ struct csk_spi_data {
 	size_t current_transfer_len;
 	spi_driver_ctx_t driver_context;
 };
-
-/* Fixme: remove this thread. The driver api could not call in isr context, so we need another thread now */
-static void spi_control_thread(void *arg1, void *arg2, void *arg3)
-{
-	while (1) {
-		spi_control_msg_t *msg = k_queue_get(&spi_control_queue, K_FOREVER);
-		struct csk_spi_data *data = msg->dev->data;
-		switch (msg->opcode) {
-			case SPI_OP_TRANSMIT:
-				SPI_Send(data->driver_context, msg->tx_buf, msg->trans_len);
-			break;
-
-			case SPI_OP_RECEIVE:
-				SPI_Receive(data->driver_context, msg->rx_buf, msg->trans_len);
-			break;
-
-			case SPI_OP_TRANSCEIVE:
-				SPI_Transfer(data->driver_context, msg->tx_buf, msg->rx_buf, msg->trans_len);
-			break;
-			default:
-			break;
-		}
-	}
-}
-
-static void spi_ctrl_transceive(const struct device *dev, const void *tx_buf, void *rx_buf, uint32_t trans_len)
-{
-	spi_control_msg_t msg;
-	msg.dev = dev;
-	msg.trans_len = trans_len;
-	msg.tx_buf = tx_buf;
-	msg.rx_buf = rx_buf;
-	if ((tx_buf != NULL) && (rx_buf != NULL)) {
-		msg.opcode = SPI_OP_TRANSCEIVE;
-	} else if (tx_buf != NULL) {
-		msg.opcode = SPI_OP_TRANSMIT;
-	} else if (rx_buf != NULL) {
-		msg.opcode = SPI_OP_RECEIVE;
-	} else {
-
-	}
-	k_queue_append(&spi_control_queue, &msg);
-}
 
 static int csk_spi_configure(const struct device *dev, const struct spi_config *spi_cfg)
 {
@@ -158,11 +93,11 @@ static void csk_spi_hal_transceive(const struct device *dev)
 	}
 
 	if (ctx->tx_buf != NULL && ctx->rx_buf != NULL) {
-		spi_ctrl_transceive(dev, ctx->tx_buf, ctx->rx_buf, chunk_len);
+		SPI_Transfer(data->driver_context, ctx->tx_buf, ctx->rx_buf, chunk_len);
 	} else if (ctx->tx_buf != NULL) {
-		spi_ctrl_transceive(dev, ctx->tx_buf, NULL, chunk_len);
+		SPI_Send(data->driver_context, ctx->tx_buf, chunk_len);
 	} else if (ctx->rx_buf != NULL) {
-		spi_ctrl_transceive(dev, NULL, ctx->rx_buf, chunk_len);
+		SPI_Receive(data->driver_context, ctx->rx_buf, chunk_len);
 	} else {
         /* should not go into here */
 	}
