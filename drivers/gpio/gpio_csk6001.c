@@ -15,6 +15,7 @@
 typedef void *gpio_driver_ctx_t;
 
 struct csk_gpio_config {
+    struct gpio_driver_config common;
     int driver_num;
     void *arg;
 };
@@ -188,9 +189,12 @@ static const struct gpio_driver_api csk_gpio_driver_api = {
 #define GPIO_CSK_INIT(n) \
     static int csk_gpio_##n##_init(const struct device *dev);	\
     static struct csk_gpio_data csk_gpio_##n##_data;		\
-    static const struct csk_gpio_config csk_gpio_##n##_config = {	\
-		.driver_num = n,                           \
-	};                      \
+    static const struct csk_gpio_config csk_gpio_##n##_config = {   \
+        .common = {						                            \
+			.port_pin_mask = GPIO_PORT_PIN_MASK_FROM_DT_INST(n),    \
+		},						                                    \
+		.driver_num = n,                                            \
+	};                                                              \
 	DEVICE_DT_INST_DEFINE(n,					\
 			    csk_gpio_##n##_init,			\
 			    NULL,					\
