@@ -92,16 +92,21 @@ static void csk_spi_hal_transceive(const struct device *dev)
 		return;
 	}
 
+	/* Resize the transaction item num since spi driver limitation */
+	uint32_t real_trans_size = (chunk_len > MAX_TRANCNT) ? MAX_TRANCNT : chunk_len;
+    uint32_t key = irq_lock();
+    data->current_transfer_len = real_trans_size;
+
 	if (ctx->tx_buf != NULL && ctx->rx_buf != NULL) {
-		SPI_Transfer(data->driver_context, ctx->tx_buf, ctx->rx_buf, chunk_len);
+		SPI_Transfer(data->driver_context, ctx->tx_buf, ctx->rx_buf, real_trans_size);
 	} else if (ctx->tx_buf != NULL) {
-		SPI_Send(data->driver_context, ctx->tx_buf, chunk_len);
+		SPI_Send(data->driver_context, ctx->tx_buf, real_trans_size);
 	} else if (ctx->rx_buf != NULL) {
-		SPI_Receive(data->driver_context, ctx->rx_buf, chunk_len);
+		SPI_Receive(data->driver_context, ctx->rx_buf, real_trans_size);
 	} else {
         /* should not go into here */
 	}
-	data->current_transfer_len = chunk_len;
+	irq_unlock(key);
 }
 
 static int transceive(const struct device *dev,
