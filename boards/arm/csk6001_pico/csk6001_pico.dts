@@ -28,7 +28,7 @@
         leds {
                 compatible = "gpio-leds";
                 board_led_2: board_led_2 {
-                        gpios = <&gpioa 16 0>;
+                        gpios = <&gpioa 5 0>;
                         label = "User BOARD_LED_2";
                 };
         };
@@ -36,7 +36,7 @@
         pwmleds {
 		compatible = "pwm-leds";
 		green_pwm_led: green_pwm_led {
-			pwms = <&pwm0 0 PWM_POLARITY_NORMAL>;
+			pwms = <&pwm5 5 PWM_POLARITY_NORMAL>;
 			label = "User BOARD_LED_2 - PWM0";
 		};
 
@@ -68,8 +68,8 @@
 &gpt0 {
 	status = "okay";
 
-	pwm0: pwm0 {
-                pinmuxs = <&pinmuxa 16 11>;
+	pwm5: pwm5 {
+                pinmuxs = <&pinmuxa 5 11>;
                 clock-prescaler = <128>;
                 status = "okay";
 	};
