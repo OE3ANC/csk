@@ -13,47 +13,54 @@
 
 #define DT_DRV_COMPAT listenai_csk_uart
 
-
 #include <drivers/uart.h>
 #include <drivers/pinmux.h>
 #include "hal/Driver_UART.h"
 #include "hal/uart.h"
 
-#define DEV_CFG(dev) 	    ((const struct csk_uart_config *const)(dev)->config)
-#define DEV_DATA(dev)	    ((struct csk_uart_data *)(dev)->data)	
-#define UART_STRUCT(dev) 	((UART_Type *)(DEV_CFG(dev))->base)
-
-
-typedef void* (*get_uart_ctx_func)(void);
-
+#define DEV_CFG(dev) ((const struct csk_uart_config *const)(dev)->config)
+#define DEV_DATA(dev) ((struct csk_uart_data *)(dev)->data)
 
 struct csk_uart_data {
-	#ifdef CONFIG_UART_INTERRUPT_DRIVEN
-		uart_irq_callback_user_data_t callback;
-		void *cb_data;
-	#endif
+#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+	uart_irq_callback_user_data_t callback;
+	void *cb_data;
+#endif
+};
+
+struct pin_ctrl {
+	char *name;
+	uint8_t num;
+	uint8_t func;
 };
 
 struct csk_uart_config {
-	get_uart_ctx_func get_uart_ctx;
+	uint32_t reg_addr;
 	uint32_t baud_rate;
-	uint8_t rx_pin;
-	uint8_t tx_pin;
-	uint8_t rx_func;
-	uint8_t tx_func;
-	char *rx_pinmux_name;
-	char *tx_pinmux_name;
-	#ifdef CONFIG_UART_INTERRUPT_DRIVEN
-		void (*irq_config_func)(const struct device *dev);
-	#endif
+	struct pin_ctrl rx_pin;
+	struct pin_ctrl tx_pin;
+#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+	void (*irq_config_func)(const struct device *dev);
+#endif
 };
+
+void *get_uart_ctx(DW_UART_RegDef *reg_base)
+{
+	if (reg_base == ((UART_RESOURCES *)UART0())->reg) {
+		return UART0();
+	} else if (reg_base == ((UART_RESOURCES *)UART1())->reg) {
+		return UART1();
+	} else if (reg_base == ((UART_RESOURCES *)UART2())->reg) {
+		return UART2();
+	}
+	return NULL;
+}
 
 static int csk_uart_poll_in(const struct device *dev, unsigned char *p_char)
 {
 	volatile uint32_t lsr;
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-	DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	while ((uart_reg->REG_LSR.all & UARTC_LSR_RDR)) {
 		/* Receive a character */
@@ -64,40 +71,35 @@ static int csk_uart_poll_in(const struct device *dev, unsigned char *p_char)
 		lsr = uart_reg->REG_LSR.all;
 	}
 	return 0;
-
 }
 
 static void csk_uart_poll_out(const struct device *dev, unsigned char out_char)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
-	if (uart_reg->REG_LSR.all & UARTC_LSR_THRE) 
-	{
-    	uart_reg->REG_THR.all = out_char;
-	}
-    while(!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT));
-}
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
+	if (uart_reg->REG_LSR.all & UARTC_LSR_THRE) {
+		uart_reg->REG_THR.all = out_char;
+	}
+	while (!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT))
+		;
+}
 
 #ifdef CONFIG_UART_INTERRUPT_DRIVEN
 
-static int csk_uart_fifo_fill(const struct device *dev,
-				  const uint8_t *tx_data,
-				  int size)
+static int csk_uart_fifo_fill(const struct device *dev, const uint8_t *tx_data, int size)
 {
 	unsigned int num_tx = 0U;
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	while (((size - num_tx) > 0)) {
 		/* Send a character */
-		if (uart_reg->REG_LSR.all & UARTC_LSR_THRE){
+		if (uart_reg->REG_LSR.all & UARTC_LSR_THRE) {
 			uart_reg->REG_THR.all = tx_data[num_tx];
 		}
 
-    	while(!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT)){
+		while (!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT)) {
 			;
 		}
 		num_tx++;
@@ -106,14 +108,12 @@ static int csk_uart_fifo_fill(const struct device *dev,
 	return (int)num_tx;
 }
 
-static int csk_uart_fifo_read(const struct device *dev, uint8_t *rx_data,
-				  const int size)
+static int csk_uart_fifo_read(const struct device *dev, uint8_t *rx_data, const int size)
 {
 	unsigned int num_rx = 0U;
 	volatile uint32_t lsr;
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	while (((size - num_rx) > 0) && (uart_reg->REG_LSR.all & UARTC_LSR_RDR)) {
 		/* Receive a character */
@@ -129,102 +129,95 @@ static int csk_uart_fifo_read(const struct device *dev, uint8_t *rx_data,
 
 static void csk_uart_irq_tx_enable(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	uart_reg->REG_IER.all |= UARTC_IER_THRE;
 }
 
 static void csk_uart_irq_tx_disable(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	uart_reg->REG_IER.all &= ~UARTC_IER_THRE;
 }
 
 static int csk_uart_irq_tx_ready(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
-    // Get interrupt status
-    uint32_t iir = uart_reg->REG_IIR.all & UARTC_IIR_INT_MASK;
+	// Get interrupt status
+	uint32_t iir = uart_reg->REG_IIR.all & UARTC_IIR_INT_MASK;
 
-    if((iir == UARTC_IIR_NONE)||(iir == UARTC_IIR_THRE)){
-	//
-		return (uart_reg->REG_LSR.all & UARTC_LSR_THRE) ? true:false;
-	}else{
+	if ((iir == UARTC_IIR_NONE) || (iir == UARTC_IIR_THRE)) {
+		return (uart_reg->REG_LSR.all & UARTC_LSR_THRE) ? true : false;
+	} else {
 		return false;
 	}
 }
 
 static void csk_uart_irq_rx_enable(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	uart_reg->REG_IER.all |= UARTC_IER_RDR;
 }
 
 static void csk_uart_irq_rx_disable(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	uart_reg->REG_IER.all &= ~UARTC_IER_RDR;
 }
 
 static int csk_uart_irq_rx_ready(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
-    // Get interrupt status
-    uint32_t iir = uart_reg->REG_IIR.all & UARTC_IIR_INT_MASK;
+	// Get interrupt status
+	uint32_t iir = uart_reg->REG_IIR.all & UARTC_IIR_INT_MASK;
 
-    if((iir == UARTC_IIR_NONE)||(iir == UARTC_IIR_RDA)||(iir == UARTC_IIR_RTO)){
-		// Get rx data status 	
-		return (uart_reg->REG_LSR.all & UARTC_LSR_RDR) ? true:false;
-	}else{
+	if ((iir == UARTC_IIR_NONE) || (iir == UARTC_IIR_RDA) || (iir == UARTC_IIR_RTO)) {
+		// Get rx data status
+		return (uart_reg->REG_LSR.all & UARTC_LSR_RDR) ? true : false;
+	} else {
 		return false;
-	}	
+	}
 }
 
 static void csk_uart_irq_err_enable(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	uart_reg->REG_IER.all |= UARTC_IER_RLS;
 }
 
 static void csk_uart_irq_err_disable(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
 	uart_reg->REG_IER.all &= ~UARTC_IER_RLS;
 }
 
 static int csk_uart_irq_is_pending(const struct device *dev)
 {
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
-    DW_UART_RegDef *uart_reg = ((UART_RESOURCES*)uart_driver_ctx)->reg;
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
-    // Get interrupt status
-    uint32_t iir= uart_reg->REG_IIR.all;
+	// Get interrupt status
+	uint32_t iir = uart_reg->REG_IIR.all;
 
-	return ((iir & UARTC_IIR_INT_MASK) == UARTC_IIR_RDA)||((iir & UARTC_IIR_INT_MASK) == UARTC_IIR_THRE) ? true:false;
+	return ((iir & UARTC_IIR_INT_MASK) == UARTC_IIR_RDA) ||
+			       ((iir & UARTC_IIR_INT_MASK) == UARTC_IIR_THRE) ?
+			     true :
+			     false;
 }
 
 static int csk_uart_irq_update(const struct device *dev)
@@ -232,8 +225,7 @@ static int csk_uart_irq_update(const struct device *dev)
 	return 1;
 }
 
-static void csk_uart_irq_callback_set(const struct device *dev,
-				      uart_irq_callback_user_data_t cb,
+static void csk_uart_irq_callback_set(const struct device *dev, uart_irq_callback_user_data_t cb,
 				      void *cb_data)
 {
 	struct csk_uart_data *data = dev->data;
@@ -252,51 +244,48 @@ static void csk_uart_isr(const struct device *dev)
 }
 #endif /* CONFIG_UART_INTERRUPT_DRIVEN */
 
-
 static int csk_uart_init(const struct device *dev)
 {
 	unsigned int old_level;
 	unsigned int baud_rate;
 	/* disable interrupts */
 	old_level = irq_lock();
-	const struct csk_uart_config *config = DEV_CFG(dev);	
-	void *uart_driver_ctx = config->get_uart_ctx();
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	void *uart_driver_ctx = get_uart_ctx((DW_UART_RegDef *)config->reg_addr);
 	baud_rate = config->baud_rate;
-    UART_Initialize(uart_driver_ctx, NULL, NULL);
-    UART_PowerControl(uart_driver_ctx, CSK_POWER_FULL);
-    UART_Control(uart_driver_ctx, CSK_UART_Function_CONTROL_Int | CSK_UART_MODE_ASYNCHRONOUS |
-                                    CSK_UART_DATA_BITS_8 |
-                                    CSK_UART_PARITY_NONE |
-                                    CSK_UART_STOP_BITS_1 |
-                                    CSK_UART_FLOW_CONTROL_NONE |
-                                    CSK_UART_GPIO_CONTROL_DEFAULT, baud_rate);
+	UART_Initialize(uart_driver_ctx, NULL, NULL);
+	UART_PowerControl(uart_driver_ctx, CSK_POWER_FULL);
+	UART_Control(uart_driver_ctx,
+		     CSK_UART_Function_CONTROL_Int | CSK_UART_MODE_ASYNCHRONOUS |
+			     CSK_UART_DATA_BITS_8 | CSK_UART_PARITY_NONE | CSK_UART_STOP_BITS_1 |
+			     CSK_UART_FLOW_CONTROL_NONE | CSK_UART_GPIO_CONTROL_DEFAULT,
+		     baud_rate);
 	UART_Control(uart_driver_ctx, CSK_UART_CONTROL_TX, 1);
 	UART_Control(uart_driver_ctx, CSK_UART_CONTROL_RX, 1);
 
-	#ifdef CONFIG_UART_INTERRUPT_DRIVEN
-		config->irq_config_func(dev);
-	#endif
+#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+	config->irq_config_func(dev);
+#endif
 
 	/* restore interrupt state */
-	irq_unlock(old_level);	
+	irq_unlock(old_level);
 
 	const struct device *rx_pinmux_drv, *tx_pinmux_drv;
 	/* Configure RX and TX pin via the pinmux driver */
-	rx_pinmux_drv = device_get_binding(config->rx_pinmux_name);
+	rx_pinmux_drv = device_get_binding(config->rx_pin.name);
 	if (!rx_pinmux_drv) {
 		return -EINVAL;
 	}
-	pinmux_pin_set(rx_pinmux_drv, config->rx_pin, config->rx_func);
+	pinmux_pin_set(rx_pinmux_drv, config->rx_pin.num, config->rx_pin.func);
 
-	tx_pinmux_drv = device_get_binding(config->tx_pinmux_name);
+	tx_pinmux_drv = device_get_binding(config->tx_pin.name);
 	if (!tx_pinmux_drv) {
 		return -EINVAL;
 	}
-	pinmux_pin_set(tx_pinmux_drv, config->tx_pin, config->tx_func);
+	pinmux_pin_set(tx_pinmux_drv, config->tx_pin.num, config->tx_pin.func);
 
 	return 0;
 }
-
 
 static const struct uart_driver_api csk_uart_driver_api = {
 	.poll_in = csk_uart_poll_in,
@@ -319,45 +308,37 @@ static const struct uart_driver_api csk_uart_driver_api = {
 };
 
 #if defined(CONFIG_UART_INTERRUPT_DRIVEN)
-#define CSK_UART_IRQ_HANDLER(index)         \
-	static void csk_uart_irq_config_func_##index(const struct device *dev)                      \
-	{                                                                                           \
-		IRQ_CONNECT(DT_INST_IRQN(index), DT_INST_IRQ(index, priority), csk_uart_isr,            \
-			    DEVICE_DT_INST_GET(index), 0);                                                  \
-		irq_enable(DT_INST_IRQN(index));                                                        \
+#define CSK_UART_IRQ_HANDLER(index)                                                                \
+	static void csk_uart_irq_config_func_##index(const struct device *dev)                     \
+	{                                                                                          \
+		IRQ_CONNECT(DT_INST_IRQN(index), DT_INST_IRQ(index, priority), csk_uart_isr,       \
+			    DEVICE_DT_INST_GET(index), 0);                                         \
+		irq_enable(DT_INST_IRQN(index));                                                   \
 	}
-#define CSK_UART_IRQ_CFG_FUNC_CONF(index)					\
-	.irq_config_func = csk_uart_irq_config_func_##index
+#define CSK_UART_IRQ_CFG_FUNC_CONF(index) .irq_config_func = csk_uart_irq_config_func_##index
 #else
 #define CSK_UART_IRQ_HANDLER(index)
 #define CSK_UART_IRQ_CFG_FUNC_CONF(index)
 #endif
 
-#define UART_CSK_INIT(index)              \
-	CSK_UART_IRQ_HANDLER(index) \
-	static struct csk_uart_data csk_uart_data_##index = {	\
-	};	                                                      \
-	\
-	static const struct csk_uart_config csk_uart_cfg_##index = {   \
-        .get_uart_ctx = UART##index,                        \
-		.baud_rate = DT_INST_PROP(index, current_speed),		\
-		.rx_pin = DT_PHA_BY_NAME(DT_NODELABEL(uart##index), pinmuxs, rxd, pin),       \
-		.tx_pin = DT_PHA_BY_NAME(DT_NODELABEL(uart##index), pinmuxs, txd, pin),		      \
-		.rx_func = DT_PHA_BY_NAME(DT_NODELABEL(uart##index), pinmuxs, rxd, function),      \
-		.tx_func = DT_PHA_BY_NAME(DT_NODELABEL(uart##index), pinmuxs, txd, function),        \
-		.rx_pinmux_name = DT_LABEL(DT_PHANDLE_BY_NAME(DT_NODELABEL(uart##index), pinmuxs, rxd)), \
-		.tx_pinmux_name = DT_LABEL(DT_PHANDLE_BY_NAME(DT_NODELABEL(uart##index), pinmuxs, txd)), \
-		CSK_UART_IRQ_CFG_FUNC_CONF(index)     \
-    };      						\
-    \
-	DEVICE_DT_INST_DEFINE(index, \
-            &csk_uart_init, \
-            NULL,			\
-            &csk_uart_data_##index,	\
-			&csk_uart_cfg_##index,	\
-			PRE_KERNEL_1,					\
-			CONFIG_KERNEL_INIT_PRIORITY_DEVICE,		\
-			&csk_uart_driver_api);				\
-\
+#define UART_CSK_INIT(index)                                                                       \
+	CSK_UART_IRQ_HANDLER(index)                                                                \
+	static struct csk_uart_data csk_uart_data_##index = {};                                    \
+                                                                                                   \
+	static const struct csk_uart_config csk_uart_cfg_##index = {                               \
+		.reg_addr = DT_INST_REG_ADDR(index),                                               \
+		.baud_rate = DT_INST_PROP(index, current_speed),                                   \
+		.rx_pin.name = DT_LABEL(DT_INST_PHANDLE_BY_IDX(index, pinmuxs, 0)),                \
+		.rx_pin.num = DT_PHA_BY_IDX(DT_DRV_INST(index), pinmuxs, 0, pin),                  \
+		.rx_pin.func = DT_PHA_BY_IDX(DT_DRV_INST(index), pinmuxs, 0, function),            \
+		.tx_pin.name = DT_LABEL(DT_INST_PHANDLE_BY_IDX(index, pinmuxs, 1)),                \
+		.tx_pin.num = DT_PHA_BY_IDX(DT_DRV_INST(index), pinmuxs, 1, pin),                  \
+		.tx_pin.func = DT_PHA_BY_IDX(DT_DRV_INST(index), pinmuxs, 1, function),            \
+		CSK_UART_IRQ_CFG_FUNC_CONF(index)                                                  \
+	};                                                                                         \
+                                                                                                   \
+	DEVICE_DT_INST_DEFINE(index, &csk_uart_init, NULL, &csk_uart_data_##index,                 \
+			      &csk_uart_cfg_##index, PRE_KERNEL_1,                                 \
+			      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &csk_uart_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(UART_CSK_INIT)
