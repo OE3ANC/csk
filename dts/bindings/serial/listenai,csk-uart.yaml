@@ -17,8 +17,3 @@ properties:
       type: phandle-array
       required: true
       description: RX and TX pinmux
-
-    pinmux-names:
-      type: string-array
-      required: true
-      description: UART pins names
