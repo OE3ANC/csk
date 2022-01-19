@@ -10,7 +10,7 @@ manifest:
   projects:
     - name: hal_listenai
       remote: listenai
-      revision: bb092bc408711de880a761e7a0e1995bd45bc32e
+      revision: 2bef1b4e5e29ec0e5f4a4dc022abecfc5c6b9709
       path: modules/hal/listenai
       groups:
         - hal
@@ -30,7 +30,7 @@ manifest:
       path: modules/lib/protobuf-c
     - name: esp-hosted
       remote: listenai
-      revision: 20bd51b6f0e4a008e9583d32be4f92778cd4d5dc
+      revision: a0e1ecbdd79b4ee5a82737282efcab861ff3be92
       path: modules/lib/esp-hosted
     - name: mcuboot
       remote: listenai
