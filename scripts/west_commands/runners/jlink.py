@@ -39,7 +39,7 @@ class JLinkBinaryRunner(ZephyrBinaryRunner):
                  gdbserver='JLinkGDBServer',
                  gdb_host='',
                  gdb_port=DEFAULT_JLINK_GDB_PORT,
-                 tui=False, tool_opt=[]):
+                 tui=False, tool_opt=[], flash_opts=None):
         super().__init__(cfg)
         self.hex_name = cfg.hex_file
         self.bin_name = cfg.bin_file
@@ -57,10 +57,19 @@ class JLinkBinaryRunner(ZephyrBinaryRunner):
         self.gdb_host = gdb_host
         self.gdb_port = gdb_port
         self.tui_arg = ['-tui'] if tui else []
+        self.flash_extra = flash_opts if flash_opts else []
+        self.flash_extra_addr = JLinkBinaryRunner.parse_flash_addr(self.flash_extra)
 
         self.tool_opt = []
         for opts in [shlex.split(opt) for opt in tool_opt]:
             self.tool_opt += opts
+
+    @staticmethod
+    def parse_flash_addr(flash_opts):
+        for flash_opt in flash_opts:
+            if flash_opt.split('=')[0] == '--base-address':
+                return int(flash_opt.split('=')[1], base=16)
+        return None
 
     @classmethod
     def name(cls):
@@ -105,6 +114,10 @@ class JLinkBinaryRunner(ZephyrBinaryRunner):
                             action=ToggleAction,
                             help='reset after loading? (default: no)')
 
+        parser.add_argument('--flash-opt', default=[], action='append',
+                            help='''Additional options for jlink flash,
+                            e.g. --flash-opt="--base-address=0x18000000" to rewrite loadfile cmd base address''')
+
         parser.set_defaults(reset_after_load=False)
 
     @classmethod
@@ -119,7 +132,8 @@ class JLinkBinaryRunner(ZephyrBinaryRunner):
                                  gdbserver=args.gdbserver,
                                  gdb_host=args.gdb_host,
                                  gdb_port=args.gdb_port,
-                                 tui=args.tui, tool_opt=args.tool_opt)
+                                 tui=args.tui, tool_opt=args.tool_opt,
+                                 flash_opts=args.flash_opt)
 
     def print_gdbserver_message(self):
         if not self.thread_info_enabled:
@@ -258,6 +272,8 @@ class JLinkBinaryRunner(ZephyrBinaryRunner):
             else:
                 flash_addr = 0
             flash_file = self.bin_name
+            if self.flash_extra_addr is not None:
+                flash_addr = self.flash_extra_addr
             flash_cmd = f'loadfile {self.bin_name} 0x{flash_addr:x}'
         else:
             err = 'Cannot flash; no hex ({}) or bin ({}) files found.'
