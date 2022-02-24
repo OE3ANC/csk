@@ -239,6 +239,15 @@
 			status = "disabled";
 			label = "USBD";
 		};
+
+		wdt: watchdog@44200000 {
+			compatible = "listenai,csk6001-watchdog";
+			reg = <0x44200000 0x100000>;
+			interrupts = <7 0>;
+			label = "WDT";
+			status = "okay";
+		};
+
 	};
 };
 
