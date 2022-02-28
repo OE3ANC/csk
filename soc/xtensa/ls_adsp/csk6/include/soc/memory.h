@@ -17,10 +17,12 @@
 #define ISR_VECTOR_SIZE  0x400 + 0x298
 #define IRAM_BASE	0x5FF00000
 #define IRAM_SIZE	0x2000
+/* FIXME: temp modify, Just to distinguish between mailbox addresses, will re-partition later  */
 #define SDRAM0_BASE	0x60000000 + ISR_VECTOR_SIZE
-#define SDRAM0_SIZE	0x700000 - ISR_VECTOR_SIZE
+#define SDRAM0_SIZE	0x500000 - ISR_VECTOR_SIZE
 
-#define SDRAM1_BASE	0x60700000
+/* FIXME: temp modify, Just to distinguish between mailbox addresses, will re-partition later  */
+#define SDRAM1_BASE	0x60500000
 #define SDRAM1_SIZE	0x100000
 
 /* The reset vector address in SRAM and its size */
