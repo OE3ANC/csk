@@ -37,6 +37,14 @@ static const struct arm_mpu_region mpu_regions[] = {
 		 		REGION_RAM_NOCACHE_ATTR( CONFIG_OPENAMP_IPC_SHM_BASE_ADDRESS,CONFIG_OPENAMP_IPC_SHM_SIZE ))
 #endif
 
+
+#if defined(CONFIG_SOF_IPC_SHM_BASE_ADDRESS)
+	/* Region 2 */
+	MPU_REGION_ENTRY("SOF_SHARE_SRAM",
+				CONFIG_SOF_IPC_SHM_BASE_ADDRESS,
+		 		REGION_RAM_NOCACHE_ATTR( CONFIG_SOF_IPC_SHM_BASE_ADDRESS,CONFIG_SOF_IPC_SHM_SIZE ))
+#endif
+
 };
 
 const struct arm_mpu_config mpu_config = {
