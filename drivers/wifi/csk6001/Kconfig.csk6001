@@ -4,8 +4,6 @@ menuconfig WIFI_CSK6001
 	bool "CSK6001 WiFi Driver"
 	default y
 	depends on HAS_CSK6001
-	select PROTOBUF_C
-	select ESP_HOSTED
 	help
 	  Enable CSK6001 SoC WiFi
 
@@ -24,5 +22,17 @@ config WIFI_CTRL_STACK_SIZE
 config WIFI_CTRL_PRIORITY
 	int "Control Task Priority"
 	default 4
+
+if XR819S
+
+config MAX_SCAN_APS_NUM
+	int "WiFi Maximum Scan AP's Number"
+	default 10
+
+config WLAN_API_TIMEOUT
+	int "WiFi Driver api timeout(s)"
+	default 30
+
+endif #XR819S
 
 endif #WIFI_CSK6001

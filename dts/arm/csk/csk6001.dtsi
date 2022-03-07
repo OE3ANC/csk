@@ -30,7 +30,7 @@
 
 	sram0: memory@80000 {
 		compatible = "mmio-sram";
-		reg = <0x00080000 (300*1024)>;
+		reg = <0x00080000 (320*1024)>;
 	};
 
     itcm0: code@10000 {

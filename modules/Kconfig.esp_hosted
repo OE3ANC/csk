@@ -2,6 +2,7 @@
 
 menuconfig ESP_HOSTED
 	bool "ESP-Hosted support"
+	select PROTOBUF_C
 
 if ESP_HOSTED
 
