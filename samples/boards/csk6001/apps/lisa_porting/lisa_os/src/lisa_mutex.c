@@ -66,15 +66,10 @@ lisa_err_t lisa_mutex_unlock(lisa_mutex_t *mutex)
 
 lisa_err_t lisa_mutex_delete(lisa_mutex_t *mutex)
 {
-	__ASSERT(0, "%s is not supportd\n", __FUNCTION__);
-	return LISA_FAIL;
-
-#if 0
 	lisa_err_t result = LISA_FAIL;
 	if (mutex != NULL) {
 		lisa_mem_free(mutex);
 		result = LISA_OK;
 	}
 	return result;
-#endif
 }

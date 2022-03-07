@@ -61,9 +61,12 @@ lisa_err_t lisa_semaphore_give(lisa_semaphore_t *sem)
 }
 lisa_err_t lisa_semaphore_delete(lisa_semaphore_t *sem)
 {
-	__ASSERT(0, "%s is not supportd\n", __FUNCTION__);
-
-	return LISA_FAIL;
+	lisa_err_t result = LISA_FAIL;
+	if (sem != NULL) {
+		lisa_mem_free(sem);
+		result = LISA_OK;
+	}
+	return result;
 }
 
 uint32_t lisa_semaphore_getcount(lisa_semaphore_t *sem)
