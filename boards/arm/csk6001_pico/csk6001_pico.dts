@@ -59,7 +59,7 @@
                 reset-gpios = <&gpiob 9 0>;
                 status = "okay";
         };
-
+        
         /*
          * Your board-specific hardware: buttons, LEDs, sensors, etc.
          */
@@ -185,4 +185,8 @@ zephyr_udc0: &usbotg {
         num-bidir-endpoints = <6>;
         num-in-endpoints = <6>;
         num-out-endpoints = <6>;
+};
+
+&wdt {
+        status = "okay";
 };
