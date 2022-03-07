@@ -5,38 +5,42 @@ cmake_minimum_required(VERSION 3.20.0)
 # SPDX-License-Identifier: Apache-2.0
 #
 #set(ZEPHYR_EXTRA_MODULES $ENV{ZEPHYR_BASE}/../modules/lib/sof_host)
-set(REMOTE_ZEPHYR_DIR ${CMAKE_CURRENT_BINARY_DIR}/openamp_remote-prefix/src/openamp_remote-build/zephyr)
 
 if("${BOARD}" STREQUAL "csk6001_pico")
-  set(BOARD_REMOTE "ls_adsp_csk6")
-else()
-  message(FATAL_ERROR "${BOARD} was not supported for this sample")
+  set(BUILD_DSP_FIRMWARE ON)
+  find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+  message(INFO " ${BOARD} compile as Master in this sample")
+  target_sources(app PRIVATE src/main.c)
+  add_subdirectory(./src)
+
+else("${BOARD}" STREQUAL "ls_adsp_csk6")
+  set(BUILD_DSP_FIRMWARE ON)
 endif()
 
-message(INFO " ${BOARD} compile as Master in this sample")
 
-find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(openamp)
+if(BUILD_DSP_FIRMWARE)
 
-enable_language(C ASM)
-
-#target_sources(app PRIVATE src/load_fw.c src/mem_image_store.c src/platform_info.c src/zynqmp_csk6001_rproc_example.c )
-target_sources(app PRIVATE src/main.c)
-add_subdirectory(./src)
-
-
-if("${BOARD}" STREQUAL "csk6001_pico")
-
-  target_sources(app PRIVATE src/main.c )
-  include(ExternalProject)
+  set(REMOTE_ZEPHYR_DIR ${CMAKE_CURRENT_BINARY_DIR}/sof-dsp-prefix/src/sof-dsp-build/zephyr)
 
   if("${BOARD}" STREQUAL "csk6001_pico")
-    set(ENV{XCC_USE_CLANG} "1")
-    set(ENV{ZEPHYR_TOOLCHAIN_VARIANT} "xcc")
+    set(BOARD_REMOTE "ls_adsp_csk6")
+  else()
+    message(FATAL_ERROR "${BOARD} was not supported for this sample")
   endif()
 
+  project(sof-dsp)
+
+  enable_language(C ASM)
+
+  #target_sources(app PRIVATE src/load_fw.c src/mem_image_store.c src/platform_info.c src/zynqmp_csk6001_rproc_example.c )
+
+  include(ExternalProject)
+
+  set(ENV{XCC_USE_CLANG} "1")
+  set(ENV{ZEPHYR_TOOLCHAIN_VARIANT} "xcc")
+
   ExternalProject_Add(
-    openamp_remote
+    sof_remote
     SOURCE_DIR ${APPLICATION_SOURCE_DIR}/remote
     INSTALL_COMMAND ""      # This particular build system has no install command
     CMAKE_CACHE_ARGS -DBOARD:STRING=${BOARD_REMOTE}
@@ -45,10 +49,8 @@ if("${BOARD}" STREQUAL "csk6001_pico")
     BUILD_ALWAYS True
   )
 
-  if("${BOARD}" STREQUAL "csk6001_pico")
-    unset(ENV{XCC_USE_CLANG})
-    unset(ENV{ZEPHYR_TOOLCHAIN_VARIANT})
-  endif()
-
+  unset(ENV{XCC_USE_CLANG})
+  unset(ENV{ZEPHYR_TOOLCHAIN_VARIANT})
   target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ./src) 
+
 endif()
