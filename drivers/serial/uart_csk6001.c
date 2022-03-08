@@ -35,8 +35,8 @@ struct pin_ctrl {
 };
 
 struct csk_uart_config {
-	uint32_t reg_addr;
-	uint32_t baud_rate;
+	volatile uint32_t reg_addr;
+	volatile uint32_t baud_rate;
 	struct pin_ctrl rx_pin;
 	struct pin_ctrl tx_pin;
 #ifdef CONFIG_UART_INTERRUPT_DRIVEN
@@ -58,19 +58,24 @@ void *get_uart_ctx(DW_UART_RegDef *reg_base)
 
 static int csk_uart_poll_in(const struct device *dev, unsigned char *p_char)
 {
+	int ret = -1;
 	volatile uint32_t lsr;
 	const struct csk_uart_config *config = DEV_CFG(dev);
 	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
 
-	while ((uart_reg->REG_LSR.all & UARTC_LSR_RDR)) {
+	if ((uart_reg->REG_LSR.all & UARTC_LSR_RDR)) {
 		/* Receive a character */
 		*p_char = (uint8_t)(uart_reg->REG_RBR.all & 0xFF);
+		ret = 0;
 	}
 
 	if (uart_reg->REG_LSR.all & UARTC_LSR_OE) {
 		lsr = uart_reg->REG_LSR.all;
 	}
-	return 0;
+	// wait not busy
+	while (!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT))
+		;
+	return ret;
 }
 
 static void csk_uart_poll_out(const struct device *dev, unsigned char out_char)
@@ -81,6 +86,7 @@ static void csk_uart_poll_out(const struct device *dev, unsigned char out_char)
 	if (uart_reg->REG_LSR.all & UARTC_LSR_THRE) {
 		uart_reg->REG_THR.all = out_char;
 	}
+	// wait not busy
 	while (!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT))
 		;
 }
@@ -99,6 +105,7 @@ static int csk_uart_fifo_fill(const struct device *dev, const uint8_t *tx_data, 
 			uart_reg->REG_THR.all = tx_data[num_tx];
 		}
 
+		// wait not busy
 		while (!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT)) {
 			;
 		}
@@ -118,12 +125,19 @@ static int csk_uart_fifo_read(const struct device *dev, uint8_t *rx_data, const 
 	while (((size - num_rx) > 0) && (uart_reg->REG_LSR.all & UARTC_LSR_RDR)) {
 		/* Receive a character */
 		rx_data[num_rx++] = (uint8_t)(uart_reg->REG_RBR.all & 0xFF);
+
+		// wait not busy
+		while (!(uart_reg->REG_LSR.all & UARTC_LSR_TEMT))
+			;
 	}
 
 	if (uart_reg->REG_LSR.all & UARTC_LSR_OE) {
 		lsr = uart_reg->REG_LSR.all;
 	}
 
+	if (uart_reg->REG_LSR.all & UARTC_LSR_PE) {
+		lsr = uart_reg->REG_LSR.all;
+	}
 	return num_rx;
 }
 
@@ -182,7 +196,7 @@ static int csk_uart_irq_rx_ready(const struct device *dev)
 	// Get interrupt status
 	uint32_t iir = uart_reg->REG_IIR.all & UARTC_IIR_INT_MASK;
 
-	if ((iir == UARTC_IIR_NONE) || (iir == UARTC_IIR_RDA) || (iir == UARTC_IIR_RTO)) {
+	if ((iir == UARTC_IIR_NONE) || (iir == UARTC_IIR_RDA) || (iir == UARTC_IIR_RTO) || (iir == UARTC_IIR_RLS)) {
 		// Get rx data status
 		return (uart_reg->REG_LSR.all & UARTC_LSR_RDR) ? true : false;
 	} else {
@@ -216,7 +230,7 @@ static int csk_uart_irq_is_pending(const struct device *dev)
 
 	return ((iir & UARTC_IIR_INT_MASK) == UARTC_IIR_RDA) ||
 			       ((iir & UARTC_IIR_INT_MASK) == UARTC_IIR_THRE) ?
-			     true :
+		       true :
 			     false;
 }
 
@@ -237,7 +251,11 @@ static void csk_uart_irq_callback_set(const struct device *dev, uart_irq_callbac
 static void csk_uart_isr(const struct device *dev)
 {
 	struct csk_uart_data *data = dev->data;
-
+	const struct csk_uart_config *config = DEV_CFG(dev);
+	DW_UART_RegDef *uart_reg = (DW_UART_RegDef *)config->reg_addr;
+	if (uart_reg == NULL) {
+		return;
+	}
 	if (data->callback) {
 		data->callback(dev, data->cb_data);
 	}
