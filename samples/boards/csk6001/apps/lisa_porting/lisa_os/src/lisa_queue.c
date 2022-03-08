@@ -13,13 +13,13 @@ lisa_queue_t *lisa_queue_create(uint32_t count, char *queue_name, uint32_t item_
 	lisa_queue_t *lisa_queue = NULL;
 	lisa_queue = (lisa_queue_t *)lisa_mem_calloc(1, sizeof(lisa_queue_t));
 	if (lisa_queue == NULL) {
-		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!", __FUNCTION__, __LINE__);
 		return NULL;
 	}
 
 	lisa_queue->pool = lisa_mem_calloc(count, item_size);
 	if (NULL == lisa_queue->pool) {
-		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!", __FUNCTION__, __LINE__);
 		lisa_mem_free(lisa_queue);
 		return NULL;
 	}
@@ -34,7 +34,7 @@ lisa_err_t lisa_queue_push(lisa_queue_t *queue, void *item, uint32_t item_size, 
 	int iret;
 
 	if ((queue == NULL) || (item == NULL)) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 
@@ -48,7 +48,7 @@ lisa_err_t lisa_queue_push(lisa_queue_t *queue, void *item, uint32_t item_size, 
 		}
 	}
 	if (iret != 0) {
-		LISA_LOGE(TAG, "[%s %d]k_msgq_put FAILED errno=%d!\n", __FUNCTION__, __LINE__,
+		LISA_LOGE(TAG, "[%s %d]k_msgq_put FAILED errno=%d!", __FUNCTION__, __LINE__,
 			  iret);
 		return LISA_FAIL;
 	}
@@ -61,7 +61,7 @@ lisa_err_t lisa_queue_receive(lisa_queue_t *queue, void *item, uint32_t item_siz
 	int iret = 0;
 
 	if ((queue == NULL) || (item == NULL)) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 
@@ -76,8 +76,6 @@ lisa_err_t lisa_queue_receive(lisa_queue_t *queue, void *item, uint32_t item_siz
 		}
 	}
 	if (iret != 0) {
-		LISA_LOGE(TAG, "[%s %d]k_msgq_put FAILED errno=%d!\n", __FUNCTION__, __LINE__,
-			  iret);
 		return LISA_FAIL;
 	}
 
@@ -87,7 +85,7 @@ lisa_err_t lisa_queue_receive(lisa_queue_t *queue, void *item, uint32_t item_siz
 lisa_err_t lisa_queue_delete(lisa_queue_t *queue)
 {
 	if (queue == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 
@@ -101,7 +99,7 @@ lisa_err_t lisa_queue_delete(lisa_queue_t *queue)
 uint32_t lisa_queue_available(lisa_queue_t *queue)
 {
 	if (queue == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return 0;
 	}
 	return k_msgq_num_free_get(&queue->handle);
@@ -110,7 +108,7 @@ uint32_t lisa_queue_available(lisa_queue_t *queue)
 uint32_t lisa_queue_waiting(lisa_queue_t *queue)
 {
 	if (queue == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return 0;
 	}
 
@@ -120,7 +118,7 @@ uint32_t lisa_queue_waiting(lisa_queue_t *queue)
 lisa_err_t lisa_queue_clear(lisa_queue_t *queue)
 {
 	if (queue == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 	k_msgq_purge(&queue->handle);
