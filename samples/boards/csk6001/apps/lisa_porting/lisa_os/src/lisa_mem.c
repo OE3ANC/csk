@@ -122,7 +122,7 @@ char *lisa_strdup(const char *s)
 
 void lisa_hexdump(char *buf, int len, int addr)
 {
-	__ASSERT(0, "%s is unsupportd\n", __FUNCTION__);
+	__ASSERT(0, "%s is unsupportd", __FUNCTION__);
 }
 
 void lisa_heap_info(void)
@@ -132,7 +132,7 @@ void lisa_heap_info(void)
 
 uint32_t lisa_thread_info(void *task)
 {
-	__ASSERT(0, "%s is unsupportd\n", __FUNCTION__);
+	__ASSERT(0, "%s is unsupportd", __FUNCTION__);
 	return 0;
 }
 
@@ -144,14 +144,14 @@ uint32_t lisa_thread_info(void *task)
 #ifdef PSRAM_TESTSELF
 static void psram_mem_rw_test(uint32_t start_address, uint32_t size)
 {
-	_ASSERT(0, "%s is unsupportd\n", __FUNCTION__);
+	_ASSERT(0, "%s is unsupportd", __FUNCTION__);
 
 
 }
 
 static void lisa_heap_test(int argc, char *argv[])
 {
-	__ASSERT(0, "%s is unsupportd\n", __FUNCTION__);
+	__ASSERT(0, "%s is unsupportd", __FUNCTION__);
 }
 
 #endif

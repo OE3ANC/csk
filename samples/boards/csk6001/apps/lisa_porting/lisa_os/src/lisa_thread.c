@@ -13,7 +13,7 @@ lisa_thread_t *lisa_thread_create(const lisa_thread_attr_t *attr, void (*entry)(
 
 	lisa_thread = (lisa_thread_t *)lisa_mem_calloc(1, sizeof(lisa_thread_t));
 	if (lisa_thread == NULL) {
-		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!", __FUNCTION__, __LINE__);
 		return NULL;
 	}
 
@@ -29,7 +29,7 @@ lisa_err_t lisa_thread_delete(lisa_thread_t *thread)
 {
 	int iret;
 	if (thread == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 
@@ -40,7 +40,7 @@ lisa_err_t lisa_thread_delete(lisa_thread_t *thread)
 		iret = k_thread_join(&thread->handle, K_FOREVER);
 	}
 	if (0 != iret) {
-		LISA_LOGE(TAG, "[%s %d]k_thread_join failed,errno=%d!\n", __FUNCTION__, __LINE__,
+		LISA_LOGE(TAG, "[%s %d]k_thread_join failed,errno=%d!", __FUNCTION__, __LINE__,
 			  iret);
 		return LISA_FAIL;
 	}
@@ -59,7 +59,7 @@ lisa_err_t lisa_thread_yield(void)
 lisa_err_t lisa_thread_suspend(lisa_thread_t *thread)
 {
 	if (thread == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 	k_thread_suspend(thread->thread_id);
@@ -69,7 +69,7 @@ lisa_err_t lisa_thread_suspend(lisa_thread_t *thread)
 lisa_err_t lisa_thread_resume(lisa_thread_t *thread)
 {
 	if (thread == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 	k_thread_resume(thread->thread_id);
@@ -86,13 +86,13 @@ lisa_err_t lisa_thread_delay(uint32_t ticks)
 
 lisa_err_t lisa_thread_mdelay(uint32_t ms)
 {
-	k_sleep(K_MSEC(ms));
+	k_msleep(ms);
 	return LISA_OK;
 }
 
 lisa_thread_t *lisa_thread_getcurrent(void)
 {
 	// TODO
-	__ASSERT(0, "%s is not supportd\n", __FUNCTION__);
+	__ASSERT(0, "%s is unsupport", __FUNCTION__);
 	return NULL;
 }

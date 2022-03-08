@@ -10,14 +10,14 @@ lisa_timer_t *lisa_timer_create(lisa_timertype type, lisa_timercb_t cb, void *ar
 	lisa_timer_t *lisa_timer = NULL;
 
 	if (type == OS_TIMER_ONCE) {
-		LISA_LOGE(TAG, "[%s %d]Timer OS_TIMER_ONCE is not supported!!!!!\n", __FUNCTION__,
+		LISA_LOGE(TAG, "[%s %d]Timer OS_TIMER_ONCE is not supported!!!!!", __FUNCTION__,
 			  __LINE__);
 		return NULL;
 	}
 
 	lisa_timer = (lisa_timer_t *)lisa_mem_calloc(1, sizeof(lisa_timer_t));
 	if (lisa_timer == NULL) {
-		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]lisa_mem_calloc FAILED!", __FUNCTION__, __LINE__);
 		return NULL;
 	}
 
@@ -31,7 +31,7 @@ lisa_timer_t *lisa_timer_create(lisa_timertype type, lisa_timercb_t cb, void *ar
 lisa_err_t lisa_timer_delete(lisa_timer_t *timer)
 {
 	if (timer == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 
@@ -44,11 +44,11 @@ lisa_err_t lisa_timer_delete(lisa_timer_t *timer)
 lisa_err_t lisa_timer_stop(lisa_timer_t *timer)
 {
 	if (timer == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 	if (timer->status == OS_TIMER_STOP) {
-		LISA_LOGD(TAG, "lisa_timer already is stop\n");
+		LISA_LOGD(TAG, "lisa_timer already is stop");
 		LISA_LOGD(TAG, "lisa_timer %p\n", timer);
 		return LISA_OK;
 	}
@@ -60,12 +60,12 @@ lisa_err_t lisa_timer_stop(lisa_timer_t *timer)
 lisa_err_t lisa_timer_start(lisa_timer_t *timer)
 {
 	if (timer == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 	if (timer->status == OS_TIMER_START) {
 		lisa_timer_stop(timer);
-		LISA_LOGE(TAG, "lisa_timer already is start,so stop & start\n");
+		LISA_LOGE(TAG, "lisa_timer already is start,so stop & start");
 	}
 	k_timer_start(&timer->handle, K_MSEC(timer->period_ms), K_MSEC(timer->period_ms));
 	timer->status = OS_TIMER_START;
@@ -76,14 +76,14 @@ lisa_err_t lisa_timer_start(lisa_timer_t *timer)
 lisa_err_t lisa_timer_change_period(lisa_timer_t *timer, uint32_t period_ms)
 {
 	if (timer == NULL) {
-		LISA_LOGE(TAG, "[%s %d]Input paramter error!\n", __FUNCTION__, __LINE__);
+		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
 	}
 	timer->period_ms = period_ms;
 
 	if (timer->status == OS_TIMER_START) {
 		lisa_timer_stop(timer);
-		LISA_LOGD(TAG, "lisa_timer already is start,so stop & start\n");
+		LISA_LOGD(TAG, "lisa_timer already is start,so stop & start");
 		lisa_timer_start(timer);
 	}
 	return LISA_OK;

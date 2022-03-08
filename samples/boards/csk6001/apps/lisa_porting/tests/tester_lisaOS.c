@@ -39,7 +39,7 @@ static lisaOS_tester_data_t lisaOS_tester_data;
 void resourcesMutex(void *ptr)
 {
 	char str[128];
-	LISA_LOGD(TAG, "  [%s %d]%s wait get resources!", __FUNCTION__, __LINE__, (char *)ptr);
+	LISA_LOGD(TAG, "[%s %d]%s wait get resources!", __FUNCTION__, __LINE__, (char *)ptr);
 	if (LISA_OK != lisa_mutex_lock(lisaOS_tester_data.mutex, LISA_WAIT_FOREVER)) {
 		__ASSERT(0, "lisa_mutex_lock FAILED!");
 	}
@@ -125,6 +125,10 @@ void lisa_os_test(void)
 	static K_THREAD_STACK_DEFINE(threadA_stack_area, 1024);
 	static K_THREAD_STACK_DEFINE(threadB_stack_area, 2048);
 	lisa_thread_attr_t attr;
+	extern struct k_heap _system_heap;
+	LISA_LOGD(TAG, "lisaOS test start\n\n\n\n");
+    sys_heap_print_info(&_system_heap.heap,0);
+	memset(&lisaOS_tester_data,0,sizeof(lisaOS_tester_data_t));
 
 	lisaOS_tester_data.syncSem = lisa_semaphore_create(1);
 	lisaOS_tester_data.ackSem = lisa_semaphore_create(1);
@@ -146,7 +150,7 @@ void lisa_os_test(void)
 		__ASSERT(0, "Create lisa_queue_create failed!");
 	}
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 1: Thread test++++++++++++++++");
+	LISA_LOGD(TAG, "++++++++++++++++Test 1: Thread test++++++++++++++++");
 	LISA_LOGD(TAG, "Create threadA and threadB");
 	attr.name = "threadA";
 	attr.stack = threadA_stack_area;
@@ -165,9 +169,10 @@ void lisa_os_test(void)
 	if (LISA_OK != lisa_semaphore_take(lisaOS_tester_data.ackSem, LISA_WAIT_FOREVER)) {
 		__ASSERT(0, "lisa_semaphore_take take failed!");
 	}
-	LISA_LOGD(TAG, "\n----------------Test 1: Thread test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 1: Thread test SUCCESS!!!----------------\n\n\n");
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 2: mem test++++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 2: mem test++++++++++++++++");
+	lisa_heap_info();
 	ptr = (char *)lisa_mem_alloc(1024);
 	if (ptr == NULL) {
 		__ASSERT(0, "mem malloc failed!");
@@ -205,9 +210,10 @@ void lisa_os_test(void)
 		LISA_LOGD(TAG, "lisa_strdup success! ptr=%p,string=%s", ptr, ptr);
 		lisa_mem_free(ptr);
 	}
-	LISA_LOGD(TAG, "\n----------------Test 2: mem test SUCCESS!!!----------------\n");
+	lisa_heap_info();
+	LISA_LOGD(TAG, "----------------Test 2: mem test SUCCESS!!!----------------\n\n\n");
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 3: semaphore test+++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 3: semaphore test+++++++++++++++");
 	lisa_semaphore_give(lisaOS_tester_data.syncSem);
 	if (LISA_OK != lisa_semaphore_take(lisaOS_tester_data.ackSem, LISA_WAIT_FOREVER)) {
 		__ASSERT(0, "lisa_semaphore_take ackSem failed!");
@@ -215,9 +221,9 @@ void lisa_os_test(void)
 	if (LISA_OK == lisa_semaphore_take(lisaOS_tester_data.ackSem, LISA_NO_WAIT)) {
 		__ASSERT(0, "lisa_semaphore_take check block failed!");
 	}
-	LISA_LOGD(TAG, "\n----------------Test 3: semaphore test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 3: semaphore test SUCCESS!!!----------------\n\n\n");
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 4: mutex test++++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 4: mutex test++++++++++++++++");
 	lisa_semaphore_give(lisaOS_tester_data.forMutex);
 	lisa_semaphore_give(lisaOS_tester_data.forMutex);
 	if (LISA_OK != lisa_semaphore_take(lisaOS_tester_data.ackSem, LISA_WAIT_FOREVER)) {
@@ -227,16 +233,16 @@ void lisa_os_test(void)
 			strlen("This is threadA\nThis is threadB\n"))) {
 		__ASSERT(0, "check mutexString failed,str<%s>!", lisaOS_tester_data.mutexString);
 	}
-	LISA_LOGD(TAG, "\n----------------Test 4: mutex test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 4: mutex test SUCCESS!!!----------------\n\n\n");
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 5: queue test++++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 5: queue test++++++++++++++++");
 	lisa_semaphore_give(lisaOS_tester_data.forQueue);
 	if (LISA_OK != lisa_semaphore_take(lisaOS_tester_data.ackSem, LISA_WAIT_FOREVER)) {
 		__ASSERT(0, "lisa_semaphore_take ackSem failed!");
 	}
-	LISA_LOGD(TAG, "\n----------------Test 5: queue test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 5: queue test SUCCESS!!!----------------\n\n\n");
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 6: Thread delete test++++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 6: Thread delete test++++++++++++++++");
 	if (LISA_OK != lisa_thread_delete(lisaOS_tester_data.threadA)) {
 		__ASSERT(0, "lisa_thread_delete failed!");
 	}
@@ -244,12 +250,12 @@ void lisa_os_test(void)
 		__ASSERT(0, "lisa_thread_delete failed!");
 	}
 
-	LISA_LOGD(TAG, "\n----------------Test 6: Thread delete test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 6: Thread delete test SUCCESS!!!----------------\n\n\n");
 
 	uint32_t ticks1 = 0;
 	uint32_t ticks2 = 0;
 	int32_t biasTicks = 0;
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 7: time test++++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 7: time test++++++++++++++++");
 	ticks1 = lisa_os_get_ticks();
 	k_sleep(K_TICKS(100));
 	ticks2 = lisa_os_get_ticks();
@@ -271,9 +277,9 @@ void lisa_os_test(void)
 		__ASSERT(0, "lisa_os_get_time failed,time[%d,%d,%d]", timeSec1, timeSec2, biasSec);
 	}
 	LISA_LOGD(TAG, "lisa_os_get_time bias time %d sec", biasSec);
-	LISA_LOGD(TAG, "\n----------------Test 7: time test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 7: time test SUCCESS!!!----------------\n\n\n");
 
-	LISA_LOGD(TAG, "\n++++++++++++++++Test 8: timer test++++++++++++++++\n");
+	LISA_LOGD(TAG, "++++++++++++++++Test 8: timer test++++++++++++++++");
 	lisaOS_tester_data.timer =
 		lisa_timer_create(OS_TIMER_PERIODIC, timerCB, LISAOS_TIMER_ARG, 1000);
 	if (lisaOS_tester_data.timer == NULL) {
@@ -304,5 +310,8 @@ void lisa_os_test(void)
 	}
 	lisa_timer_stop(lisaOS_tester_data.timer);
 
-	LISA_LOGD(TAG, "\n----------------Test 8: timer test SUCCESS!!!----------------\n");
+	LISA_LOGD(TAG, "----------------Test 8: timer test SUCCESS!!!----------------\n\n\n");
+
+	sys_heap_print_info(&_system_heap.heap,0);
+	LISA_LOGD(TAG, "lisaOS test end\n\n\n\n");
 }
