@@ -76,8 +76,6 @@ lisa_err_t lisa_queue_receive(lisa_queue_t *queue, void *item, uint32_t item_siz
 		}
 	}
 	if (iret != 0) {
-		LISA_LOGE(TAG, "[%s %d]k_msgq_put FAILED errno=%d!", __FUNCTION__, __LINE__,
-			  iret);
 		return LISA_FAIL;
 	}
 

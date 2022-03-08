@@ -9,7 +9,7 @@ zephyr_include_directories(tests/inc)
 add_subdirectory_ifdef(CONFIG_HAS_CSK6001 lisa_os)
 add_subdirectory_ifdef(CONFIG_HAS_CSK6001 lisa_net)
 # add_subdirectory(tests)
-FILE(GLOB app_sources tests/main.c tests/tester_lisaOS.c) 
+FILE(GLOB app_sources tests/*.c) 
 target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} tests/inc) 
 target_sources(app PRIVATE ${app_sources})
 

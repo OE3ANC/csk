@@ -76,11 +76,9 @@ lisa_err_t lisa_thread_resume(lisa_thread_t *thread)
 	return LISA_OK;
 }
 
-lisa_err_t lisa_thread_delay(uint32_t ticks)
+lisa_err_t lisa_thread_delay(uint32_t secs)
 {
-	k_timeout_t timout;
-	timout.ticks = ticks;
-	k_sleep(timout);
+	k_sleep(K_SECONDS(secs));
 	return LISA_OK;
 }
 

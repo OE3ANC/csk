@@ -42,8 +42,6 @@ lisa_err_t lisa_semaphore_take(lisa_semaphore_t *sem, int32_t block_time)
 	}
 
 	if (iret != 0) {
-		LISA_LOGE(TAG, "[%s %d]k_sem_take FAILED errno=%d!", __FUNCTION__, __LINE__,
-			  iret);
 		return LISA_FAIL;
 	}
 	return LISA_OK;
