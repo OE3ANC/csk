@@ -52,6 +52,10 @@ manifest:
       remote: listenai
       revision: d91eb41b5c45870b5dbf7deff58942d4e7e095e3
       path: modules/lib/listenai/zport_esp
+    - name: pyocd
+      remote: listenai
+      revision: a51b6446c020eabc627e946339d6c9aee0bbc48a
+      path: tools/pyocd
 
   self:
     import:
