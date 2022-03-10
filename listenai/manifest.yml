@@ -38,7 +38,11 @@ manifest:
       path: bootloader/mcuboot
     - name: sof_host
       remote: listenai
+<<<<<<< HEAD
       revision: 259e7174be32e3e510dc5a692f00aedd2b91bcaa
+=======
+      revision: 94a9c4919eb3c538946b2672cf4ec08ebf039fcc
+>>>>>>> [samples/board/csk6001/subsys/] sync sof_host modify
       path: modules/lib/sof_host
     - name: lisa_player
       remote: listenai
