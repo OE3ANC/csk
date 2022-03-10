@@ -66,10 +66,14 @@ static int csk_spi_configure(const struct device *dev, const struct spi_config *
 
 #if	!CONFIG_SPI_TX_DMA
 	spi_dma_en_mask |= CSK_SPI_TXIO_PIO;
+#else
+	spi_dma_en_mask |= CSK_SPI_TXIO_DMA;
 #endif
 
 #if	!CONFIG_SPI_RX_DMA
 	spi_dma_en_mask |= CSK_SPI_RXIO_PIO;
+#else
+	spi_dma_en_mask |= CSK_SPI_RXIO_DMA;
 #endif
 
 	SPI_Control(data->driver_context, spi_op_mode | spi_sample_mode | spi_word_size_mask |
@@ -173,9 +177,13 @@ static void csk_spi_isr_callback(uint32_t event, uint32_t usr_param)
 
 static void csk_zephyr_spi_isr(const struct device *dev)
 {
-	extern void spi_irq_handler(SPI_DEV *spi);
 	struct csk_spi_data *data = dev->data;
-	spi_irq_handler(data->driver_context); /* Go into spi hal driver isr handler */
+	SPI_DEV *hal_spi = data->driver_context;
+
+	if(hal_spi->irq_handler != NULL)
+	{
+		hal_spi->irq_handler();
+	}
 }
 
 static const struct spi_driver_api csk_spi_driver_api = {
