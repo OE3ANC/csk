@@ -156,13 +156,9 @@ static const struct flash_parameters *flash_csk6001_get_parameters(const struct 
 
 static int flash_csk6001_init(const struct device *dev)
 {
-	FLASH_DEV *flash_dev;
-	csk6001_flash_config_t *config;
 	unsigned int key;
-	config = (csk6001_flash_config_t *)dev->config;
-	flash_dev = &config->flash_dev;
 	key = irq_lock();
-	sflash_init((void *)flash_dev);
+	sflash_init();
 	irq_unlock(key);
 	return 0;
 }
