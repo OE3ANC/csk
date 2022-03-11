@@ -5,6 +5,9 @@
 
 add_subdirectory(common)
 
+# add_definitions(-DIC_BOARD=1)
+zephyr_compile_options(-DPLATFORM_CP -DCSK6001 -DIC_BOARD=1)
+
 if($ENV{XCC_USE_CLANG})
     set_property(GLOBAL PROPERTY CSTD c11)
     zephyr_compile_options(--stdlib=libc++ -std=c11 -Wno-unused-command-line-argument -ffunction-sections -fdata-sections -mno-coproc -mlongcalls -mno-l32r-flix -DASYM)
