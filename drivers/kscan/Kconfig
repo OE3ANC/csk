@@ -14,6 +14,7 @@ source "drivers/kscan/Kconfig.ft5336"
 source "drivers/kscan/Kconfig.xec"
 source "drivers/kscan/Kconfig.sdl"
 source "drivers/kscan/Kconfig.ht16k33"
+source "drivers/kscan/Kconfig.bl6xxx"
 
 module = KSCAN
 module-str = kscan
