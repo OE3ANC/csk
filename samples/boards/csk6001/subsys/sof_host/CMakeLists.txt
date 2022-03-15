@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.20.0)
 #set(ZEPHYR_EXTRA_MODULES $ENV{ZEPHYR_BASE}/../modules/lib/sof_host)
 
 if("${BOARD}" STREQUAL "csk6001_pico")
-  set(BUILD_DSP_FIRMWARE ON)
+  set(BUILD_DSP_FIRMWARE OFF)
   find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
   message(INFO " ${BOARD} compile as Master in this sample")
   target_sources(app PRIVATE src/main.c)

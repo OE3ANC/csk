@@ -42,7 +42,7 @@ manifest:
       path: modules/lib/sof_host
     - name: lsplayer
       remote: listenai
-      revision: 2a852cf5f530f91b81aa89c47ca6605cabcc6257
+      revision: 762022960ca6b04442ecefdb3385571f9a1e58c8
       path: modules/lib/lsplayer
 
   self:
