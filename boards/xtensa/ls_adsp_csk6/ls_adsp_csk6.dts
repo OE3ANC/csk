@@ -54,7 +54,7 @@
 
 &uart2 {
 	current-speed = <115200>;
-	pinmuxs = <&pinmuxa 19 3>, <&pinmuxa 18 3>;
+	pinmuxs = <&pinmuxa 7 3>, <&pinmuxa 6 3>;
         /* pinmux-names = "RXD", "TXD"; */
 	status = "okay";
 };
