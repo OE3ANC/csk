@@ -38,12 +38,20 @@ manifest:
       path: bootloader/mcuboot
     - name: sof_host
       remote: listenai
-      revision: 94a9c4919eb3c538946b2672cf4ec08ebf039fcc
+      revision: 89f86493d84b8819867f9d3a5d05af8636d6152c
       path: modules/lib/sof_host
-    - name: lsplayer
+    - name: lisa_player
       remote: listenai
-      revision: 762022960ca6b04442ecefdb3385571f9a1e58c8
-      path: modules/lib/lsplayer
+      revision: 47e95a373aaad162074f1021180ebe922b50de89
+      path: modules/lib/listenai/lisa_player
+    - name: zport_sal
+      remote: listenai
+      revision: c1d7a15362c88aa798ea47e9092cb2752d8da829
+      path: modules/lib/listenai/zport_sal
+    - name: zport_esp
+      remote: listenai
+      revision: a9228ee69a9bb4837579406e0c890ae0cf5101cc
+      path: modules/lib/listenai/zport_esp
 
   self:
     import:

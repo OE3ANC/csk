@@ -4,4 +4,5 @@
 
 zephyr_library_sources(./main.c)
 zephyr_library_sources(./sof_domain.c)
+zephyr_library_sources(./network_domain.c)
 
