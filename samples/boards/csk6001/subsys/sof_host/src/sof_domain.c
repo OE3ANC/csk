@@ -53,6 +53,6 @@ void sof_domain(void){
 
     ipm_init();
     avf_stream_platform_register();
-    example_sof_entry();
+    // example_sof_entry();
 }
 
