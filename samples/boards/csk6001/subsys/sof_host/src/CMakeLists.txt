@@ -4,4 +4,7 @@
 
 zephyr_library_sources(./main.c)
 zephyr_library_sources(./sof_domain.c)
+if(CONFIG_WIFI)
+zephyr_library_sources(./network_domain.c)
+endif()
 

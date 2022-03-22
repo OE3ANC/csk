@@ -153,5 +153,16 @@ config SOF_IPC_SHM_SIZE
 	  This option specifies size of the memory region to be used
 	  for the SOF IPC shared memory
 
+menu "Example Configuration"
+
+    config EXAMPLE_WIFI_SSID
+        string "WiFi SSID"
+        default "wifi_ssid"
+
+    config EXAMPLE_WIFI_PASSWORD
+        string "WiFi password"
+        default "wifi_password"
+
+endmenu
 
 source "Kconfig.zephyr"
