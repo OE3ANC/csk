@@ -158,8 +158,10 @@ struct k_thread sof_thread;
 void main(void)
 {
 	s_fs_mount();
+#ifdef CONFIG_WIFI
 	network_domain();
 	k_msleep(1000);
+#endif
 	sof_domain();
 
 	while (1) {
