@@ -1,9 +1,9 @@
-.. _csk6001_pico:
+.. _csk6002_c3_nano:
 
 
 TODO
 
-LISTENAI CSK6001_PICO
+LISTENAI CSK6002_C3_NANO
 #####################
 
 Overview
