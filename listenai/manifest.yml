@@ -10,7 +10,7 @@ manifest:
   projects:
     - name: hal_listenai
       remote: listenai
-      revision: d0c2172bc650077bfaa4cb937aca6e3e28ff2b4e
+      revision: 7c25a8a3f14affce2cb1f3babaf6095607db847f
       path: modules/hal/listenai
       groups:
         - hal
@@ -38,11 +38,7 @@ manifest:
       path: bootloader/mcuboot
     - name: sof_host
       remote: listenai
-<<<<<<< HEAD
       revision: 259e7174be32e3e510dc5a692f00aedd2b91bcaa
-=======
-      revision: 94a9c4919eb3c538946b2672cf4ec08ebf039fcc
->>>>>>> [samples/board/csk6001/subsys/] sync sof_host modify
       path: modules/lib/sof_host
     - name: lisa_player
       remote: listenai
