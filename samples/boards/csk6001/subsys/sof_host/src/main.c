@@ -6,20 +6,20 @@
 #include <device.h>
 #include <fs/fs.h>
 #include <devicetree.h>
-#if defined(CONFIG_SECOND_CORE_LOAD_BY_LITTLEFS)
+#if defined(CONFIG_AVF_USE_FS_LITTLEFS)
 #include <fs/littlefs.h>
 #include <storage/flash_map.h>
 #include <usb/usb_device.h>
-#elif defined(CONFIG_SECOND_CORE_LOAD_BY_FATFS)
+#elif defined(CONFIG_AVF_USE_FS_FATFS)
 #include <ff.h>
 #include <usb/usb_device.h>
 #endif
 
 
 
-#if defined(CONFIG_SECOND_CORE_LOAD_BY_LITTLEFS) || defined(CONFIG_SECOND_CORE_LOAD_BY_FATFS)
+#if defined(CONFIG_AVF_USE_FS_LITTLEFS) || defined(CONFIG_AVF_USE_FS_FATFS)
 
-#if defined(CONFIG_SECOND_CORE_LOAD_BY_LITTLEFS)
+#if defined(CONFIG_AVF_USE_FS_LITTLEFS)
 /* Matches LFS_NAME_MAX */
 #define MAX_PATH_LEN 255
 #define PARTITION_NODE DT_NODELABEL(lfs1)
@@ -29,8 +29,8 @@ struct fs_mount_t *p_g_fs_mount = &FS_FSTAB_ENTRY(PARTITION_NODE);
 #else /* PARTITION_NODE */
 #error "Please declare the region of the file system first"
 #endif /* PARTITION_NODE */
-#elif defined(CONFIG_SECOND_CORE_LOAD_BY_FATFS)
-#define FS_MOUNT_POINT "/NAND:"
+#elif defined(CONFIG_AVF_USE_FS_FATFS)
+#define FS_MOUNT_POINT CONFIG_AVF_FS_MOUNT_POINT
 struct fs_mount_t *p_g_fs_mount = NULL;
 static struct fs_mount_t fs_mount_p;
 static FATFS s_fat_fs;
@@ -87,7 +87,7 @@ static int s_fs_init(void)
 	struct fs_mount_t *mp;
 	int rc;
 
-#if defined(CONFIG_SECOND_CORE_LOAD_BY_LITTLEFS)
+#if defined(CONFIG_AVF_USE_FS_LITTLEFS)
 	mp = p_g_fs_mount;
 	/* Do not mount if auto-mount has been enabled */
 #if !DT_NODE_EXISTS(PARTITION_NODE) ||                                                             \
@@ -104,7 +104,7 @@ static int s_fs_init(void)
 	printk("%s automounted\n", mp->mnt_point);
 #endif
 
-#elif defined(CONFIG_SECOND_CORE_LOAD_BY_FATFS)
+#elif defined(CONFIG_AVF_USE_FS_FATFS)
 	if (p_g_fs_mount != NULL) {
 		printk("The mount point<%s> busy!\n", p_g_fs_mount->mnt_point);
 		return -1;
@@ -135,19 +135,30 @@ static void s_fs_mount(void)
 	
 	int ret;
 //file system init
-#if defined(CONFIG_SECOND_CORE_LOAD_BY_LITTLEFS) || defined(CONFIG_SECOND_CORE_LOAD_BY_FATFS)
+#if defined(CONFIG_AVF_USE_FS_LITTLEFS) || defined(CONFIG_AVF_USE_FS_FATFS)
 	s_fs_init();
+#else
+	#error "Please define file system type!"
+#endif
+
+#if defined(CONFIG_AVF_USE_FS_FATFS)
 	ret = usb_enable(NULL);
 	if (ret != 0) {
 		printk("Failed to enable USB");
 		return;
 	}
-#else
-	#error "Please define file system type!"
-#endif
+#elif defined(CONFIG_AVF_USE_FS_LITTLEFS)
+	if(0 != strcmp(CONFIG_AVF_FS_MOUNT_POINT,p_g_fs_mount->mnt_point)){
+		__ASSERT(0,"The avf fs mount point error!");
+	}
 
+#endif
 }
 
+typedef enum{
+	TESTER_ENUM0 = 0,
+	TESTER_ENUM1 = 512,
+}tester_enum_t;
 
 extern void sof_domain(void);
 extern void network_domain(void);
@@ -157,6 +168,7 @@ struct k_thread sof_thread;
 
 void main(void)
 {
+	printk("sizeof(tester_enum_t)=%d\n",sizeof(tester_enum_t));
 	s_fs_mount();
 #ifdef CONFIG_WIFI
 	network_domain();
@@ -169,17 +181,3 @@ void main(void)
 	}
 }
 
-static int PSRAM_init(const struct device *unused)
-{
-	__attribute__((section("noinit"))) static uint32_t s_init =0;
-	ARG_UNUSED(unused);
-	if(0xaa55aa55 != s_init){
-		printk("Init PSRAM!\n");
-		PSRAM_Initialize();
-		s_init= 0xaa55aa55;
-	}
-	
-	return 0;
-}
-
-SYS_INIT(PSRAM_init, PRE_KERNEL_2, 0);
