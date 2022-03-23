@@ -9,14 +9,9 @@
 
 
 
-
-
-
-extern void example_sof_entry(void);
-
 void sof_domain(void){
 
     avf_stream_platform_register();
-    example_sof_entry();
+
 }
 
