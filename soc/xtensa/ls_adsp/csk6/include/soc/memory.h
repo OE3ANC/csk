@@ -14,6 +14,11 @@
 
 #define IRAM_RESERVE_HEADER_SPACE	0x0
 /* 0x400 is size of reset isr vector, the other isr vector is 0x298 */
+#define LUNA_SHARED_MEM_BASE 0x5FE00000
+#define LUNA_SHARED_DRAM_SIZE 0xa0000
+#define LUNA_SHARED_DATA_SIZE 0x20000
+#define LUNA_SHARED_MEM_SIZE 0xA0000
+
 #define ISR_VECTOR_SIZE  0x400 + 0x298
 #define IRAM_BASE	0x5FF00000
 #define IRAM_SIZE	0x2000
