@@ -16,7 +16,7 @@ as slave. make sure to connect GPIO_A_04 to GPIO_A_07, GPIO_A_05 to GPIO_A_06 al
 Building and Running
 ********************
 
-Make sure you have the csk6001_pico connected over Jlink debuger.
+Make sure you have the csk6001 boards connected over Jlink debuger.
 
 The sample can be built and flashed as follows:
 
