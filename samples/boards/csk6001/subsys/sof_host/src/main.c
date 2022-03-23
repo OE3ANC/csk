@@ -155,11 +155,6 @@ static void s_fs_mount(void)
 #endif
 }
 
-typedef enum{
-	TESTER_ENUM0 = 0,
-	TESTER_ENUM1 = 512,
-}tester_enum_t;
-
 extern void sof_domain(void);
 extern void network_domain(void);
 
@@ -168,7 +163,7 @@ struct k_thread sof_thread;
 
 void main(void)
 {
-	printk("sizeof(tester_enum_t)=%d\n",sizeof(tester_enum_t));
+
 	s_fs_mount();
 #ifdef CONFIG_WIFI
 	network_domain();
