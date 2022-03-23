@@ -22,4 +22,10 @@ config HAS_CSK6001
 
 if SOC_CSK6001
 
-endif # SOC_ESP32
+	config CSK6001_PSRAM
+		bool "Enable CSK6001 PSRAM"
+		default n
+		help
+			Enable CSK6001 PSRAM
+
+endif # SOC_CSK6001

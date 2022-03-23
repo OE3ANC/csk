@@ -43,6 +43,10 @@ static int csk6001_init(const struct device *arg)
 #ifdef CONFIG_HAS_CSK6001_GPT
 	GPT_Init_Handler();
 #endif
+
+#if CONFIG_CSK6001_PSRAM
+	PSRAM_Initialize();
+#endif
 	return 0;
 }
 
