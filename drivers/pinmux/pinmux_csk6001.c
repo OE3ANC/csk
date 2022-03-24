@@ -16,27 +16,15 @@ struct pinmux_csk_config {
 	uintptr_t reg_addr;
 };
 
-static int pin_pad_get(uintptr_t addr, uint8_t *pad)
-{
-	if (CMN_IOMUX_A_BASE == addr) {
-		*pad = CSK_IOMUX_PAD_A;
-	} else if (CMN_IOMUX_B_BASE == addr) {
-		*pad = CSK_IOMUX_PAD_B;
-	} else {
-		return -EINVAL;
-	}
-	return 0;
-}
-
 static int pinmux_set(const struct device *dev, uint32_t pin_num, uint32_t func)
 {
 	ARG_UNUSED(dev);
 	uint8_t pad;
 	const struct pinmux_csk_config *config = DEV_CFG(dev);
-	if (pin_pad_get(config->reg_addr, &pad)) {
+	if (IOMuxManager_GetPad(config->reg_addr, &pad)) {
 		return -EINVAL;
 	}
-	if (csk_pinmux_set_func(pad, pin_num, func)) {
+	if (IOMuxManager_PinConfigure(pad, pin_num, func)) {
 		return -EINVAL;
 	}
 
@@ -49,10 +37,10 @@ static int pinmux_get(const struct device *dev, uint32_t pin_num, uint32_t *func
 	uint8_t pad;
 	const struct pinmux_csk_config *config = DEV_CFG(dev);
 
-	if (pin_pad_get(config->reg_addr, &pad)) {
+	if (IOMuxManager_GetPad(config->reg_addr, &pad)) {
 		return -EINVAL;
 	}
-	if (csk_pinmux_get_func(pad, pin_num, func)) {
+	if (IOMuxManager_GetConfig(pad, pin_num, func)) {
 		return -EINVAL;
 	}
 
@@ -65,16 +53,17 @@ static int pinmux_pullup(const struct device *dev, uint32_t pin_num, uint8_t fun
 	uint8_t pad;
 	const struct pinmux_csk_config *config = DEV_CFG(dev);
 
-	if (pin_pad_get(config->reg_addr, &pad)) {
+	if (IOMuxManager_GetPad(config->reg_addr, &pad)) {
 		return -EINVAL;
 	}
 
+	//If necessary, can add PULLDOWN_MODE 
 	switch (func) {
 	case PINMUX_PULLUP_DISABLE:
-		return csk_pinmux_set_mode(pad, pin_num, CSK_PINMUX_PULLUP_DISABLE);
+		return IOMuxManager_ModeConfigure(pad, pin_num, HAL_IOMUX_NONE_MODE);
 		break;
 	case PINMUX_PULLUP_ENABLE:
-		return csk_pinmux_set_mode(pad, pin_num, CSK_PINMUX_PULLUP_ENABLE);
+		return IOMuxManager_ModeConfigure(pad, pin_num, HAL_IOMUX_PULLUP_MODE);
 		break;
 	default:
 		return -EINVAL;

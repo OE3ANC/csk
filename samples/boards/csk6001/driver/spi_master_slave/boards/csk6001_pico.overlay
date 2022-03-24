@@ -1,0 +1,24 @@
+
+
+&spi0{
+    miso-gpios = < &gpioa 0x5 0x0 >;
+    mosi-gpios = < &gpioa 0x6 0x0 >;
+    sclk-gpios = < &gpioa 0x7 0x0 >;
+    cs-gpios = < &gpioa 0x4 0x0 >;
+};
+
+&spi1{
+    miso-gpios = < &gpiob 0x2 0x0 >;
+    mosi-gpios = < &gpiob 0x1 0x0 >;
+    sclk-gpios = < &gpiob 0x0 0x0 >;
+    cs-gpios = < &gpiob 0x3 0x0 >;
+    status = "okay";
+};
+
+
+/ {
+     aliases {
+        spi-master = &spi0;
+        spi-slave = &spi1;
+     };
+};

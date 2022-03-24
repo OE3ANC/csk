@@ -62,7 +62,7 @@ static int csk_gpio_configure(const struct device *dev, gpio_pin_t pin, gpio_fla
         GPIO_SetDir(driver_context, 1UL << pin, CSK_GPIO_DIR_OUTPUT);
     } else if (flags & GPIO_INPUT) {
         if (flags & GPIO_INT_DEBOUNCE) {
-            return -ENOTSUP; //TODO: add gpio debounce support
+            GPIO_Control(driver_context, CSK_GPIO_DEBOUNCE_ENABLE, 1UL << pin);
         }
         GPIO_SetDir(driver_context, 1UL << pin, CSK_GPIO_DIR_INPUT);
     }
