@@ -33,7 +33,7 @@ static void handler_cb(struct net_mgmt_event_callback *cb, uint32_t mgmt_event, 
     printk("Router: %s\n", net_addr_ntop(AF_INET, &iface->config.ip.ipv4->gw, buf, sizeof(buf)));
 }
 
-static void wifi_event_handler(csk_wifi_event_t events, void *arg)
+static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32_t data_len, void *arg)
 {
     if (events & CSK_WIFI_EVT_STA_CONNECTED) {
         printk("[WiFi sta] connected\n");

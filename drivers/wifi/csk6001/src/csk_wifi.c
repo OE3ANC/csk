@@ -21,9 +21,11 @@ typedef struct {
         wifi_cmd_t command;
         csk_wifi_event_t event;
     };
+    void *data;
+    uint32_t data_len;
 } csk_wifi_ctrl_msg_t;
 
-K_MSGQ_DEFINE(wifi_result_msgq, sizeof(csk_wifi_result_t), 1, 4);
+K_MSGQ_DEFINE(wifi_result_msgq, sizeof(wifi_ret_msg_t), 1, 4);
 K_MSGQ_DEFINE(wifi_interactive_msgq, sizeof(csk_wifi_ctrl_msg_t), 4, 4);
 
 static void wifi_control_thread(void *, void *, void *);
@@ -49,17 +51,17 @@ static struct csk_wifi_data csk_wifi_sta_data;
 static struct csk_wifi_data csk_wifi_ap_data;
 #endif
 
-static inline int wifi_give_result(csk_wifi_result_t *result)
+static inline int wifi_give_result(wifi_ret_msg_t *ret_msg)
 {
     if (!k_msgq_num_free_get(&wifi_result_msgq)) {
         k_msgq_purge(&wifi_result_msgq); /* clean the message queue */
     }
-    return k_msgq_put(&wifi_result_msgq, result, K_NO_WAIT);
+    return k_msgq_put(&wifi_result_msgq, ret_msg, K_NO_WAIT);
 }
 
-int wifi_take_result(csk_wifi_result_t *result, k_timeout_t timeout)
+int wifi_take_result(wifi_ret_msg_t *ret_msg, k_timeout_t timeout)
 {
-    return k_msgq_get(&wifi_result_msgq, result, timeout);
+    return k_msgq_get(&wifi_result_msgq, ret_msg, timeout);
 }
 
 int wifi_send_command(const struct device *dev, wifi_cmd_t command, k_timeout_t timeouts)
@@ -72,12 +74,52 @@ int wifi_send_command(const struct device *dev, wifi_cmd_t command, k_timeout_t 
     return k_msgq_put(&wifi_interactive_msgq, &msg, timeouts);
 }
 
-static inline int wifi_send_event(const struct device *dev, csk_wifi_event_t event, k_timeout_t timeouts)
+wifi_auth_mode_t wifi_get_encryption_mode(csk_wifi_encryption_mode_t mode)
+{
+    wifi_auth_mode_t ret;
+    switch (mode) {
+    case CSK_WIFI_AUTH_OPEN:
+        ret = WIFI_AUTH_OPEN;
+        break;
+    case CSK_WIFI_AUTH_WEP:
+        ret = WIFI_AUTH_WEP;
+        break;
+    case CSK_WIFI_AUTH_WPA_PSK:
+        ret = WIFI_AUTH_WPA_PSK;
+        break;
+    case CSK_WIFI_AUTH_WPA2_PSK:
+        ret = WIFI_AUTH_WPA2_PSK;
+        break;
+    case CSK_WIFI_AUTH_WPA_WPA2_PSK:
+        ret = WIFI_AUTH_WPA_WPA2_PSK;
+        break;
+    case CSK_WIFI_AUTH_WPA2_ENTERPRISE:
+        ret = WIFI_AUTH_WPA2_ENTERPRISE;
+        break;
+
+    case CSK_WIFI_AUTH_WPA3_PSK:
+        ret = WIFI_AUTH_WPA3_PSK;
+        break;
+
+    case CSK_WIFI_AUTH_WPA2_WPA3_PSK:
+        ret = WIFI_AUTH_WPA2_WPA3_PSK;
+        break;
+
+    default:
+        ret = WIFI_AUTH_MAX;  //Not support
+        break;
+    }
+    return ret;
+}
+
+static inline int wifi_send_event(const struct device *dev, csk_wifi_event_t event, void *event_data, uint32_t data_len, k_timeout_t timeouts)
 {
     csk_wifi_ctrl_msg_t msg = {
         .dev = dev,
         .type = WIFI_EVENT,
         .event = event,
+        .data = event_data,
+        .data_len = data_len,
     };
     return k_msgq_put(&wifi_interactive_msgq, &msg, timeouts);
 }
@@ -212,43 +254,99 @@ static csk_wifi_result_t wifi_sotfap_stop(const struct device *dev)
     return ret;
 }
 
+static csk_wifi_result_t wifi_scan_list(int *ap_count, esp_hosted_wifi_scanlist_t **ap_list)
+{
+    csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
+    *ap_list = wifi_ap_scan_list(ap_count);
+    if (ap_list == NULL || *ap_count == 0) {
+        ret = CSK_WIFI_ERR_STA_FAILED; //TODO: use more reasonable FAILED value
+    }
+    return ret;
+}
+
 static void wifi_command_handler(const struct device *dev, wifi_cmd_t command)
 {
-    csk_wifi_result_t result;
+    wifi_ret_msg_t ret_msg = {
+        .arg = NULL,
+        .result = CSK_WIFI_SUCCESS,
+    };
+
     switch (command) {
         case WIFI_CMD_AP_INIT:
         case WIFI_CMD_STA_INIT: {
             wifi_virtual_netif_init(dev);
         } break;
         case WIFI_CMD_STA_CONNECT: {
-            result = wifi_sta_connect(dev);
-            if (result == CSK_WIFI_SUCCESS) {
-                wifi_send_event(dev, CSK_WIFI_EVT_STA_CONNECTED, K_FOREVER);
+            ret_msg.result = wifi_sta_connect(dev);
+            csk_wifi_result_t get_ret = wifi_sta_get_connected_info(dev);
+            struct csk_wifi_data *data = dev->data;
+            if (ret_msg.result == CSK_WIFI_SUCCESS && get_ret == CSK_WIFI_SUCCESS) {
+                wifi_send_event(dev, CSK_WIFI_EVT_STA_CONNECTED, NULL, 0, K_FOREVER);
+                csk_wifi_sta_config_t sta_config;
+                memcpy(sta_config.ssid, data->sta_config.ssid, sizeof(sta_config.ssid));
+                memcpy(sta_config.bssid, data->sta_config.bssid, sizeof(sta_config.bssid));
+                sta_config.rssi = data->sta_config.rssi;
+                sta_config.channel = data->sta_config.channel;
+                sta_config.encryption_mode = wifi_get_encryption_mode(data->sta_config.encryption_mode);
+                wifi_dispatch_callbacks(CSK_WIFI_EVT_STA_CONNECTED, &sta_config, sizeof(csk_wifi_sta_config_t));
             }
-            wifi_give_result(&result);
+            wifi_give_result(&ret_msg);
         } break;
         case WIFI_CMD_STA_DISCONNECT: {
-            result = wifi_sta_disconnect(dev);
-            if (result == CSK_WIFI_SUCCESS) {
-                wifi_send_event(dev, CSK_WIFI_EVT_STA_DISCONNECTED, K_FOREVER);
+            ret_msg.result = wifi_sta_disconnect(dev);
+            if (ret_msg.result == CSK_WIFI_SUCCESS) {
+                wifi_send_event(dev, CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0, K_FOREVER);
+                wifi_dispatch_callbacks(CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0);
             }
-            wifi_give_result(&result);
+            wifi_give_result(&ret_msg);
         } break;
 
         case WIFI_CMD_AP_START: {
-            result = wifi_sotfap_start(dev);
-            if (result == CSK_WIFI_SUCCESS) {
-                wifi_send_event(dev, CSK_WIFI_EVT_AP_STARTED, K_FOREVER);
+            ret_msg.result = wifi_sotfap_start(dev);
+            if (ret_msg.result == CSK_WIFI_SUCCESS) {
+                wifi_send_event(dev, CSK_WIFI_EVT_AP_STARTED, NULL, 0, K_FOREVER);
+                wifi_dispatch_callbacks(CSK_WIFI_EVT_AP_STARTED, NULL, 0);
             }
-            wifi_give_result(&result);
+            wifi_give_result(&ret_msg);
         } break;
 
         case WIFI_CMD_AP_STOP: {
-            result = wifi_sotfap_stop(dev);
-            if (result == CSK_WIFI_SUCCESS) {
-                wifi_send_event(dev, CSK_WIFI_EVT_AP_STOPPED, K_FOREVER);
+            ret_msg.result = wifi_sotfap_stop(dev);
+            if (ret_msg.result == CSK_WIFI_SUCCESS) {
+                wifi_send_event(dev, CSK_WIFI_EVT_AP_STOPPED, NULL, 0, K_FOREVER);
+                wifi_dispatch_callbacks(CSK_WIFI_EVT_AP_STOPPED, NULL, 0);
             }
-            wifi_give_result(&result);
+            wifi_give_result(&ret_msg);
+        } break;
+
+        case WIFI_CMD_SCAN: {
+            wifi_scan_list_t scan_list = {0};
+            int count = 0;
+            esp_hosted_wifi_scanlist_t *ap_list = NULL;
+            ret_msg.result = wifi_scan_list(&count, &ap_list);
+            if (ret_msg.result == CSK_WIFI_SUCCESS) {
+                csk_wifi_scan_info_t *csk_ap_list = k_calloc(count, sizeof(csk_wifi_scan_info_t));
+                if (csk_ap_list == NULL) {
+                    abort();
+                }
+                for (int idx = 0; idx < count; idx++) {
+                    memcpy(csk_ap_list[idx].ssid, ap_list[idx].ssid, sizeof(csk_ap_list[idx].ssid));
+                    memcpy(csk_ap_list[idx].bssid, ap_list[idx].bssid, sizeof(csk_ap_list[idx].bssid));
+                    csk_ap_list[idx].channel = ap_list[idx].channel;
+                    csk_ap_list[idx].rssi = ap_list[idx].rssi;
+                    csk_ap_list[idx].encryption_mode = wifi_get_encryption_mode(ap_list[idx].encryption_mode);
+                }
+                k_free(ap_list);
+                ap_list = NULL;
+                scan_list.ap_list = csk_ap_list;
+                scan_list.count = count;
+                ret_msg.arg = &scan_list;
+                csk_wifi_scan_info_t csk_ap_list_copy[count];
+                memset(csk_ap_list_copy, 0, sizeof(csk_wifi_scan_info_t) * count);
+                memcpy(csk_ap_list_copy, csk_ap_list, sizeof(csk_wifi_scan_info_t) * count);
+                wifi_dispatch_callbacks(CSK_WIFI_EVT_SCAN_DONE, csk_ap_list_copy, sizeof(csk_wifi_scan_info_t) * count);
+            }
+            wifi_give_result(&ret_msg);
         } break;
 
         default:
@@ -300,7 +398,6 @@ static void wifi_control_thread(void *arg1, void *arg2, void *arg3)
             wifi_command_handler(dev, msg.command);
         } else if (msg.type == WIFI_EVENT) {
             wifi_event_handler(dev, msg.event);
-            wifi_dispatch_callbacks(msg.event);
         }
     }
 }
@@ -421,11 +518,11 @@ static void hosted_event_handler(hosted_event_t events, void *arg)
     if (events & HOSTED_LINK_EVT_ACTIVE) {
         k_sem_give(&init_sem);
     } else if (events & HOSTED_WIFI_EVT_STA_DISCONNECTED) {
-        wifi_send_event(dev, CSK_WIFI_EVT_STA_DISCONNECTED, K_FOREVER);
+        wifi_send_event(dev, CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0, K_FOREVER);
     } else if (events & HOSTED_WIFI_EVT_AP_STACONNECTED) {
-        wifi_send_event(dev, CSK_WIFI_EVT_AP_STACONNECTED, K_FOREVER);
+        wifi_send_event(dev, CSK_WIFI_EVT_AP_STACONNECTED, NULL, 0, K_FOREVER);
     } else if (events & HOSTED_WIFI_EVT_AP_STADISCONNECTED) {
-        wifi_send_event(dev, CSK_WIFI_EVT_AP_STADISCONNECTED, K_FOREVER);
+        wifi_send_event(dev, CSK_WIFI_EVT_AP_STADISCONNECTED, NULL, 0, K_FOREVER);
     } else {
         abort();
     }

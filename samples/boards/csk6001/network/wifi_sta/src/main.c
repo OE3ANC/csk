@@ -50,10 +50,10 @@ void main(void)
     wifi_event_cb.arg = NULL;
     csk_wifi_add_callback(&wifi_event_cb);
 
-    esp_hosted_sta_config_t sta_config = {
+    csk_wifi_sta_config_t sta_config = {
         .ssid = CONFIG_EXAMPLE_WIFI_SSID,
         .pwd = CONFIG_EXAMPLE_WIFI_PASSWORD,
-        .encryption_mode = WIFI_AUTH_WPA2_PSK
+        .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK
     };
 
     int retry_count = 0;

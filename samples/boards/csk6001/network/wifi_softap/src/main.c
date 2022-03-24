@@ -38,11 +38,11 @@ void main(void)
     wifi_event_cb.arg = NULL;
     csk_wifi_add_callback(&wifi_event_cb);
 
-    esp_hosted_softap_config_t ap_config = {
+    csk_wifi_softap_config_t ap_config = {
         .ssid = CONFIG_EXAMPLE_WIFI_SSID,
         .pwd = CONFIG_EXAMPLE_WIFI_PASSWORD,
-        .encryption_mode = WIFI_AUTH_WPA2_PSK, /* TODO: add to menuconfig */
-        .bandwidth = WIFI_BW_HT40,
+        .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK, /* TODO: add to menuconfig */
+        .bandwidth = CSK_WIFI_BW_HT40,
         .channel = CONFIG_EXAMPLE_WIFI_CHANNEL,
         .max_connections = CONFIG_EXAMPLE_WIFI_MAX_CONNECTTION,
     };
