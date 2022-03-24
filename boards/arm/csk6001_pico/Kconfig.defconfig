@@ -1,8 +1,0 @@
-if BOARD_CSK6001_PICO
-
-config BOARD
-   default "csk6001_pico"
-
-
-
-endif # BOARD_CSK6001_PICO
