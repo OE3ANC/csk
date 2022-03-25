@@ -157,8 +157,6 @@ static void s_fs_mount(void)
 
 extern void sof_domain(void);
 extern void network_domain(void);
-
-K_THREAD_STACK_DEFINE(sof_stack, 2048);
 struct k_thread sof_thread;
 
 void main(void)
