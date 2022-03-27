@@ -215,6 +215,20 @@ static csk_wifi_result_t wifi_sta_connect(const struct device *dev)
     return ret;
 }
 
+static csk_wifi_result_t wifi_sta_get_connected_info(const struct device *dev)
+{
+    struct csk_wifi_data *data = dev->data;
+    csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
+    
+    esp_hosted_control_config_t connected_info;
+    int get_ret = wifi_get_ap_config(&connected_info);
+    if (get_ret != 0) {
+        ret = CSK_WIFI_ERR_STA_FAILED;
+    }
+    memcpy(&data->sta_config, &connected_info.station, sizeof(esp_hosted_sta_config_t));
+    return ret;
+}
+
 static csk_wifi_result_t wifi_sta_disconnect(const struct device *dev)
 {
     csk_wifi_result_t ret = CSK_WIFI_SUCCESS;

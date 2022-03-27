@@ -178,13 +178,13 @@ int csk_wifi_scan_ap(csk_wifi_scan_info_t **ap_info, csk_wifi_result_t *result, 
  *
  * @note This function could only call while WIFI is in Station disconnected status
  *
- * @param sta_config[in] Pointer to WIFI Station configuration structure
+ * @param sta_config[in/out] Pointer to WIFI Station configuration structure
  * @param result[out] Pointer to WIFI operation result
  * @param timeout[in] How long to try to connect WIFI Access Point
  *
  * @return 0 if successful, negative errno code on failure.
  */
-int csk_wifi_sta_connect(const csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *result, k_timeout_t timeout);
+int csk_wifi_sta_connect(csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *result, k_timeout_t timeout);
 
 /**
  * @brief Start a WIFI disconnection request

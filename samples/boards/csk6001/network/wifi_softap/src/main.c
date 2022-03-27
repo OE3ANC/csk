@@ -15,7 +15,7 @@
 
 static csk_wifi_event_cb_t wifi_event_cb;
 
-static void wifi_event_handler(csk_wifi_event_t events, void *arg)
+static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32_t data_len, void *arg)
 {
     if (events & CSK_WIFI_EVT_AP_STARTED) {
         printk("[WiFi softap] started\n");

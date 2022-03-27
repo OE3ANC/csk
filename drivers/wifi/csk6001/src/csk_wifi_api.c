@@ -50,7 +50,7 @@ __exit:
 
 #ifdef CONFIG_CSK_WIFI_STATION
 
-int csk_wifi_sta_connect(const csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *result, k_timeout_t timeout)
+int csk_wifi_sta_connect(csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *result, k_timeout_t timeout)
 {
     CSK_WIFI_CHECK(sta_config != NULL && result != NULL, -EINVAL);
     CSK_WIFI_CHECK(sta_config->encryption_mode >= 0 &&
