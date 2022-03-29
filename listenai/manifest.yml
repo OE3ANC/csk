@@ -22,7 +22,7 @@ manifest:
         - hal
     - name: sof
       remote: listenai
-      revision: 6e784fb45f2a9b19e6eeb5bfccd4f878aeeeec0f
+      revision: ce4ee55c44d68142f55055bc4b8ab9fe5a1e32f6
       path: modules/audio/sof
     - name: protobuf-c
       remote: listenai
