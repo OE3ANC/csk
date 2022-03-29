@@ -42,7 +42,7 @@ manifest:
       path: modules/lib/sof_host
     - name: lisa_player
       remote: listenai
-      revision: 9337fb8dfd0df6808c5018732926f41e62dd2e3d
+      revision: 960241b455859d46d73e45bae47cd4fd64f79b72
       path: modules/lib/listenai/lisa_player
     - name: zport_sal
       remote: listenai
@@ -50,7 +50,7 @@ manifest:
       path: modules/lib/listenai/zport_sal
     - name: zport_esp
       remote: listenai
-      revision: 256b161804bfb9bb945dd4895bfaa241dd8a48b1
+      revision: d91eb41b5c45870b5dbf7deff58942d4e7e095e3
       path: modules/lib/listenai/zport_esp
 
   self:
