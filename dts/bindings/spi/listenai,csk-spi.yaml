@@ -28,3 +28,8 @@ properties:
       type: phandle-array
       required: false
       description: SPI generated clock pin
+
+    spi-max-frequency:
+      type: int
+      required: false
+      description: spi-max-frequency
