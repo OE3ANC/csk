@@ -12,9 +12,8 @@ if("${BOARD}" STREQUAL "csk6002_c3_nano")
   message(INFO " ${BOARD} compile as Master in this sample")
   target_sources(app PRIVATE src/main.c)
   add_subdirectory(./src)
-
-else("${BOARD}" STREQUAL "ls_adsp_csk6")
-  set(BUILD_DSP_FIRMWARE ON)
+  zephyr_compile_options(-fno-short-enums)
+  zephyr_ld_options(-fno-short-enums)
 endif()
 
 

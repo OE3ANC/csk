@@ -22,7 +22,7 @@ manifest:
         - hal
     - name: sof
       remote: listenai
-      revision: b58ee20f180f30267057a6b24efcf1b3034b3b4b
+      revision: 05d26cb425559ded1a5cbaff0e88a308ac889401
       path: modules/audio/sof
     - name: protobuf-c
       remote: listenai
@@ -38,19 +38,19 @@ manifest:
       path: bootloader/mcuboot
     - name: sof_host
       remote: listenai
-      revision: 259e7174be32e3e510dc5a692f00aedd2b91bcaa
+      revision: b0ff5ba2297aaaab8285441f9e4a47f3aebf49f1
       path: modules/lib/sof_host
     - name: lisa_player
       remote: listenai
-      revision: 353fec0d933bf6801855c92927199b5bb197c21b
+      revision: 960241b455859d46d73e45bae47cd4fd64f79b72
       path: modules/lib/listenai/lisa_player
     - name: zport_sal
       remote: listenai
-      revision: 94be26053e0b8cd4af6b06caa819274bcf8b1a37
+      revision: 59498060cb8160cfb6d7eaeac3a6e2a6af54ce0e
       path: modules/lib/listenai/zport_sal
     - name: zport_esp
       remote: listenai
-      revision: be82260fcc4818aa3382030112d5afd8fa639edf
+      revision: d91eb41b5c45870b5dbf7deff58942d4e7e095e3
       path: modules/lib/listenai/zport_esp
 
   self:
