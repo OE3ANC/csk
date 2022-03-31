@@ -136,6 +136,10 @@
 	status = "okay";
 };
 
+&rtc1 {
+        status = "okay";
+};
+
 &flash0 {
         /*
          * For more information, see:
