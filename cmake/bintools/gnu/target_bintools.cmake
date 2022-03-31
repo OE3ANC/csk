@@ -111,7 +111,7 @@ set_property(TARGET bintools PROPERTY readelf_command ${CMAKE_READELF})
 
 set_property(TARGET bintools PROPERTY readelf_flag "")
 set_property(TARGET bintools PROPERTY readelf_flag_final "")
-set_property(TARGET bintools PROPERTY readelf_flag_headers -e)
+set_property(TARGET bintools PROPERTY readelf_flag_headers -a)
 
 set_property(TARGET bintools PROPERTY readelf_flag_infile "")
 set_property(TARGET bintools PROPERTY readelf_flag_outfile ">;" )
