@@ -43,7 +43,7 @@ static void wifi_event_handler(csk_wifi_event_t events, void *arg)
     }
 }
 
-void network_domain(void){
+void network_domain_task(void){
     wifi_event_cb.handler = &wifi_event_handler;
     wifi_event_cb.events = CSK_WIFI_EVT_STA_CONNECTED | CSK_WIFI_EVT_STA_DISCONNECTED;
     wifi_event_cb.arg = NULL;
@@ -80,4 +80,20 @@ void network_domain(void){
         return;
     }
     net_dhcpv4_start(iface);
+
+	while (1) {
+		k_sleep(K_MSEC(1000));
+	}
+}
+
+
+struct k_thread network_thread;
+
+K_KERNEL_STACK_DEFINE(network_stack, 512);
+
+void network_domain(void){
+	k_thread_create(&network_thread, network_stack,
+				K_KERNEL_STACK_SIZEOF(network_stack), &network_domain_task, NULL, NULL, NULL,
+				2, 0, K_NO_WAIT);
+	k_thread_system_pool_assign(&network_thread);
 }
