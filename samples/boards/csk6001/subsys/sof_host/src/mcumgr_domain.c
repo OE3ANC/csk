@@ -22,8 +22,6 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(smp_sample);
 
-#include "common.h"
-
 /* Define an example stats group; approximates seconds since boot. */
 STATS_SECT_START(smp_svr_stats)
 STATS_SECT_ENTRY(ticks)
@@ -68,6 +66,7 @@ void mcumgr_domain_task(void *arg1, void *arg2, void *arg3)
 	start_smp_bluetooth();
 #endif
 #ifdef CONFIG_MCUMGR_SMP_UDP
+#include "common.h"
 	start_smp_udp();
 #endif
 	/* using __TIME__ ensure that a new binary will be built on every
