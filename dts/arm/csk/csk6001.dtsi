@@ -254,6 +254,24 @@
 			status = "disabled";
 			label = "RTC_1";
 		};
+
+		adc0: adc0@45b00000 {
+			compatible = "listenai,csk-adc";
+			reg = <0x45b00000 0x100000>;
+			interrupts = <19 0>;
+			status = "disabled";
+			label = "ADC";
+			#io-channel-cells = <1>;
+		};
+
+		keysense: keysense@46900000{
+			compatible = "listenai,csk-keysense";
+			reg = <0x46900000 0x100000>;
+			interrupts = <23 0>;
+			status = "disabled";
+			label = "KEYSENSE";
+		};
+
 	};
 };
 
