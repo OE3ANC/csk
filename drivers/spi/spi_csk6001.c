@@ -2,9 +2,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-
 #define DT_DRV_COMPAT listenai_csk_spi
 
 #include <assert.h>
@@ -29,6 +26,18 @@ struct csk_spi_data {
 	size_t current_transfer_len;
 	spi_driver_ctx_t driver_context;
 };
+
+static bool csk_is_slave(const struct device *dev)
+{
+	struct csk_spi_data *data = dev->data;
+	struct spi_context *ctx = &data->ctx;
+
+	if(ctx->config->operation & SPI_OP_MODE_SLAVE){
+		return true;
+	}else{
+		return false;
+	}
+}
 
 static int csk_spi_configure(const struct device *dev, const struct spi_config *spi_cfg)
 {
@@ -97,10 +106,10 @@ static void csk_spi_hal_transceive(const struct device *dev)
 	}
 
 	/* Resize the transaction item num since spi driver limitation */
-	uint32_t real_trans_size = (chunk_len > MAX_TRANCNT) ? MAX_TRANCNT : chunk_len;
+	// uint32_t real_trans_size = (chunk_len > MAX_TRANCNT) ? MAX_TRANCNT : chunk_len;
+	uint32_t real_trans_size = chunk_len;
     uint32_t key = irq_lock();
     data->current_transfer_len = real_trans_size;
-
 	if (ctx->tx_buf != NULL && ctx->rx_buf != NULL) {
 		SPI_Transfer(data->driver_context, ctx->tx_buf, ctx->rx_buf, real_trans_size);
 	} else if (ctx->tx_buf != NULL) {
@@ -167,11 +176,17 @@ static void csk_spi_isr_callback(uint32_t event, uint32_t usr_param)
 {
 	const struct device *dev = (const struct device *)usr_param;
 	struct csk_spi_data *data = dev->data;
+
 	if (event & CSK_SPI_EVENT_TRANSFER_COMPLETE) {
 		spi_context_update_tx(&data->ctx, 1, data->current_transfer_len);
 		spi_context_update_rx(&data->ctx, 1, data->current_transfer_len);
 		csk_spi_hal_transceive(dev);
+	}else if (event & CSK_SPI_EVENT_DMA_COMPLETE){
+		spi_context_update_tx(&data->ctx, 1, data->current_transfer_len);
+		spi_context_update_rx(&data->ctx, 1, data->current_transfer_len);
+		csk_spi_hal_transceive(dev);		
 	}
+	
     /* TODO: add transfer error processing */
 }
 
@@ -199,7 +214,7 @@ do {                     \
     const char *cs_gpio_label = DT_LABEL(DT_GPIO_CTLR_BY_IDX(DT_NODELABEL(spi##n), cs_gpios, 0)); \
     const int cs_gpio_label_len = strlen(cs_gpio_label);                                        \
     int cs_pad_num = (cs_gpio_label[cs_gpio_label_len - 1] == 'A')? 0 :                         \
-                        (cs_gpio_label[cs_gpio_label_len - 1] == 'B')? 1 : -1;                  \
+					(cs_gpio_label[cs_gpio_label_len - 1] == 'B')? 1 : -1;                  \
     assert(cs_pad_num != -1);  \
 	ARG_UNUSED(cs_pad_num);	\
     IOMuxManager_PinConfigure(sclk_pad_num, DT_PHA_BY_IDX(DT_NODELABEL(spi##n), cs_gpios, 0, pin), func);\
@@ -252,8 +267,8 @@ do {                     \
 		struct csk_spi_data *data = dev->data;		         \
 		data->driver_context = SPI##n();		             \
 		/* Fixme: rework the SPI_Initialize(), let the user parameter become void* type */  \
-        SPI_Initialize(data->driver_context, csk_spi_isr_callback, (uint32_t)dev);                      \
-		SPI_PowerControl(data->driver_context, CSK_POWER_FULL);                                         \
+        SPI_Initialize(data->driver_context, csk_spi_isr_callback, (uint32_t)dev);                    \
+		SPI_PowerControl(data->driver_context, CSK_POWER_FULL);                                        \
 		IRQ_CONNECT(DT_IRQN(DT_NODELABEL(spi##n)), DT_IRQ(DT_NODELABEL(spi##n), priority),	            \
 			        csk_zephyr_spi_isr, DEVICE_DT_GET(DT_NODELABEL(spi##n)), 0);       \
 		irq_enable(DT_IRQN(DT_NODELABEL(spi##n)));  \
@@ -281,5 +296,3 @@ SPI_CSK_SPI_INIT(0);
 #define SPI1_CONFIG_PINS(n)  SPI_CONFIG_PINS(n, CSK_IOMUX_FUNC_ALTER7)
 SPI_CSK_SPI_INIT(1);
 #endif
-
-#pragma GCC pop_options

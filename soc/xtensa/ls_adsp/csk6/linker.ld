@@ -157,7 +157,7 @@ PHDRS
 ENTRY(CONFIG_KERNEL_ENTRY)
 
 PROVIDE(_memmap_reset_vector = 0x60000000);
-PROVIDE(_memmap_vecbase_reset = XCHAL_VECBASE_RESET_PADDR_IRAM);
+PROVIDE(_memmap_vecbase_reset = 0x60000400);
 
 _heap_sentry = 0x64000000;
 

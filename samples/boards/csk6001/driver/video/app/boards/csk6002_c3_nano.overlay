@@ -1,0 +1,66 @@
+/{
+    pwmleds {
+		compatible = "pwm-leds";
+		green_pwm_led: green_pwm_led {
+			pwms = <&pwm6 6 PWM_POLARITY_NORMAL>;
+			label = "User BOARD_LED_2 - PWM0";
+		};
+	};
+};
+
+&gpt0 {
+	status = "okay";
+
+    pwm5: pwm5 {
+        status = "disabled";
+    };
+
+	pwm6: pwm6 {
+        pinmuxs = <&pinmuxa 6 11>;
+        clock-prescaler = <1>;
+        status = "okay";
+    };
+};
+
+&spi0 {
+    status = "okay";
+    spi-max-frequency = <25000000>;
+};
+
+&spi1 {
+    status = "disabled";
+};
+
+&i2c0 {
+        status = "okay";
+        pinmuxs = <&pinmuxa 4 8>, <&pinmuxa 5 8>;
+        pinmux-names = "SCL", "SDA";
+
+        bf30a2: bf30a2@6e {
+            compatible = "byd,bf30a2";
+            status = "okay";
+            label = "VIDEO";
+            reg = <0x6e>;
+            pd-gpios = <&gpioa 1 0>;
+            pwr-gpios = <&gpioa 7 0>;
+            product-id = <0x3b02>;
+            spi = <&spi0>;
+            xclk-pwm = <&pwm6>;
+            xclk-freq = <12500>;
+            csk6-spec;
+    };
+};
+
+&i2c1 {
+    status = "disabled";
+};
+
+&uart0 {
+    current-speed = <115200>;
+};
+
+&uart1 {
+    status = "disabled";
+    current-speed = <115200>;
+	pinmuxs = < &pinmuxa 8 3>, < &pinmuxa 9 3>;
+};

@@ -38,9 +38,9 @@ properties:
       type: phandle
       required: true
       description: xclk-pwm
-    xclk_freq:
+    xclk-freq:
       type: int
       required: true
-      description: xclk_freq
+      description: xclk-freq
 
 include: i2c-device.yaml
