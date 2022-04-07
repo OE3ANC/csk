@@ -1,8 +1,8 @@
 &spi1 {
-        miso-gpios = <&gpioa 18 7>;
-        mosi-gpios = <&gpioa 19 7>;
-        sclk-gpios = <&gpioa 20 7>;
-        cs-gpios   = <&gpioa 17 7>;
+        miso-gpios = <&gpioa 6 0>;
+        mosi-gpios = <&gpioa 7 7>;
+        sclk-gpios = <&gpioa 8 7>;
+        cs-gpios   = <&gpioa 9 7>;
 
         status = "okay";
         spi-max-frequency = <25000000>;

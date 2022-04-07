@@ -52,8 +52,7 @@ static inline uint32_t get_clock_source(uint8_t clock_source)
 
 static inline uint32_t get_mode(uint8_t mode)
 {
-
-	return (mode - 1) << CSK_GPT_PWM_CLKSRC_Pos;
+	return (mode - 1) << CSK_GPT_PWM_OUTMODE_Pos;
 }
 
 static uint32_t get_clock_prescaler(uint8_t clock_prescaler)
@@ -85,7 +84,6 @@ static int pwm_csk_pin_set(const struct device *dev, uint32_t pwm,
 {	
 	uint8_t duty_cycle;
 	int32_t freq;
-	uint32_t period;
 	uint64_t cycles_per_sec;
 	int ret;
 	const struct pwm_csk_config *cfg = dev->config;
@@ -102,9 +100,10 @@ static int pwm_csk_pin_set(const struct device *dev, uint32_t pwm,
 	duty_cycle = 100.0 * pulse_cycles / period_cycles;
 	/* period_cycles to period */
 	pwm_csk_get_cycles_per_sec(dev, pwm, &cycles_per_sec);
-	period = (period_cycles * 1.0 / cycles_per_sec) * USEC_PER_SEC;
 	/* period to freq */
-	freq = 1.0 / (period / 1000.0 / 1000.0); 
+	freq = cycles_per_sec / period_cycles;
+
+	// LOG_ERR("ch: %d, p:%lu, pu:%lu, du: %d, C: %llu, freq: %d", pwm, period_cycles, pulse_cycles, duty_cycle, cycles_per_sec, freq);
 	HAL_GPT_PWMControl(GPT0_PWM(), CSK_GPT_PWM_MODE | get_clock_prescaler(cfg->clock_prescaler) << CSK_GPT_PWM_CLKDIV_Pos | 
 		get_clock_source(cfg->clock_source) | get_polarity(flags) | get_mode(cfg->mode) | 
 		CSK_GPT_PWM_OPERATION_MODE_PWM, pwm);
@@ -112,6 +111,7 @@ static int pwm_csk_pin_set(const struct device *dev, uint32_t pwm,
 	if (ret != CSK_DRIVER_OK){
 		return -EIO;
 	}
+
 	ret = HAL_GPT_EnablePWM(GPT0_PWM(), pwm);
 	if (ret != CSK_DRIVER_OK){
 		return -EIO;

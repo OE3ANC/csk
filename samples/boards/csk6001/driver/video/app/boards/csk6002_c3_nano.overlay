@@ -2,7 +2,7 @@
     pwmleds {
 		compatible = "pwm-leds";
 		green_pwm_led: green_pwm_led {
-			pwms = <&pwm6 6 PWM_POLARITY_NORMAL>;
+			pwms = <&pwm4 4 PWM_POLARITY_NORMAL>;
 			label = "User BOARD_LED_2 - PWM0";
 		};
 	};
@@ -15,8 +15,8 @@
         status = "disabled";
     };
 
-	pwm6: pwm6 {
-        pinmuxs = <&pinmuxa 6 11>;
+	pwm4: pwm4 {
+        pinmuxs = <&pinmuxa 4 11>;
         clock-prescaler = <1>;
         status = "okay";
     };
@@ -33,7 +33,7 @@
 
 &i2c0 {
         status = "okay";
-        pinmuxs = <&pinmuxa 4 8>, <&pinmuxa 5 8>;
+        pinmuxs = <&pinmuxb 0 8>, <&pinmuxb 1 8>;
         pinmux-names = "SCL", "SDA";
 
         bf30a2: bf30a2@6e {
@@ -42,10 +42,10 @@
             label = "VIDEO";
             reg = <0x6e>;
             pd-gpios = <&gpioa 1 0>;
-            pwr-gpios = <&gpioa 7 0>;
+            pwr-gpios = <&gpioa 5 0>;
             product-id = <0x3b02>;
             spi = <&spi0>;
-            xclk-pwm = <&pwm6>;
+            xclk-pwm = <&pwm4>;
             xclk-freq = <12500>;
             csk6-spec;
     };
