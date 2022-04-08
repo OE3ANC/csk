@@ -7,10 +7,7 @@
 #include <zephyr.h>
 #include <avf_platform.h>
 
-
-
 void sof_domain(void){
-
     avf_stream_platform_register();
 }
 
