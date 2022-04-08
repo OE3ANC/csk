@@ -81,31 +81,24 @@ void main(void)
 
 	ipm_register_callback(ipm, ipm_callback, NULL);
 	ipm_set_enabled(ipm, 1);
-
-	printk("video steam will be start after 2s.\n");
-	k_sleep(K_MSEC(2000));
+	int x = 0;
+	ipm_send(ipm, 1, 0, &x, sizeof(x));
 	/* Start video capture */
 	if (video_stream_start(video)) {
 		printk("Unable to start video.\n");
 		return;
 	}
-	
 	printk("start video steam.\n");
-	int x = 0;
-	ipm_send(ipm, 1, 0, &x, sizeof(x));
-	dump(uart2, "dump test\n", strlen("dump test\n"));
 
-	int i = 0;
-
+	uint32_t last_tick = 0;
 	while(1) 
 	{
-		/* will block here */
 		ret = video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_FOREVER);
-		if (ret)
-		{
-			printk("Unable to dequeue video buf");
-			return;
+		if (ret == 0) {
+			if (vbuf->timestamp - last_tick > 0) {
+				printk("FPS:%d.\n", 1000 / (vbuf->timestamp - last_tick));
+			}
+			last_tick = vbuf->timestamp;
 		}
-		printk("recv a frame. frame size:%d, time:%d\n", vbuf->bytesused, vbuf->timestamp);
 	}
 }

@@ -438,7 +438,7 @@ static int bf30a2_driv_stream_start(const struct device *dev)
 #if !DT_PROP(DT_DRV_INST(0), csk6_spec) || DT_INST_ON_BUS(0, spi)
 	struct bf30a2_dev_data *data = (struct bf30a2_dev_data *)dev->data;
 	/* TODO:test code only */
-	k_work_schedule(&data->dwork, K_MSEC(16));
+	// k_work_schedule(&data->dwork, K_MSEC(16));
 #endif
 	
 	return 0;
@@ -454,7 +454,7 @@ static int bf30a2_driv_stream_stop(const struct device *dev)
 #if !DT_PROP(DT_DRV_INST(0), csk6_spec) || DT_INST_ON_BUS(0, spi)
 	struct bf30a2_dev_data *data = (struct bf30a2_dev_data *)dev->data;
 
-	k_work_cancel_delayable(&data->dwork);
+	// k_work_cancel_delayable(&data->dwork);
 
 #endif
 	return 0;
@@ -517,59 +517,95 @@ static int bf30a2_decode(char *in, char *out, uint32_t l, uint16_t h, uint16_t w
 	uint32_t offset = 0;
 	uint32_t len = 0;
 
-	/* TODO: add comment here. */
-
-	/* end packet */
-	if (bf30a2_frame_check(in + offset, l - offset, BF30A2_PACKET_TYPE_FRAME_END) != 0) {
-		//  printk("Decode error: end packet, h=%d. offset=0x%x\n", i, offset);
-		 return -1;
-	}
-	offset += BF30A2_FRAME_END_PACKET_LEN;
-
-	 /* start frame */
-	 if (bf30a2_frame_check(in + offset, l, BF30A2_PACKET_TYPE_FRAME_START) != 0) {
+	if (bf30a2_frame_check(in + offset, l, BF30A2_PACKET_TYPE_FRAME_START) != 0) {
 	 	// printk("Decode error: start packet, h=%d.\n", i);
 	 	return -1;
-	 }
+	}
 
 	offset += BF30A2_FRAME_START_PACKET_LEN;
+
 	for (i = 0; i < h; i++) {
 		/* line start packet */
 		if (bf30a2_frame_check(in + offset, l - offset, BF30A2_PACKET_TYPE_LINE_START) != 0) {
-			// printk("Decode error: line start packet, h=%d. offset=0x%x\n", i, offset);
-			return -1;
+			//  printk("Decode error: line start packet, h=%d. offset=0x%x\n", i, offset);
+			int j = 1;
+
+			while (j < 128) {
+				if (bf30a2_frame_check(in + offset - j, l - offset, BF30A2_PACKET_TYPE_LINE_START) == 0) {
+					offset -= j;
+					break;
+				}
+				j++;
+			}
+
+			if (j >= 128) {
+				return -1;
+			}
 		}
 		
 		offset += BF30A2_LINE_START_PACKET_LEN;
+
 		/* data packet */
 		if (bf30a2_frame_check(in + offset, l - offset, BF30A2_PACKET_TYPE_FRAME_DATA) != 0) {
-			// printk("Decode error: data packet, h=%d. offset=0x%x\n", i, offset);
+			 printk("Decode error: data packet, h=%d. offset=0x%x\n", i, offset);
 			return -1;
 		} else {
 			/* TODO: Is need to check data size for the data packet? */
 		}
-
-		// uint32_t t = i == 29 ? w - 2 : w;
-		
+		uint32_t _copy_size = w;
 		/* copy raw data to out buffer. */
 		char *dst = out + i * w;
 		char *src = in + offset + BF30A2_DATA_PACKET_HEADA_LEN;
-		uint32_t _size = w;
+		uint32_t _size = _copy_size;
 		while(_size--) {
 			*dst++ = *src++;
 		}
-		offset += BF30A2_DATA_PACKET_HEADA_LEN + w;
+		offset += BF30A2_DATA_PACKET_HEADA_LEN + _copy_size;
 		len += w;
 	}
 
 	return len;
 }
 
-static uint8_t  __attribute__((aligned(32))) test[25219 * 5] = {0};
+static int bf30a2_decode_x(char *in, char *out, uint32_t l, uint16_t h, uint16_t w)
+{
+	for (int i = 0; i < l; i++) {
+		if ((l - i) < 25219) {
+			break;
+		}
+
+		if (bf30a2_frame_check(in + i, l - i, BF30A2_PACKET_TYPE_FRAME_START) == 0) {
+			int r = bf30a2_decode(in + i, out,  l - i, h, w);
+			if ( r >  0) {
+				return r;
+			}
+		}
+	}
+
+	return -1;
+}
 
 #if !DT_PROP(DT_DRV_INST(0), csk6_spec) || DT_INST_ON_BUS(0, spi)
 
+static uint8_t test[25219 * 2] = {0};
+
 static void bf30a2_work(struct k_work *work)
+{
+	struct k_work_delayable *dwork;
+	struct bf30a2_dev_data *data;
+	dwork = k_work_delayable_from_work(work);
+	data = CONTAINER_OF(dwork, struct bf30a2_dev_data, dwork);
+	int r;
+	struct video_buffer *buf = k_fifo_get(&data->fifo, K_FOREVER);
+	if (buf != NULL) {
+		r = bf30a2_decode(buf->buffer, test, buf->bytesused, 180, 128);
+		if (r > 0) {
+			printk("bf30a2 frame decode ok.\n");
+		}
+	}
+}
+
+static void bf30a2_thread(void *p1, void *p2, void *p3)
 {
 	int r = 0;
 	struct k_work_delayable *dwork;
@@ -579,72 +615,50 @@ static void bf30a2_work(struct k_work *work)
 	struct video_buffer *vbuf;
 	struct video_buffer *vbuf_out;
 	static uint8_t isFirst = 1;
+	static int index = 0;
 
-	dwork = k_work_delayable_from_work(work);
-	data = CONTAINER_OF(dwork, struct bf30a2_dev_data, dwork);
-	
-	vbuf = data->vbuf[0];
-	vbuf_out = data->vbuf[1];
+	data = (struct bf30a2_dev_data *)p1;
 
-	spi_buf.buf = test;
-	spi_buf.len = isFirst  == 1 ? BF30A2_FRAME_SIZE - BF30A2_FRAME_END_PACKET_LEN - 5 : BF30A2_FRAME_SIZE;
-	rx_buf.buffers = &spi_buf;
-	rx_buf.count = 1;
-	r = spi_transceive_dt(&data->chip_data.spi_bus, NULL, &rx_buf);
+	while(1) {
+		// vbuf = data->vbuf[index];
+		// spi_buf.buf = vbuf->buffer;
+		// if (isFirst == 1) {
+		// 	spi_buf.len = BF30A2_FRAME_SIZE - BF30A2_FRAME_END_PACKET_LEN - 5;
+		// } else if (isFirst == 2) {
+		// 	spi_buf.len = BF30A2_FRAME_SIZE - BF30A2_FRAME_END_PACKET_LEN;
+		// } else {
+		// 	spi_buf.len = BF30A2_FRAME_SIZE - BF30A2_FRAME_END_PACKET_LEN;
+		// }
+		// rx_buf.buffers = &spi_buf;
+		// rx_buf.count = 1;
+		// r = spi_transceive_dt(&data->chip_data.spi_bus, NULL, &rx_buf);
+		// index++;
+		// index = index % 2;
 
-	if (isFirst != 1 && r == spi_buf.len) {
-		r = bf30a2_decode(test, vbuf_out->buffer, r, 180, 128);
-		if (r > 0) {
-			vbuf_out->bytesused = r;
-			vbuf_out->timestamp = k_uptime_get_32();
-			k_fifo_put(&data->fifo, vbuf_out);
-		} else {
-			// printk("bf30a2 frame decode error.\n");
+		// if (isFirst != 1 && r == spi_buf.len) {
+		// 	vbuf->bytesused = r;
+		// 	k_fifo_put(&data->fifo, vbuf);
+		// 	k_work_reschedule(&data->dwork, K_NO_WAIT);
+		// }
+		// isFirst++;
+
+		spi_buf.buf = test;
+		spi_buf.len = sizeof(test);
+		
+		rx_buf.buffers = &spi_buf;
+		rx_buf.count = 1;
+		vbuf = data->vbuf[0];
+		r = spi_transceive_dt(&data->chip_data.spi_bus, NULL, &rx_buf);
+		if (r == spi_buf.len) {
+			r = bf30a2_decode_x(test, vbuf->buffer, r, 180, 128);
+			if (r > 0) {
+				vbuf->bytesused = r;
+				vbuf->timestamp = k_uptime_get_32();
+				k_fifo_put(&data->fifo, vbuf);
+			}
 		}
 	}
-	isFirst++;
-	k_work_reschedule(&data->dwork, K_NO_WAIT);
 }
-
-
-// static void bf30a2_thread(void *p1, void *p2, void *p3)
-// {
-// 	int r = 0;
-// 	struct k_work_delayable *dwork;
-// 	struct bf30a2_dev_data *data;
-// 	struct spi_buf spi_buf;
-// 	struct spi_buf_set rx_buf;
-// 	struct video_buffer *vbuf;
-// 	struct video_buffer *vbuf_out;
-// 	static uint8_t isFirst = 1;
-
-// 	// dwork = k_work_delayable_from_work(work);
-// 	// data = CONTAINER_OF(dwork, struct bf30a2_dev_data, dwork);
-
-// 	data = (struct bf30a2_dev_data *)p1;
-// 	while(1) {
-// 		vbuf = data->vbuf[0];
-// 		vbuf_out = data->vbuf[1];
-
-// 		spi_buf.buf = test;
-// 		spi_buf.len = isFirst ? BF30A2_FRAME_SIZE - BF30A2_FRAME_END_PACKET_LEN - 5 : BF30A2_FRAME_SIZE;
-// 		rx_buf.buffers = &spi_buf;
-// 		rx_buf.count = 1;
-// 		r = spi_transceive_dt(&data->chip_data.spi_bus, NULL, &rx_buf);
-
-// 		if (!isFirst && r == spi_buf.len) {
-// 			r = bf30a2_decode(test, vbuf_out->buffer, r, 180, 128);
-// 			if (r > 0) {
-// 				vbuf->bytesused = r;
-// 				vbuf->timestamp = k_uptime_get_32();
-// 				k_fifo_put(&data->fifo, vbuf);
-// 			} else {
-// 				// printk("bf30a2 frame decode error.\n");
-// 			}
-// 		}
-// 		isFirst = 0;
-// 	}
-// }
 #endif
 
 static const struct video_driver_api bf30a2_driv_api = { 
@@ -759,7 +773,7 @@ static struct bf30a2_dev_data bf30a2_dev_data = {
 DEVICE_DT_INST_DEFINE(0, &bf30a2_dev_init, NULL, &bf30a2_dev_data, NULL, POST_KERNEL,
 		      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &bf30a2_driv_api);
 
-// K_THREAD_DEFINE(bf30a2_thread_id, 2048,                                \
-// 			bf30a2_thread, &bf30a2_dev_data, NULL, NULL,               \
-// 			1, 0, 0);
+K_THREAD_DEFINE(bf30a2_thread_id, 2048,                                \
+			bf30a2_thread, &bf30a2_dev_data, NULL, NULL,               \
+			K_HIGHEST_THREAD_PRIO, 0, 0);
 #endif
