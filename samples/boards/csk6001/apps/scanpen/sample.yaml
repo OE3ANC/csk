@@ -1,0 +1,8 @@
+sample:
+  name: scanpen sample
+tests:
+  sample.board.csk6001.apps.lisa_porting:
+    platform_allow: csk6012_9s_scanpen
+    tags: csk6001
+
+  

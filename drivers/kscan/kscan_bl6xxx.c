@@ -71,7 +71,9 @@ typedef struct bl6xxx_dev_data {
 static int32_t bl6xxx_chip_sleep(const struct device *i2c_dev)
 {
     int32_t ret;
-    uint8_t tx_data[] = {BL6XXX_SLEEP_REG, BL6XXX_SLEEP_VAL};
+    // uint8_t tx_data[] = {BL6XXX_SLEEP_REG, BL6XXX_SLEEP_VAL};
+    uint8_t tx_data[] = {0x12, 0x13};
+
 
     ret = i2c_write(i2c_dev, tx_data, sizeof(tx_data), BL6133_CHIP_ADDR);
     if (ret < 0) {

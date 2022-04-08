@@ -17,6 +17,7 @@
 #include <drivers/gpio.h>
 #include <sys/byteorder.h>
 #include <drivers/display.h>
+#include "IOMuxManager.h"
 
 #define LOG_LEVEL CONFIG_DISPLAY_LOG_LEVEL
 #include <logging/log.h>
@@ -371,6 +372,10 @@ static int st7789v_init(const struct device *dev)
 		return -EIO;
 	}
 #endif
+	// gpioa 14 pinmux
+	IOMuxManager_PinConfigure(CSK_IOMUX_PAD_A, 14, 1);
+	
+
 
 	data->cmd_data_gpio = device_get_binding(
 			DT_INST_GPIO_LABEL(0, cmd_data_gpios));
