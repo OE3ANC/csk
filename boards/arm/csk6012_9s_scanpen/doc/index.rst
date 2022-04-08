@@ -1,9 +1,9 @@
-.. _csk6_scanpen:
+.. _csk6012_9s_scanpen:
 
 
 TODO
 
-LISTENAI csk6_scanpen
+LISTENAI csk6012_9s_scanpen
 #####################
 
 Overview
