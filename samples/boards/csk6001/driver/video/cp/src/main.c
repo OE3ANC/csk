@@ -54,8 +54,6 @@ static void ipm_callback(const struct device *dev, void *context,
 	(BF30A2_FRAME_START_PACKET_LEN + BF30A2_DATA_PACKET_LEN * BF30A2_FRAME_HEIGHT +  \
 			 BF30A2_LINE_START_PACKET_LEN + BF30A2_FRAME_END_PACKET_LEN)
 
-static uint8_t images[3][BF30A2_FRAME_SIZE] = {0};
-
 void main(void)
 {
 	struct video_buffer *vbuf;
@@ -108,22 +106,6 @@ void main(void)
 			printk("Unable to dequeue video buf");
 			return;
 		}
-
-		if (vbuf->bytesused == BF30A2_FRAME_SIZE) {
-			memcpy(&images[i][0], vbuf->buffer, vbuf->bytesused);
-			i++;
-			printk("recv a frame.\n");
-		}
-
-		if (i >= 3) {
-			break;
-		}
-	}
-
-	printk("dump all data after 1s.\n");
-
-	k_sleep(K_MSEC(2000));
-	for (i = 0; i < 3; i++) {
-		dump(uart2, &images[i][0], BF30A2_FRAME_SIZE);
+		printk("recv a frame. frame size:%d, time:%d\n", vbuf->bytesused, vbuf->timestamp);
 	}
 }

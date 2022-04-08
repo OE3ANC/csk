@@ -1,7 +1,7 @@
 &spi1 {
-        miso-gpios = <&gpioa 6 0>;
+        miso-gpios = <&gpioa 6 7>;
         mosi-gpios = <&gpioa 7 7>;
-        sclk-gpios = <&gpioa 8 7>;
+        sclk-gpios = <&gpioa 8 7>; 
         cs-gpios   = <&gpioa 9 7>;
 
         status = "okay";
