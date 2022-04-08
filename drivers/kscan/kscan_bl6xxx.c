@@ -20,7 +20,7 @@ LOG_MODULE_REGISTER(bl6xxx, CONFIG_KSCAN_LOG_LEVEL);
 #define BL6XXX_ID_REG_4     0xE8
 #define BL6XXX_POINT_REG    0x01
 #define BL6XXX_SLEEP_REG    0xA5
-#define BL6XXX_SLEEP_VAL    0x03
+#define BL6XXX_SLEEP_VAL    0x01
 #define BL6XXX_SELF_UID_REG 0x16
 #define BL6XXX_GP_UID_VAL   0x57FACE
 #define BL6XXX_GP_UID_DATA_SIZE 3
@@ -71,8 +71,7 @@ typedef struct bl6xxx_dev_data {
 static int32_t bl6xxx_chip_sleep(const struct device *i2c_dev)
 {
     int32_t ret;
-    // uint8_t tx_data[] = {BL6XXX_SLEEP_REG, BL6XXX_SLEEP_VAL};
-    uint8_t tx_data[] = {0x12, 0x13};
+    uint8_t tx_data[] = {BL6XXX_SLEEP_REG, BL6XXX_SLEEP_VAL};
 
 
     ret = i2c_write(i2c_dev, tx_data, sizeof(tx_data), BL6133_CHIP_ADDR);
