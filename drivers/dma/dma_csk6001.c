@@ -12,6 +12,12 @@
 
 #include "hal/dma.h"
 
+#ifdef CONFIG_SOC_LS_ADSP_CSK6
+#define DMA_CSK6001_RAM_FUNC 
+#else
+#define DMA_CSK6001_RAM_FUNC __attribute__ ((section (".itcm"))) 
+#endif /* end of CONFIG_SOC_LS_ADSP_CSK6 */
+
 LOG_MODULE_REGISTER(dma_csk6001, CONFIG_DMA_LOG_LEVEL);
 
 static void
@@ -183,6 +189,7 @@ static const struct dma_driver_api csk_dma_driver_api = {
     .get_status = csk_dma_get_status,
 };
 
+DMA_CSK6001_RAM_FUNC
  static void
 csk_dma_event_callback(uint32_t event_ctx, uint32_t xfer_bytes, uint32_t arg)
 {
@@ -199,6 +206,7 @@ csk_dma_event_callback(uint32_t event_ctx, uint32_t xfer_bytes, uint32_t arg)
     ch_info->cb_info.callback(dev, ch_info->cb_info.user_data, channel, ret);
 }
 
+DMA_CSK6001_RAM_FUNC
  static void
 csk_dma_irq_handler(const struct device *dev)
 {

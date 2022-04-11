@@ -103,7 +103,6 @@ static int pwm_csk_pin_set(const struct device *dev, uint32_t pwm,
 	/* period to freq */
 	freq = cycles_per_sec / period_cycles;
 
-	// LOG_ERR("ch: %d, p:%lu, pu:%lu, du: %d, C: %llu, freq: %d", pwm, period_cycles, pulse_cycles, duty_cycle, cycles_per_sec, freq);
 	HAL_GPT_PWMControl(GPT0_PWM(), CSK_GPT_PWM_MODE | get_clock_prescaler(cfg->clock_prescaler) << CSK_GPT_PWM_CLKDIV_Pos | 
 		get_clock_source(cfg->clock_source) | get_polarity(flags) | get_mode(cfg->mode) | 
 		CSK_GPT_PWM_OPERATION_MODE_PWM, pwm);

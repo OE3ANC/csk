@@ -1,6 +1,10 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  */
+#ifdef CONFIG_SOC_CSK6001
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+#endif
 
 #define DT_DRV_COMPAT listenai_csk_spi
 
@@ -26,18 +30,6 @@ struct csk_spi_data {
 	size_t current_transfer_len;
 	spi_driver_ctx_t driver_context;
 };
-
-static bool csk_is_slave(const struct device *dev)
-{
-	struct csk_spi_data *data = dev->data;
-	struct spi_context *ctx = &data->ctx;
-
-	if(ctx->config->operation & SPI_OP_MODE_SLAVE){
-		return true;
-	}else{
-		return false;
-	}
-}
 
 static int csk_spi_configure(const struct device *dev, const struct spi_config *spi_cfg)
 {
@@ -181,12 +173,15 @@ static void csk_spi_isr_callback(uint32_t event, uint32_t usr_param)
 		spi_context_update_tx(&data->ctx, 1, data->current_transfer_len);
 		spi_context_update_rx(&data->ctx, 1, data->current_transfer_len);
 		csk_spi_hal_transceive(dev);
-	}else if (event & CSK_SPI_EVENT_DMA_COMPLETE){
+	}
+#ifdef CONFIG_SOC_LS_ADSP_CSK6
+    else if (event & CSK_SPI_EVENT_DMA_COMPLETE){
 		spi_context_update_tx(&data->ctx, 1, data->current_transfer_len);
 		spi_context_update_rx(&data->ctx, 1, data->current_transfer_len);
 		csk_spi_hal_transceive(dev);		
 	}
-	
+#endif /* end of CONFIG_SOC_LS_ADSP_CSK6 */
+
     /* TODO: add transfer error processing */
 }
 
@@ -295,4 +290,8 @@ SPI_CSK_SPI_INIT(0);
 #endif
 #define SPI1_CONFIG_PINS(n)  SPI_CONFIG_PINS(n, CSK_IOMUX_FUNC_ALTER7)
 SPI_CSK_SPI_INIT(1);
+#endif
+
+#ifdef CONFIG_SOC_CSK6001
+#pragma GCC pop_options
 #endif
