@@ -71,9 +71,12 @@
 	};
 };
 
-
 &gpt0 {
 	status = "okay";
+    pwm5: pwm5 {
+        status = "disabled";
+    };
+
 	pwm4: pwm4 {
         pinmuxs = <&pinmuxa 4 11>;
         clock-prescaler = <1>;
