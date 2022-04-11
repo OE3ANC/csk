@@ -33,6 +33,13 @@
 		};
 	};
 
+    camera_pclk {
+		camera_pclk: camera_pclk {
+			pwms = <&pwm4 4 PWM_POLARITY_NORMAL>;
+			label = "PWM TO CAMERA PCLK";
+		};
+	};
+
 };
 
  
