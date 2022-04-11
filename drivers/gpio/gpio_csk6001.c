@@ -11,6 +11,7 @@
 
 #include "hal/gpio.h"
 #include "hal/Driver_GPIO.h"
+#include <hal/IOMuxManager.h>
 
 typedef void *gpio_driver_ctx_t;
 
@@ -53,10 +54,41 @@ static void csk_gpio_isr(const struct device *dev)
 	gpio_fire_callbacks(&data->callbacks, dev, int_status);
 }
 
+static int csk_gpio_a_pinmux_set(gpio_pin_t pin)
+{
+    uint32_t pin_func = CSK_IOMUX_FUNC_DEFAULT;
+
+    if((pin <=2) || ((pin >= 10) && (pin <= 14)))
+    {
+        pin_func = CSK_IOMUX_FUNC_ALTER1;
+    }
+
+    IOMuxManager_PinConfigure(CSK_IOMUX_PAD_A, pin, pin_func);
+
+    return 0;
+}
+
+static int csk_gpio_pinmux_set(const struct device *dev, gpio_pin_t pin)
+{
+    const struct csk_gpio_config *config = dev->config;
+
+    if (config->driver_num == 0) {
+        csk_gpio_a_pinmux_set(pin);
+    } else if (config->driver_num == 1) {
+        IOMuxManager_PinConfigure(CSK_IOMUX_PAD_B, pin, CSK_IOMUX_FUNC_DEFAULT);
+    } else {
+        return -EINVAL;
+    }
+
+    return 0;
+}
+
 static int csk_gpio_configure(const struct device *dev, gpio_pin_t pin, gpio_flags_t flags)
 {
     const struct csk_gpio_config *config = dev->config;
     gpio_driver_ctx_t driver_context = csk_gpio_get_driver_ctx(config->driver_num);
+
+    csk_gpio_pinmux_set(dev, pin);
 
     if (flags & GPIO_OUTPUT) {
         GPIO_SetDir(driver_context, 1UL << pin, CSK_GPIO_DIR_OUTPUT);
