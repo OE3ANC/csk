@@ -20,29 +20,29 @@
 
 LOG_MODULE_REGISTER(main, 4);
 
-#define CP_BOOT_ADDRESS 		 0x60000000
-#define SYSCTRL_RESET_CP    	(0xCAFE000B)
-#define SYSCTRL_RELEASE_CP  	(0xCAFE100B)
-#define SYSCTRL_RESET_NPU   	(0xCAFE000C)
-#define CP_PSRAM_BASE           (0x68400000)
-#define AP_PSRAM_BASE           (0x30000000)
+#define CP_BOOT_ADDRESS 0x60000000
+#define SYSCTRL_RESET_CP (0xCAFE000B)
+#define SYSCTRL_RELEASE_CP (0xCAFE100B)
+#define SYSCTRL_RESET_NPU (0xCAFE000C)
+#define CP_PSRAM_BASE (0x68400000)
+#define AP_PSRAM_BASE (0x30000000)
 
 void prepare_cp_run(void)
 {
 	PSRAM_Initialize();
 
-	SYSCFG_RegDef *cmn_sys_ctrl = (SYSCFG_RegDef* )CMN_SYSCTRL_BASE;
+	SYSCFG_RegDef *cmn_sys_ctrl = (SYSCFG_RegDef *)CMN_SYSCTRL_BASE;
 
-    // set boot address
-    cmn_sys_ctrl->REG_CP_CTRL2.all = CP_BOOT_ADDRESS;
-    cmn_sys_ctrl->REG_CP_CTRL1.bit.CP_STAT_VECTOR_SEL = 0x1;
+	// set boot address
+	cmn_sys_ctrl->REG_CP_CTRL2.all = CP_BOOT_ADDRESS;
+	cmn_sys_ctrl->REG_CP_CTRL1.bit.CP_STAT_VECTOR_SEL = 0x1;
 
-    // stall HIFI4
-    cmn_sys_ctrl->REG_CP_CTRL1.bit.CP_HIFI4_RUNSTALL = 0x1;
+	// stall HIFI4
+	cmn_sys_ctrl->REG_CP_CTRL1.bit.CP_HIFI4_RUNSTALL = 0x1;
 
 	// release CP & NPU
 	cmn_sys_ctrl->REG_SW_RESET_CP.all = SYSCTRL_RELEASE_CP;
-	if(cmn_sys_ctrl->REG_SW_RESET_NPU.all){ // = 1 NPU reset
+	if (cmn_sys_ctrl->REG_SW_RESET_NPU.all) { // = 1 NPU reset
 		cmn_sys_ctrl->REG_SW_RESET_NPU.all = SYSCTRL_RESET_NPU;
 	}
 
@@ -62,8 +62,7 @@ void prepare_cp_run(void)
 
 struct k_work_delayable dwork;
 
-static void ipm_callback(const struct device *dev, void *context,
-			 uint32_t id, volatile void *data)
+static void ipm_callback(const struct device *dev, void *context, uint32_t id, volatile void *data)
 {
 	printk("id=%d.\n", id);
 	k_work_schedule(&dwork, K_MSEC(10));
@@ -88,7 +87,7 @@ static void _work(struct k_work *work)
 }
 
 void main(void)
-{	
+{
 	const struct device *ipm = DEVICE_DT_GET(DT_NODELABEL(mailbox0));
 
 	printk("Hello World! %s\n", CONFIG_BOARD);
@@ -99,12 +98,13 @@ void main(void)
 		return;
 	}
 
+	/* Recv cp msg by IPM */
 	ipm_register_callback(ipm, ipm_callback, NULL);
 	ipm_set_enabled(ipm, 1);
 
 	/* define a delay work to start open video steam. */
 	k_work_init_delayable(&dwork, _work);
-	
+
 	while (1) {
 		k_yield();
 	}

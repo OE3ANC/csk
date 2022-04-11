@@ -57,9 +57,6 @@ void main(void)
         printk("no memory");
         return;
     }
-
-    printk("test");
-
     for (int i = 0; i < BUFFER_SIZE; i++) {
         src_buffer[i] = i % UINT8_MAX;
     }
