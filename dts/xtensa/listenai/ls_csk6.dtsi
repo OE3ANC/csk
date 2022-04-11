@@ -63,4 +63,24 @@
 		status = "disabled";
 	};
 
+	spi1: spi@45500000 {
+		compatible = "listenai,csk-spi";
+		reg = <0x45500000 0x100000>;
+		interrupts = <17 13 0>;
+		label = "SPI_1";
+		interrupt-parent = <&core_intc>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	dma0: dma-controller@4A200000 {
+		compatible = "listenai,csk-dma";
+		reg = <0x4A200000 0x1000000>;
+		interrupts = <3 0 0>;
+		dma-channels = <8>;
+		status = "okay";
+		label = "DMA_0";
+		interrupt-parent = <&core_intc>;
+		#dma-cells = <1>;
+	};
 };

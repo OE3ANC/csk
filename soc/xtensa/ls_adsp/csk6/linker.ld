@@ -33,6 +33,12 @@ PROVIDE(_MemErrorHandler = 0x00000000);
 
 MEMORY
 {
+  luna_sharedmem_dram :
+        org = LUNA_SHARED_MEM_BASE,
+        len = LUNA_SHARED_DRAM_SIZE
+  luna_sharedmem_data :
+        org = LUNA_SHARED_MEM_BASE + LUNA_SHARED_DRAM_SIZE,
+        len = LUNA_SHARED_DATA_SIZE                
   vector_reset_text :
         org = XCHAL_RESET_VECTOR0_PADDR_IRAM,
         len = MEM_RESET_TEXT_SIZE
@@ -124,6 +130,10 @@ MEMORY
 
 PHDRS
 {
+  luna_sharedmem_dram_phdr PT_LOAD;
+  luna_sharedmem_dram_bss_phdr PT_LOAD;
+  luna_sharedmem_data_phdr PT_LOAD;
+  luna_sharedmem_data_bss_phdr PT_LOAD;
   vector_reset_text_phdr PT_LOAD;
   vector_reset_lit_phdr PT_LOAD;
   vector_base_text_phdr PT_LOAD;
@@ -157,7 +167,7 @@ PHDRS
 ENTRY(CONFIG_KERNEL_ENTRY)
 
 PROVIDE(_memmap_reset_vector = 0x60000000);
-PROVIDE(_memmap_vecbase_reset = XCHAL_VECBASE_RESET_PADDR_IRAM);
+PROVIDE(_memmap_vecbase_reset = XCHAL_VECBASE_RESET_PADDR);
 
 _heap_sentry = 0x64000000;
 
@@ -401,8 +411,19 @@ SECTIONS
     _bss_table_start = ABSOLUTE(.);
     LONG(_bss_start)
     LONG(_bss_end)
+    LONG(_dram1_bss_start)
+    LONG(_dram1_bss_end)
+    LONG(_sharedmem_bss_start)
+    LONG(_sharedmem_bss_end)
     _bss_table_end = ABSOLUTE(.);
+    . = ALIGN (4);
+
+    _rom_store_table = .;
+
+    _rom_store = .;
+    . = ALIGN (4);
     _rodata_end = ABSOLUTE(.);
+
   } >sdram0 :sdram0_phdr
 
   .module_init : ALIGN(4)
@@ -490,6 +511,71 @@ SECTIONS
     . = ALIGN(4096);
   } >sdram0 :sdram0_phdr
 
+  _DRAM_LOAD_START_ = .;
+  .dram1.rodata : ALIGN(4)
+  {
+    _dram1_rodata_start = ABSOLUTE(.);
+    *(.dram1.rodata)
+    . = ALIGN (4);
+    _dram1_rodata_end = ABSOLUTE(.);
+  } >luna_sharedmem_dram AT > sdram0 :luna_sharedmem_dram_phdr
+
+  .dram1.data : ALIGN(4)
+  {
+    _dram1_data_start = ABSOLUTE(.);
+    *(.dram1.data)
+    . = ALIGN (4);
+    _dram1_data_end = ABSOLUTE(.);
+  } >luna_sharedmem_dram AT > sdram0 :luna_sharedmem_dram_phdr
+
+  .dram1.bss (NOLOAD) : ALIGN(8)
+  {
+    . = ALIGN (8);
+    _dram1_bss_start = ABSOLUTE(.);
+    *(.dram1.bss)
+    . = ALIGN (8);
+    _dram1_bss_end = ABSOLUTE(.);
+    _memmap_seg_dram1_0_end = ALIGN(0x8);
+  } >luna_sharedmem_dram :luna_sharedmem_dram_phdr
+
+  _memmap_mem_dram1_max = ABSOLUTE(.);
+  _SHAREDMEM_LOAD_START_ = (LOADADDR(.dram1.data) + (SIZEOF(.dram1.data) + 3) & 0xFFFFFFFC);
+  .sharedmem.text : ALIGN(4)
+  {
+    _sharedmem_text_start = ABSOLUTE(.);
+    *(.sharedmem.literal .sharedmem.text)
+    . = ALIGN (4);
+    _sharedmem_text_end = ABSOLUTE(.);
+  } >luna_sharedmem_data AT > sdram0 :luna_sharedmem_data_phdr
+
+  .sharedmem.rodata : ALIGN(4)
+  {
+    _sharedmem_rodata_start = ABSOLUTE(.);
+    *(.sharedmem.rodata)
+    . = ALIGN (4);
+    _sharedmem_rodata_end = ABSOLUTE(.);
+  } >luna_sharedmem_data AT > sdram0 :luna_sharedmem_data_phdr
+
+  .sharedmem.data : ALIGN(4)
+  {
+    _sharedmem_data_start = ABSOLUTE(.);
+    *(.sharedmem.data)
+    . = ALIGN (4);
+    _sharedmem_data_end = ABSOLUTE(.);
+  } >luna_sharedmem_data AT > sdram0 :luna_sharedmem_data_phdr
+
+  .sharedmem.bss (NOLOAD) : ALIGN(8)
+  {
+    . = ALIGN (8);
+    _sharedmem_bss_start = ABSOLUTE(.);
+    *(.sharedmem.bss)
+    . = ALIGN (8);
+    _sharedmem_bss_end = ABSOLUTE(.);
+    _memmap_seg_sharedmem1_end = ALIGN(0x8);
+  } >luna_sharedmem_data :luna_sharedmem_data_bss_phdr
+
+  _memmap_mem_sharedmem_max = ABSOLUTE(.);
+
   .lit4 : ALIGN(4)
   {
     _lit4_start = ABSOLUTE(.);
@@ -498,6 +584,38 @@ SECTIONS
     *(.gnu.linkonce.lit4.*)
     _lit4_end = ABSOLUTE(.);
   } >sdram0 :sdram0_phdr
+
+  .copy.table :
+  {
+    . = ALIGN(4);
+    __iram_vector_text_lma = XCHAL_RESET_VECTOR0_PADDR_IRAM + MEM_RESET_TEXT_SIZE + MEM_RESET_LIT_SIZE;
+    __iram_vector_text_vma = XCHAL_VECBASE_RESET_PADDR_IRAM;
+    __iram_vector_text_size = (XCHAL_DOUBLEEXC_VECTOR_PADDR_IRAM + MEM_VECT_TEXT_SIZE) -XCHAL_VECBASE_RESET_PADDR_IRAM;
+
+    __iram_code_text_lma = _IRAM_TEXT_LOAD_START_;
+    __iram_code_text_vma = _iram_text_start;
+    __iram_code_text_size = _iram_text_end - _iram_text_start;  
+
+    __copy_table_start__ = .;
+    LONG (_DRAM_LOAD_START_)
+    LONG (_dram1_rodata_start)
+    LONG (_dram1_data_end - _dram1_rodata_start)
+
+    LONG (_SHAREDMEM_LOAD_START_)
+    LONG (_sharedmem_text_start)
+    LONG (_sharedmem_data_end - _sharedmem_text_start)
+
+    LONG (XCHAL_RESET_VECTOR0_PADDR_IRAM + MEM_RESET_TEXT_SIZE + MEM_RESET_LIT_SIZE) 
+    LONG  (XCHAL_VECBASE_RESET_PADDR_IRAM)
+    LONG ((XCHAL_DOUBLEEXC_VECTOR_PADDR_IRAM + MEM_VECT_TEXT_SIZE) -XCHAL_VECBASE_RESET_PADDR_IRAM) 
+    /* Add each additional data section here */
+
+    LONG (_IRAM_TEXT_LOAD_START_)
+    LONG (_iram_text_start)
+    LONG (_iram_text_end - _iram_text_start)
+
+    __copy_table_end__ = .;
+  } > sdram0 :sdram0_phdr
 
 #include <linker/common-ram.ld>
 
@@ -523,32 +641,6 @@ SECTIONS
     . = ALIGN (8);
     _bss_end = ABSOLUTE(.);
   } >sdram0 :sdram0_phdr
-
-
-  .copy.table :
-  {
-    . = ALIGN(4);
-    __iram_vector_text_lma = XCHAL_RESET_VECTOR0_PADDR_IRAM + MEM_RESET_TEXT_SIZE + MEM_RESET_LIT_SIZE;
-    __iram_vector_text_vma = XCHAL_VECBASE_RESET_PADDR_IRAM;
-    __iram_vector_text_size = (XCHAL_DOUBLEEXC_VECTOR_PADDR_IRAM + MEM_VECT_TEXT_SIZE) -XCHAL_VECBASE_RESET_PADDR_IRAM;
-
-    __iram_code_text_lma = _IRAM_TEXT_LOAD_START_;
-    __iram_code_text_vma = _iram_text_start;
-    __iram_code_text_size = _iram_text_end - _iram_text_start;  
-
-    __copy_table_start__ = .;
-    LONG (XCHAL_RESET_VECTOR0_PADDR_IRAM + MEM_RESET_TEXT_SIZE + MEM_RESET_LIT_SIZE) 
-    LONG  (XCHAL_VECBASE_RESET_PADDR_IRAM)
-    LONG ((XCHAL_DOUBLEEXC_VECTOR_PADDR_IRAM + MEM_VECT_TEXT_SIZE) -XCHAL_VECBASE_RESET_PADDR_IRAM) 
-    /* Add each additional data section here */
-
-    LONG (_IRAM_TEXT_LOAD_START_)
-    LONG (_iram_text_start)
-    LONG (_iram_text_end - _iram_text_start)
-
-    __copy_table_end__ = .;
-  } > sdram0 :sdram0_phdr
-
 
   .heap_mem (NOLOAD) : ALIGN(8)
   {

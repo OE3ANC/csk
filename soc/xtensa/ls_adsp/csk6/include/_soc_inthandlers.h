@@ -102,9 +102,9 @@ handle_irq:
 
 static inline int _xtensa_handle_one_int1(unsigned int mask)
 {
-	int irqs[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+	int irqs[9] = {0, 1, 2, 3, 4, 5, 6, 7};
 	mask &= XCHAL_INTLEVEL1_MASK;
-	return _xtensa_handle_one_int_x(mask, irqs, 8);
+	return _xtensa_handle_one_int_x(mask, irqs, 9);
 }
 
 static inline int _xtensa_handle_one_int2(unsigned int mask)
