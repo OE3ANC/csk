@@ -175,10 +175,16 @@
                         reg = <0x140000 0x20000>;
                 };
 
+                /* wifi_nvs_storage: 20Kb */
+                wifi_nvs_storage: partition@160000 {
+                        label = "wifi_nvs_storage";
+                        reg = <0x160000 0x5000>;
+                };
+
                 /* storage: 6.625MB for storage */
-                storage_partition: partition@160000 {
+                storage_partition: partition@165000 {
                         label = "storage";
-                        reg = <0x160000 0x6a0000>;
+                        reg = <0x165000 0x6a0000>;
                 };
 
         };

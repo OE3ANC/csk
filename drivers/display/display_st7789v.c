@@ -17,6 +17,7 @@
 #include <drivers/gpio.h>
 #include <sys/byteorder.h>
 #include <drivers/display.h>
+#include <drivers/pinmux.h>
 
 #define LOG_LEVEL CONFIG_DISPLAY_LOG_LEVEL
 #include <logging/log.h>
@@ -334,6 +335,7 @@ static void st7789v_lcd_init(struct st7789v_data *p_st7789v)
 static int st7789v_init(const struct device *dev)
 {
 	struct st7789v_data *data = (struct st7789v_data *)dev->data;
+	const struct device *cmd_pinmux_drv, *reset_pinmux_drv;
 
 	data->spi_dev = device_get_binding(DT_INST_BUS_LABEL(0));
 	if (data->spi_dev == NULL) {
@@ -355,6 +357,27 @@ static int st7789v_init(const struct device *dev)
 	data->spi_config.cs = &(data->cs_ctrl);
 #else
 	data->spi_config.cs = NULL;
+#endif
+
+#if DT_INST_NODE_HAS_PROP(0, pinmuxs)
+
+	char *name = DT_LABEL(DT_INST_PHANDLE_BY_IDX(0, pinmuxs, 0));     
+	cmd_pinmux_drv = device_get_binding(name);
+	if (!cmd_pinmux_drv) {
+		return -EINVAL;
+	}
+	uint8_t num = DT_PHA_BY_IDX(DT_DRV_INST(0), pinmuxs, 0, pin);
+	uint8_t func = DT_PHA_BY_IDX(DT_DRV_INST(0), pinmuxs, 0, function);
+	pinmux_pin_set(cmd_pinmux_drv, num, func);
+	
+	name = DT_LABEL(DT_INST_PHANDLE_BY_IDX(0, pinmuxs, 1));               
+	reset_pinmux_drv = device_get_binding(name);
+	if (!reset_pinmux_drv) {
+		return -EINVAL;
+	}
+	num = DT_PHA_BY_IDX(DT_DRV_INST(0), pinmuxs, 1, pin);
+	func = DT_PHA_BY_IDX(DT_DRV_INST(0), pinmuxs, 1, function);
+	pinmux_pin_set(reset_pinmux_drv, num, func);
 #endif
 
 #if DT_INST_NODE_HAS_PROP(0, reset_gpios)

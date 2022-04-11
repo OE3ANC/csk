@@ -32,7 +32,7 @@ static void handler_cb(struct net_mgmt_event_callback *cb, uint32_t mgmt_event, 
     printk("Router: %s\n", net_addr_ntop(AF_INET, &iface->config.ip.ipv4->gw, buf, sizeof(buf)));
 }
 
-static void wifi_event_handler(csk_wifi_event_t events, void *arg)
+static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32_t data_len, void *arg)
 {
     if (events & CSK_WIFI_EVT_STA_CONNECTED) {
         printk("[WiFi sta] connected\n");
@@ -50,10 +50,10 @@ void main(void)
     wifi_event_cb.arg = NULL;
     csk_wifi_add_callback(&wifi_event_cb);
 
-    esp_hosted_sta_config_t sta_config = {
+    csk_wifi_sta_config_t sta_config = {
         .ssid = CONFIG_EXAMPLE_WIFI_SSID,
         .pwd = CONFIG_EXAMPLE_WIFI_PASSWORD,
-        .encryption_mode = WIFI_AUTH_WPA2_PSK
+        .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK
     };
 
     int retry_count = 0;
@@ -73,6 +73,11 @@ void main(void)
             }
         }
     } while (retry_count < 10);
+    printk("--------------------------Current AP info-------------------------------\n");
+    printk("ssid: %s  pwd: %s  bssid: %s  channel: %d  rssi: %d\n",
+        sta_config.ssid, sta_config.pwd, sta_config.bssid, sta_config.channel,
+        sta_config.rssi);
+    printk("------------------------------------------------------------------------\n");
     net_mgmt_init_event_callback(&dhcp_cb, handler_cb, NET_EVENT_IPV4_DHCP_BOUND);
     net_mgmt_add_event_callback(&dhcp_cb);
     struct net_if *iface = net_if_get_default();

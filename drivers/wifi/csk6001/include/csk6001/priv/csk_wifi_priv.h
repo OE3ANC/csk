@@ -14,6 +14,15 @@
 #include "hosted/hosted.h"
 #include "csk6001/csk_wifi.h"
 
+#define CSK_TAG "CSK WIFI"
+
+#define CSK_WIFI_CHECK(cond, ret_val) ({                                      \
+    if (!(cond)) {                                                            \
+        printk("[%s] %s(%d)", CSK_TAG, __FUNCTION__, __LINE__);               \
+        return (ret_val);                                                     \
+    }                                                                         \
+})
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,13 +46,25 @@ typedef enum {
     WIFI_CMD_AP_INIT,
     WIFI_CMD_AP_START,
     WIFI_CMD_AP_STOP,
+    WIFI_CMD_SCAN,
 } wifi_cmd_t;
+
+typedef struct {
+    csk_wifi_result_t result;
+    void *arg;
+} wifi_ret_msg_t;
+
+typedef struct {
+    csk_wifi_scan_info_t *ap_list;
+    int count;
+} wifi_scan_list_t;
 
 const struct device * wifi_get_dev(wifi_mode_t mode);
 int wifi_send_command(const struct device *dev, wifi_cmd_t command, k_timeout_t timeouts);
-int wifi_take_result(csk_wifi_result_t *result, k_timeout_t timeout);
+int wifi_take_result(wifi_ret_msg_t *ret_msg, k_timeout_t timeout);
 
-void wifi_dispatch_callbacks(csk_wifi_event_t events);
+void wifi_dispatch_callbacks(csk_wifi_event_t events, void *event_data, uint32_t event_data_len);
+wifi_auth_mode_t wifi_get_encryption_mode(csk_wifi_encryption_mode_t mode);
 
 #ifdef __cplusplus
 }
