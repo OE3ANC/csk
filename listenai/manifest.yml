@@ -27,7 +27,7 @@ manifest:
       path: modules/lib/protobuf-c
     - name: esp-hosted
       remote: listenai
-      revision: 5c3b0858d64db4b69ead55ba012132506a7e4fc5
+      revision: a0e1ecbdd79b4ee5a82737282efcab861ff3be92
       path: modules/lib/esp-hosted
     - name: mcuboot
       remote: listenai
@@ -35,15 +35,15 @@ manifest:
       path: bootloader/mcuboot
     - name: sof_host
       remote: listenai
-      revision: e8f9f05ea0818775ad1e38512be9c680c889ba0e
+      revision: d545eb6fb08b79123765b1c6c3041f9cc200182c
       path: modules/lib/sof_host
     - name: lisa_player
       remote: listenai
-      revision: 0c05072250e56642a2354561fbc520ae3db479a6
+      revision: 960241b455859d46d73e45bae47cd4fd64f79b72
       path: modules/lib/listenai/lisa_player
     - name: zport_sal
       remote: listenai
-      revision: d52f9919eddcc33432886605ace6b024deb69cf3
+      revision: 59498060cb8160cfb6d7eaeac3a6e2a6af54ce0e
       path: modules/lib/listenai/zport_sal
     - name: zport_esp
       remote: listenai
