@@ -34,6 +34,7 @@ source "modules/Kconfig.xtensa"
 source "modules/Kconfig.mcuboot_bootutil"
 source "modules/Kconfig.protobuf_c"
 source "modules/Kconfig.esp_hosted"
+source "modules/Kconfig.wifi_manager"
 
 comment "Unavailable modules, please install those via the project manifest."
 
