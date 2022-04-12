@@ -39,6 +39,12 @@
         label = "itcm CODE";
     };
 
+	psram0: psram@30000000 {
+		compatible = "listenai,csk6-psram";
+		reg = <0x30000000 DT_SIZE_M(8)>;
+		label = "psram0";
+	};	
+
 	soc {
 
 		flash: flash-controller@46400000 {
