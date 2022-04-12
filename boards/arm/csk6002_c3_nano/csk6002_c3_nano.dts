@@ -200,3 +200,9 @@ zephyr_udc0: &usbotg {
 &wdt {
         status = "okay";
 };
+
+&adc0 {
+        status = "disabled";
+        pinmuxs = <&pinmuxb 6 16>, <&pinmuxb 7 16>, <&pinmuxb 8 16>;
+        pinmux-names = "ch0", "ch1", "ch2";
+};
