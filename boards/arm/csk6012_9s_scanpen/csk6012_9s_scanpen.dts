@@ -32,10 +32,18 @@
                         label = "cam_led_0";
                 };
         };
-     
+
         /*
          * Your board-specific hardware: buttons, LEDs, sensors, etc.
          */
+};
+&gpt0 {
+	status = "okay";
+	pwmlcd: pwm1 {
+                pinmuxs = <&pinmuxa 1 11>;
+                clock-prescaler = <1>;
+                status = "okay";
+	};
 };
 
 &spi0 {

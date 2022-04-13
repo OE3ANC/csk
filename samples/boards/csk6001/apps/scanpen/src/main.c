@@ -12,7 +12,28 @@
 #include <logging/log.h>
 #include <drivers/display.h>
 #include <drivers/kscan.h>
+#include <drivers/pinmux.h>
+#include <drivers/pwm.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
+// devicetree: LCD PWM
+struct pwm_csk_config {
+	uint8_t pwm_pin;
+	uint8_t pwm_func;
+	uint8_t clock_source;
+	uint8_t clock_prescaler;
+	uint8_t mode;
+	const struct device *pinmux_drv;
+};
+
+// PWM
+#define SDIO_PIN_FUNC 0
+#define PWM_LED0_NODE	DT_NODELABEL(pwmlcd)
+
+#if DT_NODE_HAS_PROP(PWM_LED0_NODE, pinmuxs)
+#define PWM 		DEVICE_DT_GET(DT_NODELABEL(pwmlcd))
+#else
+#error "No PWM pinmuxs found"
+#endif
 
 // devicetree: LED CAM NODE
 #define CAM_LED 		DT_NODELABEL(camleds1)
@@ -394,8 +415,29 @@ void lcd_touch_test(){
 
 void main(void)
 {
+	const struct device *pwm;
+
 	int pri = k_thread_priority_get(k_current_get());
 	k_thread_create(&lcdtouch_task_id, lcdtouch_stack_area,
 					K_THREAD_STACK_SIZEOF(lcdtouch_stack_area),
 					lcd_touch_test, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
+
+	pwm = PWM;
+	if (!device_is_ready(pwm)) {
+		printk("Error: PWM device %s is not ready\n", pwm->name);
+		return;
+	}
+	struct pwm_csk_config *pwmconfig = (struct pwm_csk_config*)pwm->config;
+
+	LOG_INF("下载模式,5s后变为PWM模式不可下载程序，重新下载需要上电并在5s内进行下载");
+	pinmux_pin_set(pwmconfig->pinmux_drv, pwmconfig->pwm_pin, SDIO_PIN_FUNC);	//配成sdio
+	k_msleep(5000);
+	LOG_INF("PWM模式");
+	pinmux_pin_set(pwmconfig->pinmux_drv, pwmconfig->pwm_pin, pwmconfig->pwm_func);		//配成pwm
+	int ret;
+	ret = pwm_pin_set_nsec(pwm, 1, 20000,  200, 1);
+	while(1){
+		k_msleep(20);
+	}
+	return;
 }
