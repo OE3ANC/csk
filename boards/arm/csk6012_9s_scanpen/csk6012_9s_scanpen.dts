@@ -12,6 +12,7 @@
                 i2c-0 = &i2c0;
                 i2c-1 = &i2c1;
                 c-led = &camleds1;
+                analogkey = &keysense;
         };
 
         chosen {
@@ -24,13 +25,29 @@
         };
 
 
-
         leds {
                 compatible = "gpio-leds";
                 camleds1: cam_led_0 {
                         gpios = <&gpiob 7 0>;
                         label = "cam_led_0";
                 };
+
+
+        };
+
+        vbatt {
+                compatible = "voltage-divider";
+		io-channels = <&adc0 5>;
+		output-ohms = <0>;
+	};
+
+        gpio,user {
+                compatible = "listenai,csk-gpio-user";
+                pwrlock: powerlock {
+                        gpios = <&gpiob 4 1>;
+                        label = "power_lock";
+                };
+
         };
 
         /*
@@ -151,3 +168,18 @@
 &rtc1 {
         status = "okay";
 };
+&adc0 {
+        status = "okay";
+        pinmuxs = <&pinmuxb 6 16>, <&pinmuxb 7 16>, <&pinmuxb 8 16>;
+        pinmux-names = "ch0", "ch1", "ch2";
+};
+&keysense {
+        status = "okay";
+    
+            //keysense use adc channel 6 to sample
+        io-channels = <&adc0 6>;
+    
+        // Trigger voltage of each analog key (mV)
+        //    扫描开关：0.95V    翻译：1.24V   开关：1.83V 
+        analogkey-trigger = <950 1240 1830>;
+    };

@@ -14,7 +14,67 @@
 #include <drivers/kscan.h>
 #include <drivers/pinmux.h>
 #include <drivers/pwm.h>
+#include <drivers/adc.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
+// device:Keysense
+#define KSCAN_DEVICE DT_LABEL(DT_ALIAS(analogkey))
+
+// device:ADC
+#define STACKSIZE       4096
+struct k_thread  adc_task_id;
+K_THREAD_STACK_DEFINE(adc_stack_area, STACKSIZE);
+
+#if !DT_NODE_EXISTS(DT_PATH(vbatt)) || \
+	!DT_NODE_HAS_PROP(DT_PATH(vbatt), io_channels)
+#error "No suitable devicetree overlay specified"
+#endif
+
+#define ADC_NUM_CHANNELS	DT_PROP_LEN(DT_PATH(vbatt), io_channels)
+
+#if ADC_NUM_CHANNELS > 2
+#error "Currently only 1 or 2 channels supported in this sample"
+#endif
+
+#if ADC_NUM_CHANNELS == 2 && !DT_SAME_NODE( \
+	DT_PHANDLE_BY_IDX(DT_PATH(vbatt), io_channels, 0), \
+	DT_PHANDLE_BY_IDX(DT_PATH(vbatt), io_channels, 1))
+#error "Channels have to use the same ADC."
+#endif
+
+#define ADC_NODE		DT_PHANDLE(DT_PATH(vbatt), io_channels)
+
+/* Common settings supported by most ADCs */
+#define ADC_RESOLUTION		11
+#define ADC_GAIN		ADC_GAIN_1
+#define ADC_REFERENCE		ADC_REF_INTERNAL
+
+/* Get the numbers of up to two channels */
+static uint8_t channel_ids[ADC_NUM_CHANNELS] = {
+	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(vbatt), 0),
+#if ADC_NUM_CHANNELS == 2
+	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(vbatt), 1)
+#endif
+};
+
+static int16_t sample_buffer[ADC_NUM_CHANNELS];
+
+
+static struct adc_channel_cfg channel_cfg = {
+	.gain = ADC_GAIN_1,
+	.reference = ADC_REFERENCE,
+	.channel_id = 0,
+};
+
+static struct adc_sequence sequence = {
+	/* individual channels will be added below */
+	.channels    = 0,
+	.buffer      = sample_buffer,
+	/* buffer size in bytes, not number of samples */
+	.buffer_size = sizeof(sample_buffer),
+	.resolution  = ADC_RESOLUTION,
+};
+
+
 // devicetree: LCD PWM
 struct pwm_csk_config {
 	uint8_t pwm_pin;
@@ -34,6 +94,13 @@ struct pwm_csk_config {
 #else
 #error "No PWM pinmuxs found"
 #endif
+// devicetree: power lock
+#define PWR_LOCK_NODE 	DT_NODELABEL(pwrlock)
+#define GPIO_PWR_LOCK	DT_GPIO_CTLR(PWR_LOCK_NODE, gpios) 
+#define PIN_PWR_LOCK	DT_GPIO_PIN(PWR_LOCK_NODE, gpios) 
+#define FLAGS_PWR_LOCK	DT_GPIO_FLAGS(PWR_LOCK_NODE, gpios) 
+
+
 
 // devicetree: LED CAM NODE
 #define CAM_LED 		DT_NODELABEL(camleds1)
@@ -402,7 +469,6 @@ void lcd_touch_test(){
 		fill_buffer_fnc(BOTTOM_LEFT, grey_count, buf, buf_size);
 		display_write(display_dev, x, y, &buf_desc, buf);
 		++grey_count;
-		cam_led_test();
 		k_msleep(grey_scale_sleep);
 #if CONFIG_TEST
 		if (grey_count >= 1024) {
@@ -413,18 +479,117 @@ void lcd_touch_test(){
 	RETURN_FROM_MAIN(0);
 }
 
+void adc_test(){
+	int err;
+	const struct device *dev_adc = DEVICE_DT_GET(ADC_NODE);
+
+	LOG_INF("ADC Sample start");
+
+	if (!device_is_ready(dev_adc)) {
+		LOG_INF("ADC device not found");
+		return;
+	}
+
+	/*
+	 * Configure channels individually prior to sampling
+	 */
+	for (uint8_t i = 0; i < ADC_NUM_CHANNELS; i++) {
+		channel_cfg.channel_id = channel_ids[i];
+
+		adc_channel_setup(dev_adc, &channel_cfg);
+
+		sequence.channels |= BIT(channel_ids[i]);
+	}
+
+	int32_t adc_vref = adc_ref_internal(dev_adc);
+
+	LOG_INF("adc_vref %d.", adc_vref);
+
+	while (1) {
+		/*
+		 * Read sequence of channels (fails if not supported by MCU)
+		 */
+		err = adc_read(dev_adc, &sequence);
+		if (err != 0) {
+			LOG_ERR("ADC reading failed with error %d.", err);
+			return;
+		}
+
+		for (uint8_t i = 0; i < ADC_NUM_CHANNELS; i++) {
+			int32_t raw_value = sample_buffer[i];
+
+			if (adc_vref > 0) {
+				/*
+				 * Convert raw reading to millivolts if driver
+				 * supports reading of ADC reference voltage
+				 */
+				int32_t vcc_value = raw_value - 2048;
+
+				adc_raw_to_millivolts(adc_vref, ADC_GAIN_1,
+					ADC_RESOLUTION, &vcc_value); // Output 1/8 Vcc
+				
+				vcc_value *= 8; 
+				LOG_INF(" adc(%d)= %d mV", raw_value, vcc_value);
+			}
+		}
+
+		k_sleep(K_MSEC(1300));
+	}
+}
+
+static void kb_callback(const struct device *dev, uint32_t row, uint32_t col,
+			bool pressed)
+{
+	ARG_UNUSED(dev);
+
+	LOG_INF("Key value = %d; Unused values = %d Pressed = %u", row, col, pressed);
+
+}
+void power_lock_init(void){
+	const struct device *power_lock = DEVICE_DT_GET(GPIO_PWR_LOCK);
+	if (!device_is_ready(power_lock)) {
+		LOG_ERR("Error: power_lock device %s is not ready", power_lock->name);
+		return;
+	}
+	LOG_INF("Get: power_lock device %s", power_lock->name);
+
+	int ret = gpio_pin_configure(power_lock, PIN_PWR_LOCK, GPIO_OUTPUT_ACTIVE | 0);
+	if (ret < 0) {
+		LOG_ERR("Error: power_lock configure %d", ret);
+		return;
+	}
+	
+	ret = gpio_pin_set(power_lock, PIN_PWR_LOCK, 1);
+	if (ret < 0) {
+		LOG_ERR("Error: power_lock set %d", ret);
+		return;
+	}
+	LOG_INF("Power is on:%d", ret);
+}
+
 void main(void)
 {
 	const struct device *pwm;
-
+	power_lock_init();
+	#if 1
 	int pri = k_thread_priority_get(k_current_get());
 	k_thread_create(&lcdtouch_task_id, lcdtouch_stack_area,
 					K_THREAD_STACK_SIZEOF(lcdtouch_stack_area),
 					lcd_touch_test, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
 
+	// ADC：Get Vcc Voltage thread
+	pri = k_thread_priority_get(k_current_get());
+	k_thread_create(&adc_task_id, adc_stack_area,
+					K_THREAD_STACK_SIZEOF(adc_stack_area),
+					adc_test, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
+	#endif
+
+
+	// PWM Init
+	#if 1
 	pwm = PWM;
 	if (!device_is_ready(pwm)) {
-		printk("Error: PWM device %s is not ready\n", pwm->name);
+		LOG_ERR("Error: PWM device %s is not ready", pwm->name);
 		return;
 	}
 	struct pwm_csk_config *pwmconfig = (struct pwm_csk_config*)pwm->config;
@@ -436,8 +601,23 @@ void main(void)
 	pinmux_pin_set(pwmconfig->pinmux_drv, pwmconfig->pwm_pin, pwmconfig->pwm_func);		//配成pwm
 	int ret;
 	ret = pwm_pin_set_nsec(pwm, 1, 20000,  200, 1);
+	#endif
+
+	// Keysense init
+	const struct device *key_dev = device_get_binding(KSCAN_DEVICE);
+	if (!device_is_ready(key_dev)) {
+		LOG_ERR("kscan device is not ready");
+		return;
+	}
+	kscan_config(key_dev, kb_callback);
+	LOG_INF("key_dev init success!");
+
 	while(1){
-		k_msleep(20);
+		cam_led_test();
+		if(led_is_on)
+			k_msleep(1000);
+		else
+			k_msleep(20);
 	}
 	return;
 }
