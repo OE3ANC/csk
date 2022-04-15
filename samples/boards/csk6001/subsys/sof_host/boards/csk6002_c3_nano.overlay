@@ -10,15 +10,11 @@
 		/*
 		 * shared memory reserved for the inter-processor communication
 		 */
-		zephyr,ipc_shm = &sramx1;
+		zephyr,ipc_shm = &sof_partition;
 		zephyr,ipc = &mailbox0;
 		zephyr,flash_sysfs_storage = &filesystem_part;
 		zephyr,flash_controller = &flash;
 		zephyr,uart-mcumgr = &uart0;
-	};
-	sramx1:memory@30700000{
-		compatible = "mmio-sram";
-		reg = <0x30700000 0x80000>;
 	};
 	fstab {
 		compatible = "zephyr,fstab";
