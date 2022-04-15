@@ -125,9 +125,8 @@ void lisa_os_test(void)
 	static K_THREAD_STACK_DEFINE(threadA_stack_area, 1024);
 	static K_THREAD_STACK_DEFINE(threadB_stack_area, 2048);
 	lisa_thread_attr_t attr;
-	extern struct k_heap _system_heap;
 	LISA_LOGD(TAG, "lisaOS test start\n\n\n\n");
-    sys_heap_print_info(&_system_heap.heap,0);
+    lisa_heap_info();
 	memset(&lisaOS_tester_data,0,sizeof(lisaOS_tester_data_t));
 
 	lisaOS_tester_data.syncSem = lisa_semaphore_create(1);
@@ -312,6 +311,14 @@ void lisa_os_test(void)
 
 	LISA_LOGD(TAG, "----------------Test 8: timer test SUCCESS!!!----------------\n\n\n");
 
-	sys_heap_print_info(&_system_heap.heap,0);
+	lisa_semaphore_delete(lisaOS_tester_data.syncSem);
+	lisa_semaphore_delete(lisaOS_tester_data.ackSem);
+	lisa_semaphore_delete(lisaOS_tester_data.forMutex);
+	lisa_semaphore_delete(lisaOS_tester_data.forQueue);
+	lisa_mutex_delete(lisaOS_tester_data.mutex);
+	lisa_queue_delete(lisaOS_tester_data.queue);
+	lisa_timer_delete(lisaOS_tester_data.timer);
+
+	lisa_heap_info();
 	LISA_LOGD(TAG, "lisaOS test end\n\n\n\n");
 }

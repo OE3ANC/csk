@@ -7,6 +7,13 @@
 #define TAG "lisa_thread"
 typedef void (*lisa_thread_entry_t)(void *, void *, void *);
 
+
+static void _thread_wrapper(void *arg1, void *arg2, void *arg3)
+{
+	void (*fun_ptr)(void *) = arg3;
+	fun_ptr(arg1);
+}
+
 lisa_thread_t *lisa_thread_create(const lisa_thread_attr_t *attr, void (*entry)(void *), void *arg)
 {
 	lisa_thread_t *lisa_thread = NULL;
@@ -19,7 +26,7 @@ lisa_thread_t *lisa_thread_create(const lisa_thread_attr_t *attr, void (*entry)(
 
 	lisa_thread->thread_id =
 		k_thread_create(&lisa_thread->handle, (k_thread_stack_t *)attr->stack,
-				attr->stack_size, (lisa_thread_entry_t)entry, arg, NULL, NULL,
+				attr->stack_size, (k_thread_entry_t)_thread_wrapper, arg, NULL, entry,
 				attr->priority, 0, K_NO_WAIT);
 	k_thread_system_pool_assign(&lisa_thread->handle);
 	return lisa_thread;
@@ -31,6 +38,13 @@ lisa_err_t lisa_thread_delete(lisa_thread_t *thread)
 	if (thread == NULL) {
 		LISA_LOGE(TAG, "[%s %d]Input paramter error!", __FUNCTION__, __LINE__);
 		return LISA_FAIL;
+	}
+
+	if(k_current_get() == thread->thread_id){
+		lisa_threadid_t tid = thread->thread_id;
+		lisa_mem_free(thread);
+		k_thread_abort(tid);
+		return LISA_OK;
 	}
 
 	k_thread_abort(thread->thread_id);
