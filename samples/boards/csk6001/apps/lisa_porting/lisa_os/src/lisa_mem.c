@@ -1,4 +1,4 @@
-#if defined(CONFIG_LISA_HEAP_BASE_ADDRESS)&& defined(CONFIG_LISA_HEAP_SIZE)
+#if (CONFIG_LISA_HEAP_ARENA_SIZE > 0)
 
 #include <stdlib.h>
 #include <zephyr.h>
@@ -16,23 +16,19 @@
 
 #define TAG "lisa_mem"
 
-#ifdef CONFIG_USERSPACE
-K_APPMEM_PARTITION_DEFINE(lisa_heap_partition);
-#define POOL_SECTION K_APP_DMEM_SECTION(lisa_heap_partition)
-#else
-#define POOL_SECTION .bss
-#endif /* CONFIG_USERSPACE */
+#define POOL_SECTION .csk6_psram_section0
+#define HEAP_BYTES CONFIG_LISA_HEAP_ARENA_SIZE
 
 Z_GENERIC_SECTION(POOL_SECTION) static struct sys_heap z_malloc_heap;
 Z_GENERIC_SECTION(POOL_SECTION) static struct sys_mutex z_malloc_heap_mutex;
-
+Z_GENERIC_SECTION(POOL_SECTION) static char z_malloc_heap_mem[HEAP_BYTES];
 
 
 static int lisa_heap_prepare(const struct device *unused)
 {
 	ARG_UNUSED(unused);
-	char* z_malloc_heap_mem = (char*)CONFIG_LISA_HEAP_BASE_ADDRESS;
-	sys_heap_init(&z_malloc_heap, z_malloc_heap_mem, CONFIG_LISA_HEAP_SIZE);
+	
+	sys_heap_init(&z_malloc_heap, z_malloc_heap_mem, HEAP_BYTES);
 	sys_mutex_init(&z_malloc_heap_mutex);
 
 	return 0;
