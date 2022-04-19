@@ -98,8 +98,12 @@ static void csk_spi_hal_transceive(const struct device *dev)
 	}
 
 	/* Resize the transaction item num since spi driver limitation */
-	// uint32_t real_trans_size = (chunk_len > MAX_TRANCNT) ? MAX_TRANCNT : chunk_len;
-	uint32_t real_trans_size = chunk_len;
+    uint32_t real_trans_size;
+    if (ctx->tx_buf == NULL){
+        real_trans_size = chunk_len;
+    } else {
+         real_trans_size = (chunk_len > MAX_TRANCNT) ? MAX_TRANCNT : chunk_len;
+    }
     uint32_t key = irq_lock();
     data->current_transfer_len = real_trans_size;
 	if (ctx->tx_buf != NULL && ctx->rx_buf != NULL) {
