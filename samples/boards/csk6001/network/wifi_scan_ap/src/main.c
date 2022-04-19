@@ -29,6 +29,7 @@ static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32
 
 void main(void)
 {
+    csk_wifi_init();
     wifi_event_cb.handler = &wifi_event_handler;
     wifi_event_cb.events = CSK_WIFI_EVT_SCAN_DONE;
     wifi_event_cb.arg = NULL;

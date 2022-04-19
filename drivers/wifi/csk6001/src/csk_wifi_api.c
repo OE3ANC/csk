@@ -1,5 +1,15 @@
 #include "csk6001/priv/csk_wifi_priv.h"
 
+#include <logging/log.h>
+LOG_MODULE_REGISTER(csk6001_wifi, CONFIG_WIFI_LOG_LEVEL);
+
+#define CSK_WIFI_CHECK(cond, ret_val) ({                                      \
+    if (!(cond)) {                                                            \
+        LOG_ERR("%s(%d): Check failed", __FUNCTION__, __LINE__);              \
+        return (ret_val);                                                     \
+    }                                                                         \
+})
+
 K_MUTEX_DEFINE(wifi_api_mutex);
 
 static sys_slist_t wifi_callback_list;
@@ -19,6 +29,11 @@ int csk_wifi_add_callback(csk_wifi_event_cb_t *wifi_event_cb)
 {
     CSK_WIFI_CHECK(wifi_event_cb != NULL, -EINVAL);
     sys_slist_prepend(&wifi_callback_list, &wifi_event_cb->node);
+    return 0;
+}
+
+int csk_wifi_init()
+{
     return 0;
 }
 

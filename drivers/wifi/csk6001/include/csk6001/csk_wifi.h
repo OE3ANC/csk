@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "commands.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -68,8 +66,8 @@ typedef struct {
  * @brief CSK WiFi scan info type
  */
 typedef struct {
-    char ssid[SSID_LENGTH];                         /* Neighboring AP SSID */
-    char bssid[BSSID_LENGTH];                       /* Neighboring AP BSSID */
+    char ssid[CSK_WIFI_SSID_LEN];                         /* Neighboring AP SSID */
+    char bssid[CSK_WIFI_BSSID_LEN];                       /* Neighboring AP BSSID */
     int rssi;                                       /* Neighboring AP rssi */
     uint8_t channel;                                /* Neighboring AP channel */
     csk_wifi_encryption_mode_t encryption_mode;     /* Neighboring AP encryption mode */
@@ -84,6 +82,7 @@ typedef enum {
     CSK_WIFI_ERR_AP_FAILED,             /* Unknown SoftAP exception, will be raised in SoftAP mode. TODO: remove it */
     CSK_WIFI_ERR_AP_NOT_FOUND,          /* AP ssid not found, will be raised in Station mode */
     CSK_WIFI_ERR_INVALID_PASSWORD,      /* Invalid WIFI password, will be raised in Station mode */
+    CSK_WIFI_ERR_SCAN_FAILED,
 } csk_wifi_result_t;                    /* WIFI API result type */
 
 /**
@@ -146,6 +145,13 @@ typedef struct csk_wifi_event_cb {
      */
     void *arg;
 } csk_wifi_event_cb_t;
+
+/**
+ * @brief CSK WiFi driver initialize
+ * 
+ * @return 0 if successful, negative errno code on failure.
+ */
+int csk_wifi_init();
 
 /**
  * @brief Add an wifi event callback
