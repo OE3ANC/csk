@@ -37,6 +37,8 @@
 #define DT_DRV_COMPAT ti_cc32xx_adc
 #elif DT_HAS_COMPAT_STATUS_OKAY(zephyr_adc_emul)
 #define DT_DRV_COMPAT zephyr_adc_emul
+#elif DT_HAS_COMPAT_STATUS_OKAY(listenai_csk_adc)
+#define DT_DRV_COMPAT listenai_csk_adc
 #else
 #error No known devicetree compatible match for ADC shell
 #endif

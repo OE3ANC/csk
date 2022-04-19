@@ -348,16 +348,8 @@ static int st7789v_init(const struct device *dev)
 	data->spi_config.operation = SPI_OP_MODE_MASTER | SPI_WORD_SET(8);
 	data->spi_config.slave = DT_INST_REG_ADDR(0);
 
-#if DT_INST_SPI_DEV_HAS_CS_GPIOS(0)
-	data->cs_ctrl.gpio_dev = device_get_binding(
-			DT_INST_SPI_DEV_CS_GPIOS_LABEL(0));
-	data->cs_ctrl.gpio_pin = DT_INST_SPI_DEV_CS_GPIOS_PIN(0);
-	data->cs_ctrl.gpio_dt_flags = DT_INST_SPI_DEV_CS_GPIOS_FLAGS(0);
-	data->cs_ctrl.delay = 0U;
-	data->spi_config.cs = &(data->cs_ctrl);
-#else
+	// use hardware spi_cs
 	data->spi_config.cs = NULL;
-#endif
 
 #if DT_INST_NODE_HAS_PROP(0, pinmuxs)
 

@@ -15,14 +15,16 @@
 #include <drivers/pinmux.h>
 #include <drivers/pwm.h>
 #include <drivers/adc.h>
+#include <shell/shell.h>
+
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 // device:Keysense
 #define KSCAN_DEVICE DT_LABEL(DT_ALIAS(analogkey))
 
 // device:ADC
-#define STACKSIZE       4096
+#define ADC_STACKSIZE       4096
 struct k_thread  adc_task_id;
-K_THREAD_STACK_DEFINE(adc_stack_area, STACKSIZE);
+K_THREAD_STACK_DEFINE(adc_stack_area, ADC_STACKSIZE);
 
 #if !DT_NODE_EXISTS(DT_PATH(vbatt)) || \
 	!DT_NODE_HAS_PROP(DT_PATH(vbatt), io_channels)
@@ -103,6 +105,9 @@ struct pwm_csk_config {
 
 
 // devicetree: LED CAM NODE
+struct k_thread  camled_task_id;
+#define CAM_LED_STACKSIZE	1024 
+K_THREAD_STACK_DEFINE(camled_stack_area, CAM_LED_STACKSIZE);
 #define CAM_LED 		DT_NODELABEL(camleds1)
 #define GPIO_LED_CAM 	DT_GPIO_CTLR_BY_IDX(CAM_LED, gpios, 0) 
 
@@ -319,25 +324,28 @@ static void fill_buffer_mono(enum corner corner, uint8_t grey, uint8_t *buf,
 	memset(buf, color, buf_size);
 }
 
-bool led_is_on = true;
 void cam_led_test(void){
-	const struct device *cam_led;
-	int ret;
-	cam_led = DEVICE_DT_GET(GPIO_LED_CAM);
+	bool led_is_on = true;
+	const struct device *cam_led = DEVICE_DT_GET(GPIO_LED_CAM);;
 	if (!device_is_ready(cam_led)) {
 		printk("Error: CAM LED device %s is not ready\n", cam_led->name);
 		return;
 	}
-	ret = gpio_pin_configure(cam_led, 7, GPIO_OUTPUT_ACTIVE | 0);
+	int ret = gpio_pin_configure(cam_led, 7, GPIO_OUTPUT_ACTIVE | 0);
 	if (ret < 0) {
+		LOG_ERR("Error: GPIO pin configure fault!");
 		return;
 	}
-
-	led_is_on = !led_is_on;
-	gpio_pin_set(cam_led, 7, (int)led_is_on);
 	
+	while(1){
+		led_is_on = !led_is_on;
+		gpio_pin_set(cam_led, 7, (int)led_is_on);
+		if(led_is_on)
+			k_msleep(1000);
+		else
+			k_msleep(20);
+	}
 	return;
-	
 }
 
 void lcd_touch_test(){
@@ -571,7 +579,6 @@ void main(void)
 {
 	const struct device *pwm;
 	power_lock_init();
-	#if 1
 	int pri = k_thread_priority_get(k_current_get());
 	k_thread_create(&lcdtouch_task_id, lcdtouch_stack_area,
 					K_THREAD_STACK_SIZEOF(lcdtouch_stack_area),
@@ -582,6 +589,11 @@ void main(void)
 	k_thread_create(&adc_task_id, adc_stack_area,
 					K_THREAD_STACK_SIZEOF(adc_stack_area),
 					adc_test, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
+
+	#if 0
+	k_thread_create(&camled_task_id, camled_stack_area,
+					K_THREAD_STACK_SIZEOF(camled_stack_area),
+					cam_led_test, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
 	#endif
 
 
@@ -593,11 +605,10 @@ void main(void)
 		return;
 	}
 	struct pwm_csk_config *pwmconfig = (struct pwm_csk_config*)pwm->config;
-
 	LOG_INF("下载模式,5s后变为PWM模式不可下载程序，重新下载需要上电并在5s内进行下载");
 	pinmux_pin_set(pwmconfig->pinmux_drv, pwmconfig->pwm_pin, SDIO_PIN_FUNC);	//配成sdio
 	k_msleep(5000);
-	LOG_INF("PWM模式");
+	LOG_INF("PWM模式,需要进入swd模式请输入：swd");
 	pinmux_pin_set(pwmconfig->pinmux_drv, pwmconfig->pwm_pin, pwmconfig->pwm_func);		//配成pwm
 	int ret;
 	ret = pwm_pin_set_nsec(pwm, 1, 20000,  200, 1);
@@ -613,11 +624,26 @@ void main(void)
 	LOG_INF("key_dev init success!");
 
 	while(1){
-		cam_led_test();
-		if(led_is_on)
-			k_msleep(1000);
-		else
-			k_msleep(20);
+		k_msleep(1000);
 	}
 	return;
 }
+
+int swd_mode_shell_handler(const struct shell *shell,
+                                 size_t argc, char **argv)
+{
+    const struct device *pwm = PWM;
+        if (!device_is_ready(pwm)) {
+                LOG_ERR("Error: PWM device %s is not ready", pwm->name);
+                return -1;
+        }
+        struct pwm_csk_config *pwmconfig = (struct pwm_csk_config*)pwm->config;
+
+        pinmux_pin_set(pwmconfig->pinmux_drv, pwmconfig->pwm_pin, SDIO_PIN_FUNC);
+
+    shell_print(shell, "Enter SWD IO Mode.");
+
+    return 0;
+}
+
+SHELL_CMD_ARG_REGISTER(swd, NULL, "swd mode select.", swd_mode_shell_handler, 1, 0);
