@@ -17,9 +17,11 @@
 #include <lisa_timer.h>
 
 #define TAG "tester_lisaos"
+#define  _IN_ABS(a) ((a)>0?(a):-(a))
 typedef struct {
 	lisa_thread_t *threadA;
 	lisa_thread_t *threadB;
+	lisa_thread_t *threadC;
 	lisa_timer_t *timer;
 
 	lisa_semaphore_t *syncSem;
@@ -111,6 +113,18 @@ void threadB(void *arg)
 		k_sleep(K_MSEC(1000));
 	}
 }
+
+void threadC_delete_self(void *arg)
+{
+	lisa_thread_t* thread;
+
+	
+	k_msleep(10);/*must wait for arg pointer update*/
+	thread = *(lisa_thread_t**)arg;
+	lisa_thread_delete(thread);
+
+	__ASSERT(0, "lisa_thread_delete %s failed.\n",__FUNCTION__);
+}
 static void timerCB(lisa_timerhandle_t *timer)
 {
 	lisa_semaphore_give(lisaOS_tester_data.ackSem);
@@ -124,6 +138,7 @@ void lisa_os_test(void)
 	int i;
 	static K_THREAD_STACK_DEFINE(threadA_stack_area, 1024);
 	static K_THREAD_STACK_DEFINE(threadB_stack_area, 2048);
+	static K_THREAD_STACK_DEFINE(threadC_stack_area, 1024);
 	lisa_thread_attr_t attr;
 	LISA_LOGD(TAG, "lisaOS test start\n\n\n\n");
     lisa_heap_info();
@@ -168,6 +183,14 @@ void lisa_os_test(void)
 	if (LISA_OK != lisa_semaphore_take(lisaOS_tester_data.ackSem, LISA_WAIT_FOREVER)) {
 		__ASSERT(0, "lisa_semaphore_take take failed!");
 	}
+
+	attr.name = "threadC";
+	attr.stack = threadC_stack_area;
+	attr.stack_size = K_THREAD_STACK_SIZEOF(threadC_stack_area);
+	attr.priority = 4;
+	lisaOS_tester_data.threadC =
+		lisa_thread_create(&attr, threadC_delete_self, &lisaOS_tester_data.threadC);
+
 	LISA_LOGD(TAG, "----------------Test 1: Thread test SUCCESS!!!----------------\n\n\n");
 
 	LISA_LOGD(TAG, "++++++++++++++++Test 2: mem test++++++++++++++++");
@@ -256,11 +279,11 @@ void lisa_os_test(void)
 	int32_t biasTicks = 0;
 	LISA_LOGD(TAG, "++++++++++++++++Test 7: time test++++++++++++++++");
 	ticks1 = lisa_os_get_ticks();
-	k_sleep(K_TICKS(100));
+	k_msleep(100);
 	ticks2 = lisa_os_get_ticks();
-	biasTicks = (ticks2 - ticks1) - K_TICKS(100).ticks;
+	biasTicks = (ticks2 - ticks1) - 100;
 	;
-	if (abs(biasTicks) > 10) {
+	if (_IN_ABS(biasTicks) > 3) {
 		__ASSERT(0, "lisa_os_get_ticks failed,ticks[%d,%d,%d]", ticks1, ticks2, biasTicks);
 	}
 	LISA_LOGD(TAG, "lisa_os_get_ticks bias ticks=%d", biasTicks);
@@ -292,7 +315,7 @@ void lisa_os_test(void)
 	}
 	ticks2 = lisa_os_get_ticks();
 	biasTicks = (ticks2 - ticks1) - K_MSEC(1000).ticks;
-	if (abs(biasTicks) > K_MSEC(10).ticks) {
+	if (_IN_ABS(biasTicks) > K_MSEC(10).ticks) {
 		__ASSERT(0, "lisaOS timer period error!biasTicks=%d", biasTicks);
 	}
 
@@ -304,7 +327,7 @@ void lisa_os_test(void)
 	}
 	ticks2 = lisa_os_get_ticks();
 	biasTicks = (ticks2 - ticks1) - K_MSEC(2000).ticks;
-	if (abs(biasTicks) > K_MSEC(10).ticks) {
+	if (_IN_ABS(biasTicks) > K_MSEC(10).ticks) {
 		__ASSERT(0, "lisaOS timer period error!diffTicks=%d", biasTicks);
 	}
 	lisa_timer_stop(lisaOS_tester_data.timer);
@@ -319,6 +342,7 @@ void lisa_os_test(void)
 	lisa_queue_delete(lisaOS_tester_data.queue);
 	lisa_timer_delete(lisaOS_tester_data.timer);
 
+	k_msleep(100);/*wait for thread resource free*/
 	lisa_heap_info();
 	LISA_LOGD(TAG, "lisaOS test end\n\n\n\n");
 }
