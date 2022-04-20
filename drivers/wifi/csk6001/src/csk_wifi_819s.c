@@ -184,7 +184,7 @@ static int wifi_driver_init(const struct device *dev)
 #endif
     wlan_sys_init();
     wlan_attach(wlan_event_handler);
-    
+
     return CSK_WIFI_SUCCESS;
 }
 
@@ -220,7 +220,6 @@ static csk_wifi_result_t wifi_sta_get_connected_info(const struct device *dev)
 {
     csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
     struct csk_wifi_data *data = dev->data;
-    wlan_sta_scan_once();
     wlan_sta_config_t config = {0};
 
     int wlan_ret = 0;
@@ -268,30 +267,32 @@ static csk_wifi_result_t wifi_scan_list(int *ap_count, csk_wifi_scan_info_t **ap
     }
 
     wlan_sta_scan_results_t scan_results;
-    scan_results.num = WIFI_MAX_SCAN_NUM;
-    scan_results.ap = k_calloc(scan_results.num, sizeof(wlan_sta_ap_t));
+    scan_results.size = WIFI_MAX_SCAN_NUM;
+    scan_results.ap = k_calloc(scan_results.size, sizeof(wlan_sta_ap_t));
     if (scan_results.ap == NULL) {
         LOG_ERR("Scan list no mem");
-    }
-    if (ap_list == NULL) {
         return CSK_WIFI_ERR_SCAN_FAILED;
     }
+
     wlan_ret = wlan_sta_scan_result(&scan_results);
     if (wlan_ret != 0) {
         ret = CSK_WIFI_ERR_SCAN_FAILED;
         goto __out;
     }
+    // dump_scan_list(&scan_results);
     *ap_count = scan_results.num;
-    *ap_list = k_calloc(scan_results.num, sizeof(csk_wifi_scan_info_t));
+    *ap_list = k_calloc(*ap_count, sizeof(csk_wifi_scan_info_t));
     if (*ap_list == NULL) {
         ret = CSK_WIFI_ERR_SCAN_FAILED;
         goto __out;
     }
-    for (int idx = 0; idx < scan_results.num; idx++) {
-        memcpy((*ap_list)[idx].ssid, scan_results.ap[idx].ssid.ssid, scan_results.ap[idx].ssid.ssid_len);
-        sprintf((*ap_list)[idx].bssid, MACSTR, MACTOSTR(scan_results.ap[idx].bssid));
-        (*ap_list)[idx].channel = scan_results.ap[idx].channel;
-        (*ap_list)[idx].rssi = scan_results.ap[idx].rssi;
+    csk_wifi_scan_info_t *ap_list_ptr = *ap_list;
+    for (int idx = 0; idx < *ap_count; idx++) {
+        memcpy(ap_list_ptr[idx].ssid, scan_results.ap[idx].ssid.ssid, scan_results.ap[idx].ssid.ssid_len);
+        ap_list_ptr[idx].ssid[scan_results.ap[idx].ssid.ssid_len] = '\0';
+        sprintf(ap_list_ptr[idx].bssid, MACSTR, MACTOSTR(scan_results.ap[idx].bssid));
+        ap_list_ptr[idx].channel = scan_results.ap[idx].channel;
+        ap_list_ptr[idx].rssi = -(scan_results.ap[idx].rssi * 0.5);
     }
 
 __out:
