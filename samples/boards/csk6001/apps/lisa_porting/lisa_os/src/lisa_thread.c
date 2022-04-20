@@ -27,9 +27,10 @@ static void _thread_delete_work_handler(struct k_work *work){
     pre_delete_thread_t *pre_thread, *tmp;
 	lisa_mutex_lock(pre_thread_mutex,LISA_WAIT_FOREVER);
     SYS_SLIST_FOR_EACH_CONTAINER_SAFE(list, pre_thread, tmp, node) {
+		sys_slist_find_and_remove(list,&pre_thread->node);
 		lisa_mem_free(pre_thread->thread);
 		lisa_mem_free(pre_thread);
-		sys_slist_find_and_remove(list,&pre_thread->node);
+		
     }
 	lisa_mutex_unlock(pre_thread_mutex);
 }
