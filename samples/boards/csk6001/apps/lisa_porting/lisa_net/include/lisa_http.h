@@ -1,46 +1,23 @@
 #ifndef __LISA_HAL_HTTP__
 #define __LISA_HAL_HTTP__
-/*
- * 文件      : hai_wifi.c
- *
 
- * 本程序只供学习使用，未经作者许可，不得用于其它任何用途
- * ListenAI BK7251开发板
- * 提供给应用层的wifi开发API
- * 包括 lisa_wifi_connect()  lisa_wifi_disconnect等
- * 官方网站:http://listenai.com/
- * 作者：   Alexho
- * 创建日期:2020.11.23
- * 版权所有，盗版必究。
- * Copyright(C) 安徽聆思智能科技有限公司
- * All rights reserved
- * ********************************************************************************
- *
- * 修改说明
- * V1.1 20201123
- * 1 . 创建。
- * 2 . 封装lisa的http/https接口
-*/
+#include <lisa_err.h>
+#include <lisa_mem.h>
+#include <string.h>
 
-#include "lisa_err.h"
-#include "lisa_semaphore.h"
-#include "lisa_thread.h"
-#include <net/http_client.h>
-
-
-#define URL_MAX_LENGTH 1024
-#define BODY_MAX_LENGTH 1024
+#define URL_MAX_LENGTH (1024)
+#define BODY_MAX_LENGTH (1024)
+#define HEADER_MAX_LENGTH (1024)
 
 typedef enum {
 	LISA_HTTP_OK = 0,
 	LISA_HTTP_COMMON_ERR,
 	LISA_HTTP_PARAM_ERROR,
-
 } lisa_http_err_e;
 
 typedef enum {
 	LISA_HTTP_ON_ERROR,
-	LISA_HTTP_ON_HEADER,  // 多次发生
+	LISA_HTTP_ON_HEADER,
 	LISA_HTTP_ON_END,
 } lisa_http_event_e;
 
@@ -67,17 +44,16 @@ typedef struct {
 typedef struct {
 	lisa_http_event_e what;
 	lisa_http_error_e error;
-	const char *header;
+	const uint8_t *header;
 	uint16_t status_code;
 } lisa_http_event_t;
 
 typedef struct {
 	lisa_http_method_e method;
-	int sock_id;
-	char url[URL_MAX_LENGTH];
-	char host[URL_MAX_LENGTH];
-	char body[BODY_MAX_LENGTH];
-	const char **headers;
+	uint8_t url[URL_MAX_LENGTH];
+	uint8_t body[BODY_MAX_LENGTH];
+	uint8_t header[HEADER_MAX_LENGTH];
+	void *header_addr;
 	int32_t body_len;
 	uint32_t timeout_ms;
 	void *user;
@@ -88,23 +64,45 @@ typedef struct {
 
 typedef struct {
 	lisa_http_method_e method;
-	const char *url;
-	const char *host;
-	const char **headers;
+	const uint8_t *url;
+	const uint8_t *headers;
 	void *body;
-	int32_t body_len;  // 不定长度传 -1
+	int32_t body_len;
 	uint32_t timeout_ms;
 	void *user;
 	void (*on_event)(lisa_http_event_t *event);
 	void (*on_data)(lisa_http_data_t *data);
 } lisa_http_request_t;
-int lisa_http_create(void);
-extern lisa_http_t *lisa_http_set(lisa_http_request_t *req);
-lisa_http_err_e lisa_http_perform(lisa_http_t *ins);
-// body=NULL, len=0 表示 EOF
-lisa_http_err_e lisa_http_write(lisa_http_t *ins, const void *buffer, size_t length);
 
-lisa_http_err_e lisa_http_cancel(lisa_http_t *ins);
-lisa_http_err_e lisa_http_cleanup(void);
+/**
+ * @brief 创建http实例
+ * 
+ * @param req 
+ * @return lisa_http_t* 
+ */
+extern lisa_http_t *lisa_http_init(lisa_http_request_t *req);
+
+/**
+ * @brief 执行http请求
+ * 
+ * @param ins 
+ * @return lisa_http_err_e 
+ */
+lisa_http_err_e lisa_http_perform(lisa_http_t *ins);
+
+/**
+ * @brief download
+ * @param  ins              
+ * @return lisa_http_err_e 
+ */
+lisa_http_err_e lisa_http_download(lisa_http_t *ins);
+
+/**
+ * @brief 释放http实例
+ * 
+ * @param ins 
+ * @return lisa_http_err_e 
+ */
+lisa_http_err_e lisa_http_cleanup(lisa_http_t *ins);
 
 #endif  //__LISA_HAL_HTTP__

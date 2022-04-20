@@ -1,362 +1,324 @@
-/*
- * SPDX-License-Identifier: Apache-2.0
- */
+#include <lisa_websocket.h>
+#include <lisa_log.h>
+#include <lisa_mem.h>
+#include <lisa_mutex.h>
+#include <lisa_queue.h>
+#include <lisa_thread.h>
+#include <lisa_typedef.h>
+#include <lisa_time.h>
+#include <ze_websocket_client.h>
+#include <lisa_semaphore.h>
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <zephyr.h>
-#include <sys/printk.h>
+#define WS_SEND_RETRY_TXT_COUNT (10)
+#define WS_SEND_RETRY_BIN_COUNT (5)
+#define WS_SEND_RETRY_DELAY (50000)  // 20ms
+#define SEND_STACK_SIZE (10 * 1024)
+#define RECV_STACK_SIZE (8 * 512)
+#define WS_QUEUE_COUNT 150
 
-#include <net/net_ip.h>
-#include <net/socket.h>
-#include <net/websocket.h>
-#include <net/http_client.h>
+static K_THREAD_STACK_DEFINE(lisa_ws_send_stack_area, SEND_STACK_SIZE);
+static K_THREAD_STACK_DEFINE(lisa_ws_recv_stack_area, RECV_STACK_SIZE);
 
-#include "lisa_websocket.h"
-
-#if !defined(__ZEPHYR__) || defined(CONFIG_POSIX_API)
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <netdb.h>
-
-#else
-
-#include <net/socket.h>
-#include <kernel.h>
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-#include <net/tls_credentials.h>
-#include "ca_certificate.h"
-#endif
-
-#endif
-
-#define TAG "lisa_websocket"
-
-#define WS_DEBUG 1
-#if WS_DEBUG
-#define WS_DBG(fmt, ...)                                                                           \
-	printf("[%s]%s,line:%d: " fmt "\n", TAG, __FUNCTION__, __LINE__, ##__VA_ARGS__);
-#else
-#define WS_DBG(fmt, ...)
-#endif
-
-#define WS_THREAD_STACK_SIZE (1 * 1024)
-K_THREAD_STACK_DEFINE(ws_recv_stack, WS_THREAD_STACK_SIZE);
-#define WS_THREAD_PRIORITY  2
-
-#define WS_RECV_BUF_SIZE 1024
-static uint8_t ws_recv_buf[WS_RECV_BUF_SIZE];
-
-#define RESP_BUF_SIZE 1024
-static uint8_t recv_buf_ipv4[RESP_BUF_SIZE];
+#define TAG "RWS"
 
 typedef struct {
-	int sock_id;
-	int ws_sock;
-	k_tid_t recv_t_id;
-} lisa_ws_mng_t;
+	lisa_ws_data_type_e m_type;  // 0 txt 1 audio
+	char *m_msg;
+	int m_size;
+	uint32_t flash_index;
+} lisa_ws_msg_t;
 
-static int setup_socket(sa_family_t family, int *sock)
+static lisa_ws_t *g_lisa_ws = NULL;
+static lisa_thread_t *g_pid_send = NULL;
+static lisa_thread_t *g_recv_thread = NULL;
+static lisa_mutex_t *g_mutex = NULL;
+static lisa_semaphore_t *s_ws_sema = NULL;
+static bool g_break_conn = false;
+static bool g_connected = false;
+static bool g_stop = false;
+
+static lisa_queue_t *g_tx_msg_queue = NULL;
+static lisa_queue_t *g_rx_msg_queue = NULL;
+
+static void _callback_ws_disconnect()
 {
-	const char *family_str = family == AF_INET ? "IPv4" : "IPv6";
-	int ret = 0;
-
-	struct timeval optval = {
-		.tv_sec = 10,
-		.tv_usec = 0,
-	};
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-	sec_tag_t sec_tag_list[] = {
-		CA_CERTIFICATE_TAG,
-	};
-
-	*sock = socket(family, SOCK_STREAM, IPPROTO_TLS_1_2);
-	if (*sock >= 0) {
-		ret = setsockopt(*sock, SOL_TLS, TLS_SEC_TAG_LIST, sec_tag_list,
-				 sizeof(sec_tag_list));
-		if (ret < 0) {
-			printf("Failed to set %s secure option (%d)", family_str, -errno);
-			ret = -errno;
-		}
-
-		ret = setsockopt(*sock, SOL_TLS, TLS_HOSTNAME, TLS_PEER_HOSTNAME,
-				 sizeof(TLS_PEER_HOSTNAME));
-		if (ret < 0) {
-			printf("Failed to set %s TLS_HOSTNAME "
-			       "option (%d)",
-			       family_str, -errno);
-			ret = -errno;
-		}
+	if (g_lisa_ws) {
+		lisa_ws_event_t ws_event;
+		ws_event.what = LISA_WS_ON_DISCONNECTED;
+		ws_event.header = NULL;
+		ws_event.user = g_lisa_ws->user;
+		g_lisa_ws->inter_on_event(&ws_event);
 	}
-
-#else
-	*sock = socket(family, SOCK_STREAM, IPPROTO_TCP);
-#endif
-	if (*sock < 0) {
-		printf("Failed to create %s HTTP socket (%d)", family_str, -errno);
-		return ret;
-	}
-	printf("socket finish\n");
-	setsockopt(*sock, SOL_SOCKET, SO_SNDTIMEO, &optval,
-			sizeof(optval));
-	return ret;
-}
-
-
-
-static int connect_socket(sa_family_t family, int *sock, struct sockaddr *addr, socklen_t addr_len)
-{
-	int ret;
-
-	ret = setup_socket(family, sock);
-	if (ret < 0 || *sock < 0) {
-		return -1;
-	}
-
-	ret = connect(*sock, addr, addr_len);
-	if (ret < 0) {
-		printf("Cannot connect to %s remote (%d)", family == AF_INET ? "IPv4" : "IPv6",
-		       -errno);
-		ret = -errno;
-	}
-
-	return ret;
-}
-
-
-void lisa_ws_thread(void *arg)
-{
-	uint64_t remaining = 0;
-	uint32_t message_type;
-	int ret = 0;
-	lisa_ws_data_t ws_data;
-	lisa_ws_event_t ws_event;
-	lisa_ws_t *ins = (lisa_ws_t *)arg;
-
-	if (ins->inter_on_event) {
-		ws_event.what = LISA_WS_ON_CONNECTED;
-		ws_event.user = ins->user;
-		ins->inter_on_event(&ws_event);
-	}
-	lisa_ws_mng_t *ws_mng = (lisa_ws_mng_t*)ins->ws_mngt;
-	while (1) {
-		remaining = 0;
-		memset(ws_recv_buf, 0, sizeof(ws_recv_buf));
-		ret = websocket_recv_msg(ws_mng->ws_sock, ws_recv_buf, 1, &message_type, &remaining,
-					0);
-					//  SYS_FOREVER_MS);
-
-		if (ret < 0) {
-			// WS_DBG("websocket_recv_msg error (%d)", ret);
-			k_sleep(K_MSEC(1000));
-			continue;
-		}
-		if (remaining > 0) {
-			printf("remaining: %lld \n", remaining);
-			ret = websocket_recv_msg(ws_mng->ws_sock, &ws_recv_buf[1], remaining,
-						 &message_type, NULL, 0);
-		}
-		if (ret < 0) {
-			WS_DBG("websocket_recv_msg2 error (%d)", ret);
-			continue;
-		} 
-
-		WS_DBG("websocket_recv_msg ---%d \n", message_type);
-		#if 1
-		if (message_type & WEBSOCKET_FLAG_CLOSE) {
-			lisa_ws_disconnect(ins);
-
-			if (ins->inter_on_event) {
-				ws_event.what = LISA_WS_ON_DISCONNECTED;
-				ws_event.user = ins->user;
-				ins->inter_on_event(&ws_event);
-			}
-		} else if (message_type & WEBSOCKET_FLAG_TEXT) {
-			// if (ins->inter_on_event) {
-			// 	ws_event.what = LISA_WS_ON_DATA;
-			// 	ws_event.user = ins->user;
-			// 	ins->inter_on_event(&ws_event);
-			// }
-			if (ins->inter_on_data) {
-				ws_data.type = LISA_WS_TEXT;
-				ws_data.buf = ws_recv_buf;
-				ws_data.len = 1 + remaining;
-				ins->inter_on_data(&ws_data);
-			}
-		} else if (message_type & WEBSOCKET_FLAG_BINARY) {
-			// if (ins->inter_on_event) {
-			// 	ws_event.what = LISA_WS_ON_DATA;
-			// 	ws_event.user = ins->user;
-			// 	ins->inter_on_event(&ws_event);
-			// }
-			if (ins->inter_on_data) {
-				ws_data.type = LISA_WS_BIN;
-				ws_data.buf = ws_recv_buf;
-				ws_data.len = 1 + remaining;
-				ins->inter_on_data(&ws_data);
-			}
-		} else {
-			if (ins->inter_on_event) {
-				ws_event.what = LISA_WS_ON_ERROR;
-				ws_event.user = ins->user;
-				ins->inter_on_event(&ws_event);
-			}
-		}
-		#endif
-	}
-}
-
-static int connect_cb(int sock, struct http_request *req, void *user_data)
-{
-	// this callback  not means connecting is finished
-	printf(" -----------------connect_cb finish %d\n", sock);
-
-	return 0;
 }
 
 lisa_ws_t *lisa_ws_init(lisa_ws_request_t *req)
 {
-	WS_DBG("lisa_ws_init");
-
-	lisa_ws_t *ins = malloc(sizeof(lisa_ws_t));
-	if (ins == NULL) {
-		WS_DBG("ins create failed. ");
+	lisa_ws_t *handle = (lisa_ws_t *)lisa_mem_calloc(1, sizeof(lisa_ws_t));
+	if (handle == NULL) {
+		LISA_LOGE(TAG, "handle create failed. ");
 		return NULL;
 	}
 
-	lisa_ws_mng_t *ws_mng = malloc(sizeof(lisa_ws_mng_t));
-	if (ws_mng == NULL) {
-		WS_DBG("ws_mng create failed. ");
-		return NULL;
+	LISA_LOGD(TAG, "port %s", req->port);
+	LISA_LOGD(TAG, "scheme %s", req->scheme);
+	LISA_LOGD(TAG, "host %s", req->host);
+	LISA_LOGD(TAG, "path %s", req->path);
+
+	strcpy((char *)handle->u_info.scheme, req->scheme);
+	strcpy((char *)handle->u_info.host, req->host);
+	strcpy((char *)handle->u_info.path, req->path);
+	strcpy((char *)handle->u_info.port, req->port);
+	handle->user = req->user;
+	handle->inter_on_event = req->on_event;
+
+	handle->inter_on_data = req->on_data;
+	g_mutex = lisa_mutex_create();
+	s_ws_sema = lisa_semaphore_create(2);
+	g_tx_msg_queue = lisa_queue_create(WS_QUEUE_COUNT, "ws_tx_msg", sizeof(lisa_ws_msg_t));
+	if (g_tx_msg_queue == NULL) {
+		LISA_LOGE(TAG, "create tx queue failed!");
+		goto ERR_TXQUE;
 	}
 
-	strcpy((char *)ins->u_info.scheme, req->scheme);
-	strcpy((char *)ins->u_info.host, req->host);
-	strcpy((char *)ins->u_info.path, req->path);
-	strcpy((char *)ins->u_info.port, req->port);
-
-	ins->user = req->user;
-	ins->inter_on_event = req->on_event;
-	ins->inter_on_data = req->on_data;
-	ins->timeout_ms = req->timeout_ms;
-	ins->ws_status = LISA_WS_STATUS_NULL;
-
-	static struct addrinfo hints;
-	struct addrinfo *res;
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	int st;
-	int sock4 = -1;
-
-
-	st = getaddrinfo(ins->u_info.host, ins->u_info.port, &hints, &res);
-	printf("getaddrinfo status: %d\n", st);
-
-	if (IS_ENABLED(CONFIG_NET_IPV4)) {
-		(void)connect_socket(AF_INET, &sock4, res->ai_addr, res->ai_addrlen);
+	g_rx_msg_queue = lisa_queue_create(WS_QUEUE_COUNT, "ws_rx_msg", sizeof(lisa_ws_msg_t));
+	if (g_rx_msg_queue == NULL) {
+		LISA_LOGE(TAG, "create rx queue failed!");
+		goto ERR_RXQUE;
 	}
 
-	if (sock4 < 0) {
-		printf("Cannot create HTTP connection.");
-		goto __err_exit;
+	g_lisa_ws = handle;
+	return handle;
+
+ERR_RXQUE:
+	if (g_tx_msg_queue) {
+		lisa_queue_delete(g_tx_msg_queue);
+		g_tx_msg_queue = NULL;
 	}
-	ws_mng->sock_id = sock4;
+ERR_TXQUE:
+	lisa_mem_free(handle);
+	return handle;
+}
+
+static void _recv_thread(void *param)
+{
+	lisa_ws_t *ins = (lisa_ws_t *)param;
+	lisa_ws_data_t ws_data;
+	ws_data.type = LISA_WS_TEXT;
+	ws_data.user = ins->user;
+	static lisa_ws_msg_t chunk;
+	memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+	while (!g_stop && lisa_queue_receive(g_rx_msg_queue, &chunk, sizeof(lisa_ws_msg_t),
+							  LISA_WAIT_FOREVER) == LISA_OK) {
+		ws_data.buf = chunk.m_msg;
+		ws_data.len = chunk.m_size;
+		ins->inter_on_data(&ws_data);
+		if (chunk.m_msg) {
+			lisa_mem_free(chunk.m_msg);
+		}
+		memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+	}
+
+	lisa_ws_msg_t recv_chunk;
+	memset(&recv_chunk, 0, sizeof(lisa_ws_msg_t));
+	while (lisa_queue_receive(g_rx_msg_queue, &recv_chunk, sizeof(lisa_ws_msg_t), 0) == LISA_OK) {
+		if (recv_chunk.m_msg != NULL) {
+			lisa_mem_free(recv_chunk.m_msg);
+		}
+		memset(&recv_chunk, 0, sizeof(lisa_ws_msg_t));
+	}
+
+	if (g_recv_thread) {
+		lisa_thread_t *temp_thread = g_recv_thread;
+		g_recv_thread = NULL;
+		lisa_thread_delete(temp_thread);
+	}
+}
+
+static void _lisa_ws_cb(ze_websocket_client_handle_t *client, ze_websocket_event_id_t event_id,
+		ze_websocket_event_data_t *data)
+{
+	switch (event_id) {
+		case WEBSOCKET_EVENT_CONNECTED:
+			LISA_LOGD(TAG, "WEBSOCKET_EVENT_CONNECTED");
+			g_connected = true;
+			lisa_semaphore_give(s_ws_sema);
+			break;
+		case WEBSOCKET_EVENT_DISCONNECTED:
+			g_stop = true;
+			g_connected = false;
+			_callback_ws_disconnect();
+			LISA_LOGD(TAG, "WEBSOCKET_EVENT_DISCONNECTED");
+			lisa_semaphore_give(s_ws_sema);
+			break;
+		case WEBSOCKET_EVENT_DATA:
+			LISA_LOGD(TAG, "recv data len %d\n", data->data_len);
+			if (data->data_len <= 0) {
+				return;
+			}
+			LISA_LOGD(TAG, "received=%.*s", data->data_len, (char *)data->data_ptr);
+			unsigned char *msg_copy = (unsigned char *)lisa_mem_alloc(data->data_len);
+			if (msg_copy == NULL) {
+				LISA_LOGE(TAG, "recv txt malloc failed!");
+				return;
+			}
+			memcpy(msg_copy, data->data_ptr, data->data_len);
+
+			static lisa_ws_msg_t recv_chunk;
+			memset(&recv_chunk, 0, sizeof(lisa_ws_msg_t));
+			recv_chunk.m_msg = (char *)msg_copy;
+			recv_chunk.m_size = data->data_len;
+			lisa_err_t st = lisa_queue_push(g_rx_msg_queue, (void *)&recv_chunk, sizeof(lisa_ws_msg_t), 0);
+			if (st != LISA_OK) {
+				LISA_LOGE(TAG, "send recv msg failed! ret: %d", st);
+				lisa_mem_free(msg_copy);
+			}
+
+			break;
+		case WEBSOCKET_EVENT_ERROR:
+			LISA_LOGE(TAG, "WEBSOCKET_EVENT_ERROR");
+			break;
+	}
+}
+
+static void _send_thread(void *param)
+{
+	lisa_ws_t *ins = (lisa_ws_t *)param;
+
+	lisa_mutex_lock(g_mutex, LISA_WAIT_FOREVER);
+
+	g_break_conn = false;
+	ze_websocket_client_config_t websocket_cfg = {
+			.task_stack = SEND_STACK_SIZE,
+			.task_prio = OS_PRIORITY_HIGH,
+			.user_context = ins,
+			.headers = "Origin: http://www.listenai.com\r\n",
+			.disable_auto_reconnect = true,
+	};
+	char url[512] = {0};
+
+	sprintf(url, "%s://%s:%s%s", ins->u_info.scheme, ins->u_info.host, ins->u_info.port, ins->u_info.path);
+	LISA_LOGD(TAG, "ws url = %s", url);
+	websocket_cfg.uri = url;
+
+	ze_websocket_client_handle_t client = ze_websocket_client_init(&websocket_cfg);
+	if (client == NULL) {
+		LISA_LOGE(TAG, "websocket client init failed");
+		goto EXIT;
+	}
+
+	ze_websocket_register_events(client, _lisa_ws_cb);
+	int start_ret = ze_websocket_client_start(client);
+	if (start_ret != ZPORT_OK) {
+		LISA_LOGE(TAG, "websocket start error: %d", start_ret);
+		goto EXIT;
+	}
+	lisa_semaphore_take(s_ws_sema, LISA_WAIT_FOREVER);
+	if (!g_connected) {
+		goto EXIT;
+	}
 	
-	ins->ws_mngt = (void *)ws_mng;
-	return ins;
+	lisa_thread_attr_t thread_attr;
+	thread_attr.name = "ws_recv_thread";
+	thread_attr.stack_size = K_THREAD_STACK_SIZEOF(lisa_ws_recv_stack_area);
+	thread_attr.stack = lisa_ws_recv_stack_area;
+	thread_attr.priority = OS_PRIORITY_ABOVE_NORMAL;  // OS_PRIORITY_ABOVE_NORMAL
+	g_recv_thread = lisa_thread_create(&thread_attr, _recv_thread, (void *)ins);
+	if (g_recv_thread == NULL) {
+		LISA_LOGE(TAG, "create recv thread failed");
+		goto EXIT;
+	}
 
-__err_exit:
-	free(ins);
-	return NULL;
+	g_stop = false;
+	lisa_ws_event_t ws_event;
+	ws_event.what = LISA_WS_ON_CONNECTED;
+	ws_event.header = NULL;
+	ws_event.user = ins->user;
+	ins->inter_on_event(&ws_event);
+
+	uint64_t start;
+	while (!g_stop) {
+		static lisa_ws_msg_t chunk;
+		memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+		lisa_err_t st = lisa_queue_receive(g_tx_msg_queue, &chunk, sizeof(lisa_ws_msg_t), 20);
+		if (st == LISA_OK) {
+			if (chunk.m_size > 0) {
+				int ret = 0;
+				if (chunk.m_type == LISA_WS_TEXT) {
+					int send_ret = ze_websocket_client_send_text(client, chunk.m_msg, chunk.m_size, 100);
+					if (send_ret <= 0) {
+						LISA_LOGD(TAG, "send ret %d", send_ret);
+					}
+					
+					if (chunk.m_msg != NULL) {
+						lisa_mem_free(chunk.m_msg);
+					}
+				} else {
+					start = lisa_os_get_ticks();
+					ret = ze_websocket_client_send_bin(client, chunk.m_msg, chunk.m_size, 100);
+					if (ret != chunk.m_size)
+						LISA_LOGE(TAG, "send bin ret: %d cost: %ld\n", ret,
+								lisa_os_get_ticks() - start);
+					if (chunk.m_msg != NULL) {
+						lisa_mem_free(chunk.m_msg);
+					}
+				}
+			}
+		}
+	}
+	if (g_recv_thread) {
+		lisa_ws_msg_t recv_chunk;
+		memset(&recv_chunk, 0, sizeof(lisa_ws_msg_t));
+		recv_chunk.m_msg = NULL;
+		recv_chunk.m_size = 0;
+		lisa_queue_push(g_rx_msg_queue, (void *)&recv_chunk, sizeof(lisa_ws_msg_t), 0);
+	}
+
+	lisa_ws_msg_t chunk;
+	memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+	while (lisa_queue_receive(g_tx_msg_queue, &chunk, sizeof(lisa_ws_msg_t), 0) == LISA_OK) {
+		if (chunk.m_msg != NULL) {
+			lisa_mem_free(chunk.m_msg);
+		}
+		memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+	}
+
+EXIT:
+	if (g_connected && client) {
+		ze_websocket_client_stop(client);
+	}
+	if (client) {
+		ze_websocket_client_destroy(client);
+	}
+	if (g_break_conn && g_connected) {
+		_callback_ws_disconnect();
+	}
+	g_connected = false;
+	lisa_mutex_unlock(g_mutex);
+	if (g_pid_send) {
+		lisa_thread_t *temp_thread = g_pid_send;
+		g_pid_send = NULL;
+		lisa_thread_delete(temp_thread);
+	}
+	return;
 }
 
 lisa_ws_err_e lisa_ws_connect(lisa_ws_t *ins)
 {
-	lisa_err_t ret = LISA_FAIL;
-	WS_DBG("lisa_ws_connect. ");
-	struct websocket_request req;
-	memset(&req, 0, sizeof(req));
-	req.host = ins->u_info.host;
-	req.url = ins->u_info.path;
-	req.optional_headers = NULL;
-	req.cb = connect_cb;
-	req.tmp_buf = recv_buf_ipv4;
-	req.tmp_buf_len = RESP_BUF_SIZE;	
-
-	WS_DBG("req.host %s", req.host);
-	WS_DBG("req.path %s", req.url);
-
-	lisa_ws_mng_t *ws_mng = (lisa_ws_mng_t*)ins->ws_mngt;
-	if (ws_mng->sock_id < 0) {
-		printf("Csock_id invalid\n");
-		return ret;
-	}
-	ws_mng->ws_sock = websocket_connect(ws_mng->sock_id, &req, ins->timeout_ms, (void *)ins);
-	if (ws_mng->ws_sock < 0) {
-		printf("Cannot connect to server\n");
-		return ret;
-	}
-	printf("ins->ws_sock  =  %d\n", ws_mng->ws_sock);
-
-	struct timeval optval = {
-		.tv_sec = 10,
-		.tv_usec = 0,
-	};
-	setsockopt(ws_mng->ws_sock, SOL_SOCKET, SO_RCVTIMEO, &optval,
-			sizeof(optval));	
-
-	static struct k_thread thread_handle;
-	ws_mng->recv_t_id = k_thread_create(&thread_handle, ws_recv_stack, K_THREAD_STACK_SIZEOF(ws_recv_stack),
-			(k_thread_entry_t)lisa_ws_thread, (void *)ins, NULL, NULL,
-			WS_THREAD_PRIORITY, 0, K_NO_WAIT);
-
-	return LISA_OK;
-}
-
-lisa_ws_err_e lisa_ws_send_text(lisa_ws_t *ins, const uint8_t *text)
-{
-	printf("text \r\n ");
-	if (ins == NULL) {
-		WS_DBG("ins is null ");
+	if (!ins) {
 		return LISA_WS_COMMON_ERR;
 	}
-	// if (ins->ws_status != LISA_WS_STATUS_OK) {
-	// 	WS_DBG("ws_status not connected");
-	// 	return LISA_WS_COMMON_ERR;
-	// }
-	lisa_ws_mng_t *ws_mng = (lisa_ws_mng_t*)ins->ws_mngt;
-	int send_len = websocket_send_msg(ws_mng->ws_sock, text, strlen(text),
-					  WEBSOCKET_OPCODE_DATA_TEXT, true, true, ins->timeout_ms);
-	if (send_len < 0) {
-		WS_DBG("ws send text failed  ret = %d ", send_len);
+	if (g_connected || g_pid_send) {
+		LISA_LOGE(TAG, "websocket already running");
 		return LISA_WS_COMMON_ERR;
 	}
-	return LISA_WS_OK;
-}
-
-lisa_ws_err_e lisa_ws_send_binary(lisa_ws_t *ins, const void *buf, uint32_t len)
-{
-	printf("bin \r\n ");
-	if (ins == NULL) {
-		WS_DBG("ins is null ");
-		return LISA_WS_COMMON_ERR;
-	}
-
-	// if (ins->ws_status != LISA_WS_STATUS_OK) {
-	// 	WS_DBG("ws_status not connected");
-	// 	return LISA_WS_COMMON_ERR;
-	// }
-	lisa_ws_mng_t *ws_mng = (lisa_ws_mng_t*)ins->ws_mngt;
-	int send_len = websocket_send_msg(ws_mng->ws_sock, buf, len, WEBSOCKET_OPCODE_DATA_BINARY,
-					  true, true, ins->timeout_ms);
-	if (send_len < 0) {
-		WS_DBG("ws send bin failed  ret = %d ", send_len);
+	lisa_thread_attr_t thread_attr;
+	thread_attr.name = "ws_send_thread";
+	thread_attr.stack_size = K_THREAD_STACK_SIZEOF(lisa_ws_send_stack_area);
+	thread_attr.stack = lisa_ws_send_stack_area;
+	thread_attr.priority = OS_PRIORITY_HIGH;  // OS_PRIORITY_HIGH
+	g_pid_send = lisa_thread_create(&thread_attr, _send_thread, (void *)ins);
+	if (g_pid_send == NULL) {
+		LISA_LOGE(TAG, "thread_create failed");
 		return LISA_WS_COMMON_ERR;
 	}
 	return LISA_WS_OK;
@@ -364,42 +326,90 @@ lisa_ws_err_e lisa_ws_send_binary(lisa_ws_t *ins, const void *buf, uint32_t len)
 
 lisa_ws_err_e lisa_ws_disconnect(lisa_ws_t *ins)
 {
-	// lisa_err_t error = LISA_FAIL;
-	WS_DBG("lisa_ws_disconnect. ");
-	if (ins == NULL) {
-		WS_DBG("ins is null ");
+	if (!ins || g_stop) {
 		return LISA_WS_COMMON_ERR;
 	}
-	lisa_ws_mng_t *ws_mng = (lisa_ws_mng_t*)ins->ws_mngt;
-	k_thread_abort(ws_mng->recv_t_id);
+	g_break_conn = true;
+	g_stop = true;
+	lisa_mutex_lock(g_mutex, LISA_WAIT_FOREVER);
+	lisa_mutex_unlock(g_mutex);
+	lisa_thread_mdelay(10);
+	return LISA_WS_OK;
+}
 
-	ins->ws_status = LISA_WS_STATUS_NOT_OK; // 记录状态
-	if (ws_mng->ws_sock >= 0) {
-		close(ws_mng->ws_sock);
-		ws_mng->ws_sock = -1;
+lisa_ws_err_e lisa_ws_send_text(lisa_ws_t *ins, const uint8_t *text)
+{
+	if (ins == NULL) {
+		return LISA_WS_COMMON_ERR;
 	}
-	return LISA_OK;
+	static lisa_ws_msg_t chunk;
+	memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+	chunk.m_type = LISA_WS_TEXT;
+	int len = strlen(text);
+	char *msg_copy = lisa_mem_alloc(len + 1);
+	if (msg_copy == NULL) {
+		LISA_LOGE(TAG, "send txt malloc failed!");
+		return LISA_WS_COMMON_ERR;
+	}
+	strcpy(msg_copy, text);
+	chunk.m_msg = msg_copy;
+	chunk.m_size = len;
+	lisa_err_t st = lisa_queue_push(g_tx_msg_queue, &chunk, sizeof(lisa_ws_msg_t), 0);
+	if (st != LISA_OK) {
+		lisa_mem_free(msg_copy);
+		LISA_LOGE(TAG, "send txt failed! ret: %d", st);
+		return LISA_WS_COMMON_ERR;
+	}
+	return LISA_WS_OK;
+}
+
+lisa_ws_err_e lisa_ws_send_binary(lisa_ws_t *ins, const void *buf, uint32_t len)
+{
+	if (ins == NULL) {
+		return LISA_WS_COMMON_ERR;
+	}
+	static lisa_ws_msg_t chunk;
+	memset(&chunk, 0, sizeof(lisa_ws_msg_t));
+
+	chunk.m_type = LISA_WS_BIN;
+	char *msg_copy = lisa_mem_alloc(len);
+	if (msg_copy == NULL) {
+		LISA_LOGE(TAG, "send byte malloc failed!");
+		return LISA_WS_COMMON_ERR;
+	}
+	memcpy(msg_copy, buf, len);
+	chunk.m_msg = msg_copy;
+	chunk.m_size = len;
+	lisa_err_t st = lisa_queue_push(g_tx_msg_queue, &chunk, sizeof(lisa_ws_msg_t), 0);
+	if (st != LISA_OK) {
+		lisa_mem_free(msg_copy);
+		LISA_LOGE(TAG, "send binary to queue failed! ret: %d", st);
+		return LISA_WS_COMMON_ERR;
+	}
+	return LISA_WS_OK;
 }
 
 lisa_ws_err_e lisa_ws_cleanup(lisa_ws_t *ins)
 {
-	// lisa_err_t error = LISA_FAIL;
-	WS_DBG("lisa_ws_cleanup. ");
-	if (ins == NULL) {
-		WS_DBG("ins is null ");
-		return LISA_WS_COMMON_ERR;
+	if (ins) {
+		lisa_ws_disconnect(ins);
+		while (g_pid_send != NULL) {
+			lisa_thread_mdelay(100);
+		}
+		while (g_recv_thread != NULL) {
+			lisa_thread_mdelay(100);
+		}
+		lisa_queue_delete(g_rx_msg_queue);
+		g_rx_msg_queue = NULL;
+		lisa_queue_delete(g_tx_msg_queue);
+		g_tx_msg_queue = NULL;
+		lisa_mutex_delete(g_mutex);
+		g_mutex = NULL;
+		lisa_semaphore_delete(s_ws_sema);
+		s_ws_sema = NULL;
+		lisa_mem_free(ins);
+		g_lisa_ws = NULL;
+		return LISA_WS_OK;
 	}
-	lisa_ws_mng_t *ws_mng = (lisa_ws_mng_t*)ins->ws_mngt;
-
-	lisa_ws_disconnect(ins);
-
-	if (ws_mng->sock_id >= 0) {
-		close(ws_mng->sock_id);
-		ws_mng->sock_id = -1;
-	}
-
-	free(ws_mng);
-	free(ins);
-
-	return LISA_OK;
+	return LISA_WS_COMMON_ERR;
 }

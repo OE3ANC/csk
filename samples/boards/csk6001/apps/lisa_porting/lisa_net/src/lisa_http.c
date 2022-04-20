@@ -1,353 +1,237 @@
-/*
- * SPDX-License-Identifier: Apache-2.0
- */
-
-#include <stdlib.h>
+#include <lisa_http.h>
+#include <lisa_log.h>
+#include <lisa_mem.h>
+#include <lisa_typedef.h>
+#include <ze_http_client.h>
 #include <string.h>
-#include <stdio.h>
-#include <zephyr.h>
-#include <sys/printk.h>
 
-#include <net/net_ip.h>
-#include <net/socket.h>
-#include <net/http_client.h>
+#define TAG "hal_http"
 
-#if !defined(__ZEPHYR__) || defined(CONFIG_POSIX_API)
+#define RESP_BUF_SIZE (4096)
+#define DOWNLOAD_SIZE (4096)
 
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <netdb.h>
+typedef void *(*lisa_http_get_header)();
 
-#else
-
-#include <net/socket.h>
-#include <kernel.h>
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-#include <net/tls_credentials.h>
-#include "ca_certificate.h"
-#endif
-
-#endif
-
-#include "lisa_http.h"
-
-// #include <logging/log.h>
-// LOG_MODULE_REGISTER(lisa_http, LOG_LEVEL_DBG);
-
-#define TAG "http"
-
-#define WS_DEBUG 1
-#if WS_DEBUG
-#define WS_DBG(fmt, ...)                                                                           \
-	printf("[%s]%s:%d:%s: " fmt "\n", TAG, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
-#else
-#define WS_DBG(fmt, ...)
-#endif
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-#define HTTP_PORT "443"
-#else
-#define HTTP_PORT "80"
-#endif
-
-#define RESP_BUF_SIZE 1024
-
-typedef struct {
-	bool enable_status;
-	lisa_semaphore_t *sem;
-	lisa_thread_t *thread;
-	uint8_t *read_buffer;
-	lisa_http_t *lisa_http;
-} hal_http_mng_t;
-
-hal_http_mng_t *g_http_mng = NULL;
-
-static int setup_socket(sa_family_t family, int *sock)
+zport_err_t _lisa_http_zport_cb(ze_http_client_event_t *evt)
 {
-	const char *family_str = family == AF_INET ? "IPv4" : "IPv6";
-	int ret = 0;
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-	sec_tag_t sec_tag_list[] = {
-		CA_CERTIFICATE_TAG,
-	};
-
-	*sock = socket(family, SOCK_STREAM, IPPROTO_TLS_1_2);
-	if (*sock >= 0) {
-		ret = setsockopt(*sock, SOL_TLS, TLS_SEC_TAG_LIST, sec_tag_list,
-				 sizeof(sec_tag_list));
-		if (ret < 0) {
-			printf("Failed to set %s secure option (%d)", family_str, -errno);
-			ret = -errno;
-		}
-
-		ret = setsockopt(*sock, SOL_TLS, TLS_HOSTNAME, TLS_PEER_HOSTNAME,
-				 sizeof(TLS_PEER_HOSTNAME));
-		if (ret < 0) {
-			printf("Failed to set %s TLS_HOSTNAME "
-			       "option (%d)",
-			       family_str, -errno);
-			ret = -errno;
-		}
-	}
-
-#else
-	*sock = socket(family, SOCK_STREAM, IPPROTO_TCP);
-
-#endif
-	if (*sock < 0) {
-		printf("Failed to create %s HTTP socket (%d)", family_str, -errno);
-	}
-
-	return ret;
-}
-
-static int connect_socket(sa_family_t family, int *sock, struct sockaddr *addr, socklen_t addr_len)
-{
-	int ret;
-	// net_sin(addr)->sin_port = htons(port);
-	ret = setup_socket(family, sock);
-	if (ret < 0 || *sock < 0) {
-		return -1;
-	}
-
-	ret = connect(*sock, addr, addr_len);
-	if (ret < 0) {
-		printf("Cannot connect to %s remote (%d)", family == AF_INET ? "IPv4" : "IPv6",
-		       -errno);
-		ret = -errno;
-	}
-
-	return ret;
-}
-
-static void response_cb(struct http_response *rsp, enum http_final_call final_data, void *user_data)
-{
-	lisa_http_t *ins = NULL;
-	lisa_http_data_t http_data;
-	lisa_http_event_t http_event;
-
-	// if (final_data == HTTP_DATA_MORE) {
-	// 	printf("Partial data received (%zd bytes)\n", rsp->data_len);
-	// } else if (final_data == HTTP_DATA_FINAL) {
-	// 	printf("All the data received (%zd bytes)\n", rsp->data_len);
-	// }
-	
-	printf("Response status %s\n", rsp->http_status);
-	printf("Response http_status_code  %d\n", rsp->http_status_code);
-
-	if (g_http_mng->lisa_http) {
-		ins = g_http_mng->lisa_http;
-
-		if (200 != rsp->http_status_code) {
-			http_event.error = LISA_HTTP_ERROR_NETWORK;
-			if (ins->inter_on_event) {
-				ins->inter_on_event(&http_event);
+	lisa_http_t *ins = (lisa_http_t *)evt->user_data;
+	switch (evt->event_id) {
+		case HTTP_EVENT_ERROR:
+			// LISA_LOGD(TAG, "HTTP_EVENT_ERROR");
+			break;
+		case HTTP_EVENT_ON_CONNECTED:
+			// LISA_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
+			break;
+		case HTTP_EVENT_HEADER_SENT:
+			// LISA_LOGD(TAG, "HTTP_EVENT_HEADER_SENT");
+			break;
+		case HTTP_EVENT_ON_HEADER:
+			// LISA_LOGD(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key,
+			// evt->header_value);
+			break;
+		case HTTP_EVENT_ON_DATA:
+			LISA_LOGD(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+			if (!ze_http_client_is_chunked_response(evt->client)) {
+				// Write out data
+				if (ins && ins->inter_on_data) {
+					lisa_http_data_t data;
+					data.buf = evt->data;
+					data.len = evt->data_len;
+					data.user = ins->user;
+					ins->inter_on_data(&data);
+				}
 			}
-			return;
-		}
-		printf("read_buffer %s\n",g_http_mng->read_buffer);
-		printf("\n\n");
-		http_data.buf = g_http_mng->read_buffer;
-		http_data.len = rsp->data_len;
-		http_data.user = ins->user;
-		if (ins->inter_on_data){
-			ins->inter_on_data(&http_data);
-		}
-		else
-		{
-			printf("inter_on_data null\n");
-		}
+
+			break;
+		case HTTP_EVENT_ON_FINISH:
+			// LISA_LOGD(TAG, "HTTP_EVENT_ON_FINISH");
+			break;
+		case HTTP_EVENT_DISCONNECTED:
+			// LISA_LOGD(TAG, "HTTP_EVENT_DISCONNECTED");
+			break;
 	}
+	return ZPORT_OK;
 }
 
-int lisa_http_create(void)
+zport_err_t _lisa_download_zport_cb(ze_http_client_event_t *evt)
 {
-	if (g_http_mng) {
-		printf("error: lisa_http is exist\n");
-		return LISA_FAIL;
-	}
-	g_http_mng = (hal_http_mng_t *)malloc(sizeof(hal_http_mng_t));
-	if (g_http_mng == NULL) {
-		printf("no memory for g_http_mng.\n");
-		return LISA_HTTP_COMMON_ERR;
-	}
-	memset(g_http_mng, 0, sizeof(hal_http_mng_t));
-	g_http_mng->enable_status = true;
-
-	g_http_mng->read_buffer = (unsigned char *)malloc(RESP_BUF_SIZE);
-	if (g_http_mng->read_buffer == NULL) {
-		printf("no memory for receive buffer.\n");
-		goto out;
-	}
-	return LISA_OK;
-
-out:
-	free(g_http_mng);
-	return LISA_FAIL;
+	return ZPORT_OK;
 }
 
-lisa_http_t *lisa_http_set(lisa_http_request_t *req)
+lisa_http_t *lisa_http_init(lisa_http_request_t *req)
 {
-	// int ret = 0;
-	int sock4 = -1;
-	lisa_http_t *lisa_http_temp = NULL;
+	int ret = 0;
+	lisa_http_t *http_session = NULL;
 
-	if (!g_http_mng) {
-		WS_DBG("error: lisa_http is not create\n");
+	http_session = (lisa_http_t *)lisa_mem_calloc(1, sizeof(lisa_http_t));
+	if (http_session == NULL) {
+		LISA_LOGE(TAG, "no memory for lisa_http_t.\n");
 		return NULL;
 	}
 
-	lisa_http_temp = (lisa_http_t *)malloc(sizeof(lisa_http_t));
-	if (lisa_http_temp == NULL) {
-		WS_DBG("no memory for lisa_http_t.\n");
-		return NULL;
-	}
-	memset(lisa_http_temp, 0, sizeof(struct http_request));
-
-	strcpy(lisa_http_temp->url, req->url);
-	strcpy(lisa_http_temp->host, req->host);
-
-	static struct addrinfo hints;
-	struct addrinfo *res;
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	int st;
-
-	st = getaddrinfo(lisa_http_temp->host, HTTP_PORT, &hints, &res);
-	printf("getaddrinfo status: %d\n", st);
-
-	int port = strtol(HTTP_PORT, NULL, 10);
-	if (port < 1 || port > 65535) {
-		printf("Err: DNS_EAI_NONAME \n");
-		goto __err_exit;
-	}
-
-	if (IS_ENABLED(CONFIG_NET_IPV4)) {
-		(void)connect_socket(AF_INET, &sock4, res->ai_addr, res->ai_addrlen);
-	}
-
-	if (sock4 < 0) {
-		printf("Cannot create HTTP connection.");
-		goto __err_exit;
-	}
+	strcpy(http_session->url, req->url);
 	if (req->body_len > 0) {
-		memcpy(lisa_http_temp->body, req->body, req->body_len); 
+		memcpy(http_session->body, req->body, req->body_len);
 	}
+	http_session->header_addr = req->headers;
+	http_session->body_len = req->body_len;
+	http_session->method = req->method;
+	http_session->timeout_ms = req->timeout_ms;
+	http_session->status_code = 0;
+	http_session->inter_on_data = req->on_data;
+	http_session->user = req->user;
 
-    if (req->headers)  
-    {
-        lisa_http_temp->headers = req->headers;
-    }
-
-	lisa_http_temp->sock_id = sock4;
-	lisa_http_temp->body_len = strlen(req->body);
-	lisa_http_temp->method = req->method;
-	lisa_http_temp->timeout_ms = req->timeout_ms;
-	lisa_http_temp->status_code = 0;
-	lisa_http_temp->user = req->user;
-	lisa_http_temp->inter_on_data = req->on_data;
-	lisa_http_temp->inter_on_event = req->on_event;
-
-	g_http_mng->lisa_http = lisa_http_temp;
-
-	return lisa_http_temp;
-
-__err_exit:
-	free(lisa_http_temp);
-	return NULL;
+	return http_session;
 }
-
 
 lisa_http_err_e lisa_http_perform(lisa_http_t *ins)
 {
-	lisa_http_err_e http_ret = 0;
+	lisa_http_err_e http_ret = LISA_HTTP_COMMON_ERR;
+	lisa_http_data_t http_data;
+	lisa_http_event_t http_event;
+	int ret = 0;
 
-	if (!ins) {
-		WS_DBG("webclient error: ins is null\n");
-		http_ret = LISA_HTTP_ERROR_PARAM;
-		return http_ret;
+	ze_http_client_config_t config = {
+			.event_handler = _lisa_http_zport_cb,
+			.url = ins->url,
+			.user_data = ins,
+			.timeout_ms = ins->timeout_ms,
+	};
+
+	ze_http_client_handle_t client = ze_http_client_init(&config);
+	if (client == NULL) {
+		LISA_LOGE(TAG, "malloc http params error");
+		return LISA_FAIL;
 	}
-	if (ins->sock_id >= 0 && IS_ENABLED(CONFIG_NET_IPV4)) {
-		struct http_request req;
 
-		// const char *headers[] = { "Content-Type: application/octet-stream\r\n", NULL };
-		memset(&req, 0, sizeof(req));
-
-		if (ins->method == LISA_HTTP_GET) {
-			req.method  = HTTP_GET;
-		} else if (ins->method == LISA_HTTP_POST) {
-			req.method  = HTTP_POST;
-		} else {
-			req.method  = 0;
-			WS_DBG("lisa_http_temp->http_request.method null\n");
+	lisa_http_get_header header_cb = (lisa_http_get_header)ins->header_addr;
+	char *header = header_cb();
+	if (header) {
+		char header_item[512];
+		char header_next[512];
+		char header_temp[512];
+		int32_t spl_ret = sscanf(header, "%[^\r\n]\r\n%s", header_item, header_next);
+		while (spl_ret > 0) {
+			char key[128];
+			char value[256];
+			int32_t result = sscanf(header_item, "%[^:]:%s", key, value);
+			if (result == 2) {
+				ze_http_client_set_header(client, key, value);
+			}
+			memset(header_item, 0, 512);
+			if (spl_ret == 2) {
+				spl_ret = sscanf(header_next, "%[^\r\n]\r\n%s", header_item, header_temp);
+				strcpy(header_next, header_temp);
+			} else {
+				break;
+			}
 		}
-
-		req.url = ins->url;
-		req.host = ins->host;
-		req.protocol = "HTTP/1.1";
-		req.payload = ins->body;
-		req.payload_len = ins->body_len;
-		req.header_fields = ins->headers;
-		req.response = response_cb;
-		req.recv_buf = g_http_mng->read_buffer;
-		req.recv_buf_len = RESP_BUF_SIZE;
-
-        if(http_client_req(ins->sock_id, &req, ins->timeout_ms, NULL)<0)
-        {
-            WS_DBG("webclient error: http_client_req\n");
-            http_ret = LISA_HTTP_ERROR_PARAM;
-        }		
 	}
 
-	return http_ret;
+	if (ins->method == LISA_HTTP_GET) {
+		ze_http_client_set_method(client, HTTP_METHOD_GET);
+	} else if (ins->method == LISA_HTTP_POST) {
+		ze_http_client_set_method(client, HTTP_METHOD_POST);
+		ze_http_client_set_post_field(client, ins->body, ins->body_len);
+	}
+
+	zport_err_t err = ze_http_client_perform(client);
+	if (err == ZPORT_OK) {
+		LISA_LOGD(TAG, "HTTP GET Status = %d, content_length = %ld",
+				ze_http_client_get_status_code(client), ze_http_client_get_content_length(client));
+	} else {
+		LISA_LOGE(TAG, "HTTP GET request failed: %x %s line: %d", err, __func__, __LINE__);
+		ret = -1;
+	}
+
+	ze_http_client_cleanup(client);
+
+	return (ret == 0 ? LISA_HTTP_OK : LISA_HTTP_COMMON_ERR);
+}
+
+lisa_http_err_e lisa_http_download(lisa_http_t *ins)
+{
+	lisa_http_err_e http_ret = LISA_HTTP_COMMON_ERR;
+	lisa_http_data_t http_data;
+	lisa_http_event_t http_event;
+	int ret = 0;
+
+	ze_http_client_config_t config = {
+			.event_handler = _lisa_http_zport_cb,
+			.url = ins->url,
+			.user_data = ins,
+			.timeout_ms = ins->timeout_ms,
+	};
+
+	ze_http_client_handle_t client = ze_http_client_init(&config);
+	if (client == NULL) {
+		LISA_LOGE(TAG, "malloc http params error");
+		return LISA_FAIL;
+	}
+
+	lisa_http_get_header header_cb = (lisa_http_get_header)ins->header_addr;
+	char *header = header_cb();
+	if (header) {
+		char header_item[512];
+		char header_next[512];
+		char header_temp[512];
+		int32_t spl_ret = sscanf(header, "%[^\r\n]\r\n%s", header_item, header_next);
+		while (spl_ret > 0) {
+			char key[128];
+			char value[256];
+			int32_t result = sscanf(header_item, "%[^:]:%s", key, value);
+			if (result == 2) {
+				ze_http_client_set_header(client, key, value);
+			}
+			memset(header_item, 0, 512);
+			if (spl_ret == 2) {
+				spl_ret = sscanf(header_next, "%[^\r\n]\r\n%s", header_item, header_temp);
+				strcpy(header_next, header_temp);
+			} else {
+				break;
+			}
+		}
+	}
+
+	if (ins->method == LISA_HTTP_GET) {
+		ze_http_client_set_method(client, HTTP_METHOD_GET);
+	} else if (ins->method == LISA_HTTP_POST) {
+		ze_http_client_set_method(client, HTTP_METHOD_POST);
+		ze_http_client_set_post_field(client, ins->body, ins->body_len);
+	}
+
+	zport_err_t err = ze_http_client_perform(client);
+	if (err == ZPORT_OK) {
+		LISA_LOGD(TAG, "HTTP GET Status = %d, content_length = %ld",
+				ze_http_client_get_status_code(client), ze_http_client_get_content_length(client));
+	} else {
+		LISA_LOGE(TAG, "HTTP GET request failed: %x %s line: %d", err, __func__, __LINE__);
+		ret = -1;
+	}
+
+	ze_http_client_cleanup(client);
+
+	return (ret == 0 ? LISA_HTTP_OK : LISA_HTTP_COMMON_ERR);
 }
 
 lisa_http_err_e lisa_http_write(lisa_http_t *ins, const void *buffer, size_t length)
 {
-	// todo
-	return LISA_OK;
+	lisa_http_err_e http_ret = LISA_HTTP_OK;
+	return http_ret;
 }
 
 lisa_http_err_e lisa_http_cancel(lisa_http_t *ins)
 {
-	lisa_http_err_e http_ret = 0;
-	if (!ins) {
-		WS_DBG("webclient error: ins is null\n");
-		http_ret = LISA_HTTP_ERROR_PARAM;
-		return http_ret;
-	}
-	if (ins->sock_id > 0) {
-		close(ins->sock_id);
-		ins->sock_id = -1;
-		g_http_mng->lisa_http = NULL;
-	}
-
-	free(ins);
+	lisa_http_err_e http_ret = LISA_HTTP_OK;
 	return http_ret;
 }
 
-lisa_http_err_e lisa_http_cleanup(void)
+lisa_http_err_e lisa_http_cleanup(lisa_http_t *ins)
 {
-	WS_DBG("lisa_http_cleanup----\n");
-	lisa_http_err_e http_ret = 0;
-	if (!g_http_mng) {
-		WS_DBG("error: g_http_mng is not created\n");
-		return LISA_HTTP_COMMON_ERR;
+	lisa_http_err_e http_ret = LISA_HTTP_OK;
+	if (ins) {
+		lisa_mem_free(ins);
+		return http_ret;
 	}
-	if (g_http_mng->lisa_http) {
-		WS_DBG("info: g_http_mng->lisa_http is running,cancel it\n");
-		http_ret = lisa_http_cancel(g_http_mng->lisa_http);
-		if (http_ret) {
-			WS_DBG("error: lisa_http_cancel error\n");
-			return LISA_HTTP_COMMON_ERR;
-		}
-	}
-
-	free(g_http_mng->read_buffer);
-	free(g_http_mng);
 	return http_ret;
 };
