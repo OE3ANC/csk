@@ -50,7 +50,7 @@ manifest:
       path: modules/lib/listenai/zport_sal
     - name: zport_esp
       remote: listenai
-      revision: 6c57bbf1a22941834e0f32c3640beb76a5dc763e
+      revision: 351362c57afe163756af96e027ff6575c915cf5c
       path: modules/lib/listenai/zport_esp
     - name: pyocd
       remote: listenai
