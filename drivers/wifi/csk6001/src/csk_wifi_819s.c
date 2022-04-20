@@ -223,17 +223,15 @@ static csk_wifi_result_t wifi_sta_get_connected_info(const struct device *dev)
     wlan_sta_config_t config = {0};
 
     int wlan_ret = 0;
-    config.field = WLAN_STA_FIELD_SSID;
-    wlan_ret |= wlan_sta_get_config(&config);
-    memcpy(data->sta_config.ssid, config.u.ssid.ssid, config.u.ssid.ssid_len);
+    wlan_sta_ap_t ap_info;
+    wlan_ret = wlan_sta_ap_info(&ap_info);
+    memcpy(data->sta_config.ssid, ap_info.ssid.ssid, ap_info.ssid.ssid_len);
     config.field = WLAN_STA_FIELD_PSK;
     wlan_ret |= wlan_sta_get_config(&config);
     memcpy(data->sta_config.pwd, config.u.psk, CSK_WIFI_PWD_LEN);
-    config.field = WLAN_STA_FIELD_BSSID;
-    wlan_ret |= wlan_sta_get_config(&config);
-    sprintf(data->sta_config.bssid, MACSTR, MACTOSTR(config.u.bssid.bssid));
-    config.field = WLAN_STA_FIELD_BSSID;
-    wlan_ret |= wlan_sta_get_config(&config);
+    sprintf(data->sta_config.bssid, MACSTR, MACTOSTR(ap_info.bssid));
+    data->sta_config.rssi = -(ap_info.rssi * 0.5);
+    data->sta_config.channel = ap_info.channel;
     if (wlan_ret != 0 ) {
         return CSK_WIFI_ERR_STA_FAILED;
     }
