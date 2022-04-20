@@ -1,120 +1,133 @@
-/*
- * SPDX-License-Identifier: Apache-2.0
- */
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <zephyr.h>
-#include <sys/printk.h>
-
-#include <tester_lisa.h>
+#include "tester_lisa.h"
 #include <lisa_http.h>
+#include <lisa_log.h>
+#include <lisa_mem.h>
 
-#include <logging/log.h>
-LOG_MODULE_REGISTER(tester_http, LOG_LEVEL_DBG);
+#define TAG "http_test"
+#define HTTP_POST_URL ("http://www.rt-thread.com/service/echo")
+#define HTTP_GET_URL ("http://listenai-firmware-delivery.oss-cn-beijing.aliyuncs.com/test/test.txt")
+#define HTTP_DOWNLOAD_URL                                                                   \
+	("http://listenai-firmware-delivery.oss-cn-beijing.aliyuncs.com/test/scanpen/ota_test/" \
+	 "flashboot.bin")
+#define HTTP_TEST_HEAD ("Content-Type:application/x-www-form-urlencoded;charset=utf-8")
+#define BODY                                                                                    \
+	"client_id=ad9f3c5d-38fd-4383-8d8d-8d460590de22&scope=user_ivs_all&scope_data={\"user_ivs_" \
+	"all\":{\"device_id\":\"12345\"}}"
+#define HTTP_TIME_OUT (10 * 1000)
+unit_test_result_t g_result = LISA_TEST_PASS;
 
-
-
-#include <net/net_ip.h>
-#include <net/socket.h>
-#include <net/http_client.h>
-
-#if !defined(__ZEPHYR__) || defined(CONFIG_POSIX_API)
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <netdb.h>
-
-#else
-
-#include <net/socket.h>
-#include <kernel.h>
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-#include <net/tls_credentials.h>
-#include "ca_certificate.h"
-#endif
-
-#endif
-
-
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-#define HTTP_PORT "443"
-#else
-#define HTTP_PORT "80"
-#endif
-
-/* HTTP server to connect to */
-#define HTTP_HOST "www.rt-thread.com"
-// #define HTTP_HOST "192.168.0.100" 
-
-
-
-
-
-#define HEADERS "Content-Type: application/octet-stream\r\n"
-
-lisa_http_t *test_http = NULL;
-
-void
-get_http_data_cb(lisa_http_data_t *data)
+static void *_lisa_evs_request_device_code_heads(void)
 {
-	printf("-----get_auth_data_cb -----");
-	if (data->buf) {
-		printf("%s", (char *)data->buf);
-		printf("\n");
-	}
-	if (data->user) {
-		printf("%p", (char *)data->user);
+	return HTTP_TEST_HEAD;
+}
+
+static uint32_t s_total_len = 0;
+
+static void http_data_cb(lisa_http_data_t *data)
+{
+	if (!data || !data->buf || data->len <= 0) {
+		g_result = LISA_TEST_FAILED;
+	} else {
+		s_total_len += data->len;
+		LISA_LOGE(TAG, "http response : len %d", s_total_len);
 	}
 }
 
-const char *headers[] = {
-		"Content-Type: application/octet-stream\r\n",
-		NULL
-	};
+static void http_event_cb(lisa_http_event_t *event) {}
 
-void lisa_https_test(void)
+static unit_test_result_t http_test_method(lisa_http_method_e method)
 {
+	lisa_http_request_t *http_param =
+			(lisa_http_request_t *)lisa_mem_calloc(1, sizeof(lisa_http_request_t));
+	http_param->method = method;
+	if (method == LISA_HTTP_GET) {
+		http_param->url = HTTP_GET_URL;
+	} else if (method == LISA_HTTP_POST) {
+		http_param->url = HTTP_POST_URL;
+	}
+	http_param->headers = (void *)_lisa_evs_request_device_code_heads;
+	if (method == LISA_HTTP_GET) {
+		http_param->body = NULL;
+		http_param->body_len = 0;
+	} else if (method == LISA_HTTP_POST) {
+		http_param->body = BODY;
+		http_param->body_len = strlen(BODY);
+	}
+	http_param->timeout_ms = HTTP_TIME_OUT;
+	http_param->on_data = http_data_cb;
+	http_param->on_event = http_event_cb;
+	http_param->user = NULL;
 
-    _wifi_init();
-	k_sleep(K_TICKS(50000));
-
-
-	#if 1
-
-	lisa_http_request_t http_param;
-	lisa_http_err_e http_ret = 0;
-
-	lisa_http_create();
-
-	http_param.url = "/service/echo";
-	http_param.host = "www.rt-thread.com";
-	http_param.headers = headers;
-	http_param.body = "RT-Thread is an open source IoT";
-	http_param.body_len = strlen(http_param.body)+1;
-	http_param.method = LISA_HTTP_POST;
-	http_param.timeout_ms = 3 * MSEC_PER_SEC;
-	http_param.on_data = get_http_data_cb;
-	http_param.on_event = NULL;
-	http_param.user = NULL;
-	test_http = lisa_http_set(&http_param);
-	if (test_http == NULL) {
-	printf("lisa_http_set failed\n");
+	lisa_http_t *http_test = lisa_http_init(http_param);
+	if (!http_test) {
+		LISA_LOGE(TAG, "lisa_http_init failed");
+		g_result = LISA_TEST_FAILED;
 	}
 
-	http_ret = lisa_http_perform(test_http);
-	if (http_ret) {
-		printf("lisa_http_perform failed ret = %d\n", http_ret);
+	if (lisa_http_perform(http_test) != LISA_HTTP_OK) {
+		LISA_LOGE(TAG, "lisa_http_perform failed");
+		g_result = LISA_TEST_FAILED;
 	}
-	k_sleep(K_TICKS(50000));
-	lisa_http_cancel(test_http);
-	test_http = NULL;
 
-	lisa_http_cleanup();
-	#endif
+	if (http_test) {
+		lisa_http_cleanup(http_test);
+	}
 
+	if (http_param) {
+		lisa_mem_free(http_param);
+	}
+	return g_result;
+}
+
+static void http_test_download(lisa_http_method_e method)
+{
+	lisa_http_request_t *http_param =
+			(lisa_http_request_t *)lisa_mem_calloc(1, sizeof(lisa_http_request_t));
+	http_param->method = method;
+	http_param->url = HTTP_DOWNLOAD_URL;
+
+	http_param->headers = (void *)_lisa_evs_request_device_code_heads;
+	if (method == LISA_HTTP_GET) {
+		http_param->body = NULL;
+		http_param->body_len = 0;
+	} else if (method == LISA_HTTP_POST) {
+		http_param->body = BODY;
+		http_param->body_len = strlen(BODY);
+	}
+	http_param->timeout_ms = HTTP_TIME_OUT;
+	http_param->on_data = http_data_cb;
+	http_param->on_event = http_event_cb;
+	http_param->user = NULL;
+
+	lisa_http_t *http_test = lisa_http_init(http_param);
+	if (!http_test) {
+		LISA_LOGE(TAG, "lisa_http_init failed");
+		g_result = LISA_TEST_FAILED;
+	}
+
+	if (lisa_http_download(http_test) != LISA_HTTP_OK) {
+		LISA_LOGE(TAG, "lisa_http_perform failed");
+		g_result = LISA_TEST_FAILED;
+	}
+
+	if (http_test) {
+		lisa_http_cleanup(http_test);
+	}
+
+	if (http_param) {
+		lisa_mem_free(http_param);
+	}
+	return g_result;
+}
+
+unit_test_result_t lisa_https_test()
+{
+	// http post
+	http_test_method(LISA_HTTP_POST);
+	s_total_len = 0;
+	http_test_method(LISA_HTTP_GET);
+	s_total_len = 0;
+	// http_test_download(LISA_HTTP_GET);
+
+	return g_result;
 }
