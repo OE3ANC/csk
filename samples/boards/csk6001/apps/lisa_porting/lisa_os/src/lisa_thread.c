@@ -1,12 +1,50 @@
+#include <zephyr.h>
+#include <zephyr/types.h>
+#include <init.h>
+#include <lisa_typedef.h>
 #include <lisa_mem.h>
 #include <lisa_time.h>
 #include <lisa_log.h>
+#include <lisa_mutex.h>
 #include <lisa_thread.h>
 #define THREAD_TIMESLICE 5
 
 #define TAG "lisa_thread"
 typedef void (*lisa_thread_entry_t)(void *, void *, void *);
 
+/* Delayed work for timeout handling */
+static struct k_work_delayable		s_thread_delete_work;
+static sys_slist_t pre_delete_thread_list;
+static lisa_mutex_t *pre_thread_mutex = NULL;
+#define LISA_THREAD_DELAY_DELETE_TIMEOUT	K_MSEC(100)
+typedef struct{
+	sys_snode_t node;
+	lisa_thread_t *thread;
+}pre_delete_thread_t;
+
+static void _thread_delete_work_handler(struct k_work *work){
+    sys_slist_t *list = &pre_delete_thread_list;
+    pre_delete_thread_t *pre_thread, *tmp;
+	lisa_mutex_lock(pre_thread_mutex,LISA_WAIT_FOREVER);
+    SYS_SLIST_FOR_EACH_CONTAINER_SAFE(list, pre_thread, tmp, node) {
+		sys_slist_find_and_remove(list,&pre_thread->node);
+		lisa_mem_free(pre_thread->thread);
+		lisa_mem_free(pre_thread);
+		
+    }
+	lisa_mutex_unlock(pre_thread_mutex);
+}
+
+
+static int lisa_thread_prepare(const struct device *unused){
+
+	ARG_UNUSED(unused);
+	pre_thread_mutex = lisa_mutex_create();
+	sys_slist_init(&pre_delete_thread_list);
+	k_work_init_delayable(&s_thread_delete_work,_thread_delete_work_handler);
+
+	return 0;
+}
 
 static void _thread_wrapper(void *arg1, void *arg2, void *arg3)
 {
@@ -41,9 +79,20 @@ lisa_err_t lisa_thread_delete(lisa_thread_t *thread)
 	}
 
 	if(k_current_get() == thread->thread_id){
-		lisa_threadid_t tid = thread->thread_id;
-		lisa_mem_free(thread);
-		k_thread_abort(tid);
+		pre_delete_thread_t* pre_thread;
+
+		pre_thread = lisa_mem_alloc(sizeof(pre_delete_thread_t));
+		if(pre_thread != NULL){
+			pre_thread->thread = thread;
+			lisa_mutex_lock(pre_thread_mutex,LISA_WAIT_FOREVER);
+			sys_slist_prepend(&pre_delete_thread_list, &pre_thread->node);
+			lisa_mutex_unlock(pre_thread_mutex);
+			k_work_reschedule(&s_thread_delete_work, LISA_THREAD_DELAY_DELETE_TIMEOUT);
+		}
+		else{
+			LISA_LOGE(TAG, "[%s %d]lisa_mem_alloc FAILED!", __FUNCTION__, __LINE__);
+		}
+		k_thread_abort(thread->thread_id);
 		return LISA_OK;
 	}
 
@@ -108,3 +157,5 @@ lisa_thread_t *lisa_thread_getcurrent(void)
 	__ASSERT(0, "%s is unsupport", __FUNCTION__);
 	return NULL;
 }
+
+SYS_INIT(lisa_thread_prepare, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
