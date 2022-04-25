@@ -98,6 +98,7 @@
 			compatible = "listenai,csk-pinmux";
 			reg = <0x46200000 0x80>;
 			#pinmux-cells = <2>;
+			#pinctrl-cells = <2>;
 			label = "PINMUX_A";
 			status = "okay";
 		};
@@ -106,6 +107,7 @@
 			compatible = "listenai,csk-pinmux";
 			reg = <0x46200080 0xc0>;
 			#pinmux-cells = <2>;
+			#pinctrl-cells = <2>;
 			label = "PINMUX_B";
 			status = "okay";
 		};

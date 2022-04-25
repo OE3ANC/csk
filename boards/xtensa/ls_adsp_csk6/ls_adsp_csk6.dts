@@ -7,6 +7,7 @@
 /dts-v1/;
 
 #include <listenai/ls_csk6.dtsi>
+#include "ls_adsp_csk6_pinctrl.dtsi"
 
 / {
 	model = "ls_adsp_csk6";
@@ -53,8 +54,8 @@
 };
 
 &uart2 {
+	pinctrl-0 = <&pinctrl_uart2_rx_default &pinctrl_uart2_tx_default>; 
+	pinctrl-names = "default";
 	current-speed = <115200>;
-	pinmuxs = <&pinmuxb 7 3>, <&pinmuxb 6 3>;
-        /* pinmux-names = "RXD", "TXD"; */
 	status = "okay";
 };
