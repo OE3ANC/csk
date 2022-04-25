@@ -3,6 +3,7 @@
 /dts-v1/;
 #include <csk/csk6001.dtsi>
 #include <dt-bindings/pwm/pwm.h>
+#include "csk6002_9s_nano_pinctrl.dtsi"
 
 / {
         model = "csk6002 9s nano";
@@ -61,7 +62,7 @@
                 compatible = "gpio-keys";
                 user_button_0: button_0 {
                         label = "User SW0";
-                        gpios = <&gpiob 6 0>;
+                        gpios = <&gpiob 5 0>;
                 };
         };
 
@@ -85,11 +86,16 @@
 	status = "okay";
 
 	pwm5: pwm5 {
-                pinmuxs = <&pinmuxa 5 11>;
                 clock-prescaler = <128>;
                 status = "okay";
 	};
 
+};
+
+&pwm5 {
+        pinctrl-0 = <&pinctrl_pwm5_default>; 
+        pinctrl-names = "default";
+        status = "okay";
 };
 
 &gpioa {
@@ -101,9 +107,9 @@
 };
 
 &uart0 {
+        pinctrl-0 = <&pinctrl_uart0_rx_default &pinctrl_uart0_tx_default>; 
+        pinctrl-names = "default";
         current-speed = <115200>;
-        pinmuxs = <&pinmuxa 2 2>, <&pinmuxa 3 2>;
-        /* pinmux-names = "RXD", "TXD"; */
         status = "okay";
 };
 
@@ -116,10 +122,6 @@
 };
 
 &spi0 {
-    miso-gpios = <&gpioa 17 0>;
-    mosi-gpios = <&gpioa 18 0>;
-    sclk-gpios = <&gpioa 19 0>;
-    cs-gpios = <&gpioa 20 0>;
     status = "disabled";
 };
 
@@ -128,15 +130,11 @@
 };
 
 &i2c0 {
-        status = "okay";
-        pinmuxs = <&pinmuxa 4 8>, <&pinmuxa 5 8>;
-        pinmux-names = "SCL", "SDA";
+        status = "disabled";
 };
 
 &i2c1 {
-        status = "okay";
-        pinmuxs = <&pinmuxa 6 9>, <&pinmuxa 7 9>;
-        pinmux-names = "SDA", "SCL";
+        status = "disabled";
 };
 
 &board_led_2 {
@@ -227,6 +225,4 @@ zephyr_udc0: &usbotg {
 
 &adc0 {
         status = "disabled";
-        pinmuxs = <&pinmuxb 6 16>, <&pinmuxb 7 16>, <&pinmuxb 8 16>;
-        pinmux-names = "ch0", "ch1", "ch2";
 };
