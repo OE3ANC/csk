@@ -52,10 +52,6 @@ manifest:
       remote: listenai
       revision: 351362c57afe163756af96e027ff6575c915cf5c
       path: modules/lib/listenai/zport_esp
-    - name: pyocd
-      remote: listenai
-      revision: a51b6446c020eabc627e946339d6c9aee0bbc48a
-      path: tools/pyocd
     - name: wifi_manager
       remote: listenai
       revision: c44ef39564656a9b1c7aa6e8c00e9a2608d13bc8
