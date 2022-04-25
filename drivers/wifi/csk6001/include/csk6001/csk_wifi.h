@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 #define CSK_WIFI_SSID_LEN       32
-#define CSK_WIFI_BSSID_LEN      18
+#define CSK_WIFI_BSSID_LEN      17
 #define CSK_WIFI_PWD_LEN        64
 
 /* TODO: Add WIFI state machine transition diagram */
@@ -41,9 +41,9 @@ typedef enum {
  * @brief CSK WiFi station configuration struct
  */
 typedef struct {
-    char ssid[CSK_WIFI_SSID_LEN];                   /* Target AP SSID */
-    char pwd[CSK_WIFI_PWD_LEN];                     /* Target AP Password */
-    char bssid[CSK_WIFI_BSSID_LEN];                 /* Target AP bssid (MAC address) */
+    char ssid[CSK_WIFI_SSID_LEN+1];                 /* Target AP SSID */
+    char pwd[CSK_WIFI_PWD_LEN+1];                   /* Target AP Password */
+    char bssid[CSK_WIFI_BSSID_LEN+1];               /* Target AP bssid (MAC address) */
     uint8_t channel;                                /* Target AP channel */
     int rssi;                                       /* Target AP rssi */
     csk_wifi_encryption_mode_t encryption_mode;     /* Target AP encryption mode */
@@ -53,8 +53,8 @@ typedef struct {
  * @brief CSK WiFi softap configuration struct
  */
 typedef struct {
-    char ssid[CSK_WIFI_SSID_LEN];                   /* WiFi SoftAP SSID */
-    char pwd[CSK_WIFI_PWD_LEN];                     /* WiFi SoftAP Password */
+    char ssid[CSK_WIFI_SSID_LEN+1];                 /* WiFi SoftAP SSID */
+    char pwd[CSK_WIFI_PWD_LEN+1];                   /* WiFi SoftAP Password */
     csk_wifi_encryption_mode_t encryption_mode;     /* WiFi SoftAP encryption mode */
     csk_wifi_bandwidth_t bandwidth;                 /* WiFi SoftAP bandwidth */
     uint8_t channel;                                /* WiFi SoftAP channel */
@@ -66,8 +66,8 @@ typedef struct {
  * @brief CSK WiFi scan info type
  */
 typedef struct {
-    char ssid[CSK_WIFI_SSID_LEN];                         /* Neighboring AP SSID */
-    char bssid[CSK_WIFI_BSSID_LEN];                       /* Neighboring AP BSSID */
+    char ssid[CSK_WIFI_SSID_LEN+1];                 /* Neighboring AP SSID */
+    char bssid[CSK_WIFI_BSSID_LEN+1];               /* Neighboring AP BSSID */
     int rssi;                                       /* Neighboring AP rssi */
     uint8_t channel;                                /* Neighboring AP channel */
     csk_wifi_encryption_mode_t encryption_mode;     /* Neighboring AP encryption mode */
@@ -82,7 +82,7 @@ typedef enum {
     CSK_WIFI_ERR_AP_FAILED,             /* Unknown SoftAP exception, will be raised in SoftAP mode. TODO: remove it */
     CSK_WIFI_ERR_AP_NOT_FOUND,          /* AP ssid not found, will be raised in Station mode */
     CSK_WIFI_ERR_INVALID_PASSWORD,      /* Invalid WIFI password, will be raised in Station mode */
-    CSK_WIFI_ERR_SCAN_FAILED,
+    CSK_WIFI_ERR_SCAN_FAILED,           /* WiFi scan neighboring AP devices failed */
 } csk_wifi_result_t;                    /* WIFI API result type */
 
 /**
