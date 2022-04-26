@@ -40,8 +40,8 @@ struct adc_csk6_data {
     void *handle; 
     
 	struct adc_context ctx;
-	/* Channel ID */
-	uint32_t ch;
+	/* Channels mask */
+	uint32_t channels;
 	/* Save ADC result to the buffer. */
 	uint16_t *buffer;
 	/*
@@ -55,8 +55,6 @@ struct adc_csk6_data {
 
 
 struct adc_csk6_cfg {
-	/* Pinmux control group */
-	const struct device *pinctrls;
 	/* GPIO pin */
 	uint8_t pin;
 	/* ADC alternate configuration */
@@ -88,8 +86,7 @@ static int adc_csk6_start_read(const struct device *dev,
 static int adc_csk6_channel_setup(const struct device *dev,
 				   const struct adc_channel_cfg *channel_cfg)
 {
-	struct adc_csk6_cfg *config = DEV_CFG(dev);
-	uint8_t i = 0;
+	struct adc_csk6_data *data = DEV_DATA(dev);
 
 	if (channel_cfg->channel_id >= ADC_CHANNEL_COUNT) {
 		LOG_ERR("ADC Channel %d is not valid", channel_cfg->channel_id);
@@ -117,30 +114,19 @@ static int adc_csk6_channel_setup(const struct device *dev,
 		return -EINVAL;
 	}
 
-
-	switch(channel_cfg->channel_id)
+	//TODO: aon_pinmux
+	if(6 == channel_cfg->channel_id)
 	{
-		case 0:
-		case 1:
-		case 2:
-			i = channel_cfg->channel_id;
-			pinmux_pin_set(config->pinctrl_list[i].pinctrls, config->pinctrl_list[i].pin, config->pinctrl_list[i].alt_fun);
-			break;
-
-		case 6:
-			AON_IOMuxManager_PinConfigure(CSK_AON_IOMUX_PAD_B, 5, CSK_IOMUX_FUNC_DEFAULT);
-			LOG_DBG("keysense pinmux set\n");
-			break;
-
-		default:
-			break;
+		AON_IOMuxManager_PinConfigure(CSK_AON_IOMUX_PAD_B, 5, CSK_IOMUX_FUNC_DEFAULT);
+		LOG_DBG("keysense pinmux set\n");
 	}
 
+	data->channels |= CSK_ADC_CHANNEL_SEL(channel_cfg->channel_id);
 	HAL_GPADC_Control(DEV_HANDLER(dev), CSK_GPADC_SAMPLETIME_8 | CSK_GPADC_CLKFREQ_12M |	\
-	 					(CSK_ADC_CHANNEL_SEL(channel_cfg->channel_id)) | \
+	 					data->channels | \
 					  	CSK_GPADC_INPUT_MODE_Single | CSK_GPADC_VREF_SEL_1_25V | CSK_GPADC_DMA_DISABLE);
 
-	LOG_DBG("channel(%d) setup\n", channel_cfg->channel_id);
+	LOG_DBG("channels(0x%x) setup\n", data->channels);
 
 	return 0;
 }
@@ -152,9 +138,6 @@ static int adc_csk6_read(const struct device *dev,
 	int error = 0;
 
 	data->buffer = sequence->buffer;
-	data->ch = sequence->channels;
-
-	LOG_DBG("channels(0x%x) read\n", data->ch);
 
 	adc_context_lock(&data->ctx, false, NULL);
 	error = adc_csk6_start_read(dev, sequence);
@@ -213,6 +196,7 @@ static void adc_context_start_sampling(struct adc_context *ctx)
 	data->triggernum = ADC_TRIGGER_NUM;
 	HAL_GPADC_SetTriggerNum(DEV_HANDLER(dev), data->triggernum);
 
+
 	HAL_GPADC_Start(DEV_HANDLER(dev));
 
 	//Will wait until the ADC conversion is complete!
@@ -242,6 +226,7 @@ static void adc_csk6_isr(const void *arg)
 static int adc_csk6_init(const struct device *dev)
 {
     struct adc_csk6_data *data = DEV_DATA(dev);
+	struct adc_csk6_cfg *config = DEV_CFG(dev);
 
     data->handle = GPADC();
 
@@ -251,6 +236,8 @@ static int adc_csk6_init(const struct device *dev)
 		    adc_csk6_isr, DEVICE_DT_INST_GET(0), 0);
 
 	adc_context_unlock_unconditionally(&data->ctx);
+
+	PINCTRL_CONFIG_PINS(config->pinctrl_list, config->pinctrl_list_size);
 
 	return 0;
 }
