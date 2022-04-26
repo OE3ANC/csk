@@ -9,7 +9,7 @@
 #include "csk6001/priv/csk_wifi_priv.h"
 
 #include <logging/log.h>
-LOG_MODULE_DECLARE(csk6001_wifi, CONFIG_WIFI_LOG_LEVEL);
+LOG_MODULE_DECLARE(csk_wifi, CONFIG_WIFI_LOG_LEVEL);
 
 #define PARTITION_NODE DT_NODELABEL(lfs1)
 FS_FSTAB_DECLARE_ENTRY(PARTITION_NODE);
@@ -144,48 +144,27 @@ const struct device * wifi_get_dev(int mode)
 static void wlan_event_handler(uint32_t param0, uint32_t param1)
 {
     wlan_event_t wifi_event = EVENT_SUBTYPE(param0);
-    switch (wifi_event) {
-        case WLAN_EVENT_CONNECTED: {
-            wlan_event_give(&wifi_event);
-        } break;
-
-        case WLAN_EVENT_DISCONNECTED: {
-            wlan_event_give(&wifi_event);
-        } break;
-
-        case WLAN_EVENT_SCAN_SUCCESS: {
-            wlan_event_give(&wifi_event);
-        } break;
-
-        case WLAN_EVENT_SCAN_FAILED: {
-            wlan_event_give(&wifi_event);
-        } break;
-
-        default: break;
-    }
+    wlan_event_give(&wifi_event);
 }
 
 static int wifi_driver_init(const struct device *dev)
 {
+    int ret = 0;
     struct fs_mount_t *mp =&FS_FSTAB_ENTRY(PARTITION_NODE);
-    int rc;
-    /* Do not mount if auto-mount has been enabled */
-#if !DT_NODE_EXISTS(PARTITION_NODE) ||						\
-	!(FSTAB_ENTRY_DT_MOUNT_FLAGS(PARTITION_NODE) & FS_MOUNT_FLAG_AUTOMOUNT)
-    rc = fs_mount(mp);
-	if (rc < 0) {
-		printk("FAIL: mount id %" PRIuPTR " at %s: %d\n",
-		       (uintptr_t)mp->storage_dev, mp->mnt_point, rc);
-		return rc;
+#if !DT_NODE_EXISTS(PARTITION_NODE) || !(FSTAB_ENTRY_DT_MOUNT_FLAGS(PARTITION_NODE) & FS_MOUNT_FLAG_AUTOMOUNT)
+    ret = fs_mount(mp);
+	if (ret < 0) {
+        LOG_ERR("%s mount failed", mp->mnt_point);
+		return ret;
 	}
-	printk("%s mount: %d\n", mp->mnt_point, rc);
+	LOG_INF("%s mounted\n", mp->mnt_point);
 #else
     LOG_INF("%s automounted\n", mp->mnt_point);
 #endif
     wlan_sys_init();
     wlan_attach(wlan_event_handler);
 
-    return CSK_WIFI_SUCCESS;
+    return 0;
 }
 
 static void wifi_virtual_netif_init(const struct device *dev)
@@ -197,93 +176,141 @@ static void wifi_virtual_netif_init(const struct device *dev)
     wlan_get_mac_addr(data->virtual_netif, data->mac_addr, sizeof(data->mac_addr));
 }
 
-static csk_wifi_result_t wifi_sta_connect(const struct device *dev)
+static int wifi_sta_connect(const struct device *dev)
 {
-    csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
+    int ret = 0;
+    wlan_event_t event;
     struct csk_wifi_data *data = dev->data;
+
     wlan_sta_set((uint8_t *)data->sta_config.ssid, strlen(data->sta_config.ssid), (uint8_t *)data->sta_config.pwd);
     wlan_sta_enable();
-    wlan_event_t event;
     do {
         int wlan_ret = wlan_event_take(&event, K_SECONDS(WIFI_MAX_TIMEOUT_SEC));
-        if ((wlan_ret != 0) || (event != WLAN_EVENT_CONNECTED)) {
-            ret = CSK_WIFI_ERR_STA_FAILED;
-        } else {
-            ret = CSK_WIFI_SUCCESS;
+        if (wlan_ret == -EAGAIN) {
+            ret = wlan_ret;
+            break;
         }
-    } while (event == WLAN_EVENT_SCAN_SUCCESS); /* station connect request will trigger scan operation */
+        if (event == WLAN_EVENT_CONNECTED) {
+            LOG_INF("WiFi station connect successfully");
+            return 0;
+        } else if (event == WLAN_EVENT_SCAN_SUCCESS) {
+            LOG_INF("WiFi Scan successfully");
+            continue;
+        }  else if (event == WLAN_EVENT_DISCONNECTED) {
+            LOG_WRN("WiFi station unknown exception, event_code: %d", event);
+            continue;
+        } else if (event == WLAN_EVENT_SCAN_FAILED) {
+            ret = CSK_WIFI_ERR_STA_FAILED;
+            LOG_ERR("WiFi Scan failed, event_code: %d", event);
+            break;
+        } else if (event == WLAN_EVENT_SSID_NOT_FOUND) {
+            ret = CSK_WIFI_ERR_AP_NOT_FOUND;
+            LOG_ERR("WiFi AP ssid not found, event_code: %d", event);
+            break;
+        } else if (event == WLAN_EVENT_AUTH_TIMEOUT) {
+            ret = CSK_WIFI_ERR_STA_FAILED;
+            LOG_ERR("WiFi station authentication timeout, event_code: %d", event);
+            break;
+        } else if (event == WLAN_EVENT_ASSOC_TIMEOUT) {
+            ret = CSK_WIFI_ERR_STA_FAILED;
+            LOG_ERR("WiFi station association timeout, event_code: %d", event);
+            break;
+        } else if (event == WLAN_EVENT_ASSOC_FAILED) {
+            ret = CSK_WIFI_ERR_STA_FAILED;
+            LOG_ERR("WiFi station association failed, event_code: %d", event);
+            break;
+        } else if (event == WLAN_EVENT_4WAY_HANDSHAKE_FAILED) {
+            ret = CSK_WIFI_ERR_INVALID_PASSWORD;
+            LOG_ERR("WiFi station 4-way handshake failed, event_code: %d", event);
+            break;
+        } else {
+            ret = CSK_WIFI_ERR_STA_FAILED;
+            LOG_ERR("WiFi station unknown exception, event_code: %d", event);
+            break;
+        }
+    } while (1); /* station connect request will trigger scan operation */
 
     return ret;
 }
 
-static csk_wifi_result_t wifi_sta_get_connected_info(const struct device *dev)
+static int wifi_sta_get_connected_info(const struct device *dev)
 {
-    csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
-    struct csk_wifi_data *data = dev->data;
-    wlan_sta_config_t config = {0};
-
-    int wlan_ret = 0;
+    int ret = 0;
     wlan_sta_ap_t ap_info;
-    wlan_ret = wlan_sta_ap_info(&ap_info);
-    if (ap_info.ssid.ssid_len > CSK_WIFI_SSID_LEN) {
-        LOG_ERR("WiFi ssid too long");
-        return CSK_WIFI_ERR_STA_FAILED;
+    wlan_sta_config_t config = {0};
+    struct csk_wifi_data *data = dev->data;
+
+    ret = wlan_sta_ap_info(&ap_info);
+    if (ret != 0) {
+        goto __failed;
     }
     memcpy(data->sta_config.ssid, ap_info.ssid.ssid, ap_info.ssid.ssid_len);
     data->sta_config.ssid[ap_info.ssid.ssid_len] = '\0';
     config.field = WLAN_STA_FIELD_PSK;
-    wlan_ret |= wlan_sta_get_config(&config);
+    ret = wlan_sta_get_config(&config);
+    if (ret != 0) {
+        goto __failed;
+    }
     memcpy(data->sta_config.pwd, config.u.psk, CSK_WIFI_PWD_LEN);
     data->sta_config.pwd[CSK_WIFI_PWD_LEN - 1] = '\0';
     sprintf(data->sta_config.bssid, MACSTR, MACTOSTR(ap_info.bssid));
     data->sta_config.rssi = -(ap_info.rssi * 0.5);
     data->sta_config.channel = ap_info.channel;
-    if (wlan_ret != 0 ) {
-        return CSK_WIFI_ERR_STA_FAILED;
-    }
-    return ret;
+    return 0;
+
+__failed:
+    LOG_ERR("WiFi station get connected info failed, ret %d\n", ret);
+    return -EIO;
 }
 
 static csk_wifi_result_t wifi_sta_disconnect(const struct device *dev)
 {
-    csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
     wlan_event_t event;
-    int wlan_ret = wlan_sta_disconnect();
-    wlan_ret = wlan_event_take(&event, K_SECONDS(WIFI_MAX_TIMEOUT_SEC));
-    if ((wlan_ret != 0) || (event != WLAN_EVENT_DISCONNECTED)) {
-        ret = CSK_WIFI_ERR_STA_FAILED;
+    int ret = wlan_sta_disconnect();
+    if (ret != 0) {
+        goto __failed;
+    }
+    ret = wlan_event_take(&event, K_SECONDS(WIFI_MAX_TIMEOUT_SEC));
+    if ((ret != 0) || (event != WLAN_EVENT_DISCONNECTED)) {
+        goto __failed;
     }
     wlan_sta_disable();
     return ret;
+
+__failed:
+    LOG_ERR("WiFi station disconnecte from AP failed, ret %d\n", ret);
+    return -EIO;
 }
 
-static csk_wifi_result_t wifi_scan_list(int *ap_count, csk_wifi_scan_info_t **ap_list)
+static int wifi_scan_list(int *ap_count, csk_wifi_scan_info_t **ap_list)
 {
-    csk_wifi_result_t ret = CSK_WIFI_SUCCESS;
+    int ret = 0;
+    wlan_event_t event;
+    wlan_sta_scan_results_t scan_results;
+
     int wlan_ret = wlan_sta_scan_once();
     if (wlan_ret != 0) {
         return CSK_WIFI_ERR_SCAN_FAILED;
     }
-    wlan_event_t event;
-    wlan_ret = wlan_event_take(&event, K_SECONDS(WIFI_MAX_TIMEOUT_SEC));
+    ret = wlan_event_take(&event, K_SECONDS(WIFI_MAX_TIMEOUT_SEC));
+    if (ret != 0) {
+        return -EAGAIN;
+    }
     if (event != WLAN_EVENT_SCAN_SUCCESS) {
         return CSK_WIFI_ERR_SCAN_FAILED;
     }
 
-    wlan_sta_scan_results_t scan_results;
     scan_results.size = WIFI_MAX_SCAN_NUM;
     scan_results.ap = k_calloc(scan_results.size, sizeof(wlan_sta_ap_t));
     if (scan_results.ap == NULL) {
         LOG_ERR("Scan list no mem");
-        return CSK_WIFI_ERR_SCAN_FAILED;
+        return -ENOMEM;
     }
-
-    wlan_ret = wlan_sta_scan_result(&scan_results);
-    if (wlan_ret != 0) {
+    ret = wlan_sta_scan_result(&scan_results);
+    if (ret != 0) {
         ret = CSK_WIFI_ERR_SCAN_FAILED;
         goto __out;
     }
-    // dump_scan_list(&scan_results);
     *ap_count = scan_results.num;
     *ap_list = k_calloc(*ap_count, sizeof(csk_wifi_scan_info_t));
     if (*ap_list == NULL) {
@@ -309,59 +336,59 @@ __out:
 
 static void wifi_command_handler(const struct device *dev, wifi_cmd_t command)
 {
+    int ret = 0;
     wifi_ret_msg_t ret_msg = {
         .arg = NULL,
-        .result = CSK_WIFI_SUCCESS,
+        .result = 0,
     };
+    struct csk_wifi_data *data = dev->data;
 
     switch (command) {
         case WIFI_CMD_AP_INIT:
         case WIFI_CMD_STA_INIT: {
-            ret_msg.result = wifi_driver_init(dev);
+            ret = wifi_driver_init(dev);
+            if (ret != 0)   break;
             wifi_virtual_netif_init(dev);
-            wifi_give_result(&ret_msg);
         } break;
 
         case WIFI_CMD_STA_CONNECT: {
-           ret_msg.result = wifi_sta_connect(dev);
-           csk_wifi_result_t get_ret = wifi_sta_get_connected_info(dev);
-           struct csk_wifi_data *data = dev->data;
-           if (ret_msg.result == CSK_WIFI_SUCCESS && get_ret == CSK_WIFI_SUCCESS) {
-               wifi_send_event(dev, CSK_WIFI_EVT_STA_CONNECTED, NULL, 0, K_FOREVER);
-               wifi_dispatch_callbacks(CSK_WIFI_EVT_STA_CONNECTED, &data->sta_config, sizeof(data->sta_config));
-           }
-           wifi_give_result(&ret_msg);
+            ret = wifi_sta_connect(dev);
+            if (ret != 0)   break;
+            ret = wifi_sta_get_connected_info(dev);
+            if (ret != 0)   break;
+            wifi_send_event(dev, CSK_WIFI_EVT_STA_CONNECTED, NULL, 0, K_FOREVER);
+            wifi_dispatch_callbacks(CSK_WIFI_EVT_STA_CONNECTED,
+                                    &data->sta_config, sizeof(data->sta_config));
         } break;
 
         case WIFI_CMD_STA_DISCONNECT: {
-           ret_msg.result = wifi_sta_disconnect(dev);
-           if (ret_msg.result == CSK_WIFI_SUCCESS) {
-               wifi_send_event(dev, CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0, K_FOREVER);
-               wifi_dispatch_callbacks(CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0);
-           }
-           wifi_give_result(&ret_msg);
+            ret = wifi_sta_disconnect(dev);
+            if (ret != 0)   break;
+            wifi_send_event(dev, CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0, K_FOREVER);
+            wifi_dispatch_callbacks(CSK_WIFI_EVT_STA_DISCONNECTED, NULL, 0);
         } break;
 
         case WIFI_CMD_SCAN: {
             int aps_num = 0;
             csk_wifi_scan_info_t *ap_list = NULL;
-            ret_msg.result = wifi_scan_list(&aps_num, &ap_list);
-            if (ret_msg.result == CSK_WIFI_SUCCESS) {
-                wifi_scan_list_t scan_list = {0};
-                scan_list.ap_list = ap_list;
-                scan_list.count = aps_num;
-                ret_msg.arg = &scan_list;
-                csk_wifi_scan_info_t csk_ap_list_copy[aps_num];
-                memset(csk_ap_list_copy, 0, sizeof(csk_wifi_scan_info_t) * aps_num);
-                memcpy(csk_ap_list_copy, ap_list, sizeof(csk_wifi_scan_info_t) * aps_num);
-                wifi_dispatch_callbacks(CSK_WIFI_EVT_SCAN_DONE, csk_ap_list_copy, sizeof(csk_wifi_scan_info_t) * aps_num);
-            }
-            wifi_give_result(&ret_msg);
+            ret = wifi_scan_list(&aps_num, &ap_list);
+            if (ret != 0)   break;
+            wifi_scan_list_t scan_list = {0};
+            scan_list.ap_list = ap_list;
+            scan_list.count = aps_num;
+            ret_msg.arg = &scan_list;
+            csk_wifi_scan_info_t csk_ap_list_copy[aps_num];
+            memset(csk_ap_list_copy, 0, sizeof(csk_wifi_scan_info_t) * aps_num);
+            memcpy(csk_ap_list_copy, ap_list, sizeof(csk_wifi_scan_info_t) * aps_num);
+            wifi_dispatch_callbacks(CSK_WIFI_EVT_SCAN_DONE,
+                                    csk_ap_list_copy, sizeof(csk_wifi_scan_info_t) * aps_num);
         } break;
 
         default:
             break;
     }
+    ret_msg.result = ret;
+    wifi_give_result(&ret_msg);
 }
 
 static void wifi_event_handler(const struct device *dev, csk_wifi_event_t event)
@@ -483,6 +510,7 @@ static int csk_eth_dev_init(const struct device *dev)
 {
     struct csk_wifi_data *data = dev->data;
     data->dev = dev;
+    data->wifi_status = WLAN_EVENT_MAX;
     k_sem_give(&init_sem);
     return 0;
 }

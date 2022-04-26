@@ -1,7 +1,7 @@
 #include "csk6001/priv/csk_wifi_priv.h"
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(csk6001_wifi, CONFIG_WIFI_LOG_LEVEL);
+LOG_MODULE_REGISTER(csk_wifi, CONFIG_WIFI_LOG_LEVEL);
 
 #define CSK_WIFI_CHECK(cond, ret_val) ({                                      \
     if (!(cond)) {                                                            \
@@ -46,10 +46,7 @@ int csk_wifi_init()
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(&ret_msg, K_FOREVER);
     if (ret != 0)   goto __exit;
-    if (ret_msg.result != CSK_WIFI_SUCCESS) {
-        ret = -EIO;
-        goto __exit;
-    }
+    ret = ret_msg.result;
     k_mutex_unlock(&wifi_api_mutex);
     return 0;
 
@@ -69,9 +66,14 @@ int csk_wifi_scan_ap(csk_wifi_scan_info_t **ap_info, csk_wifi_result_t *result, 
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(&ret_msg, timeout);
     if (ret != 0)   goto __exit;
-    *result = ret_msg.result;
-    if (*result != CSK_WIFI_SUCCESS) {
+    if (ret_msg.result > 0) {
+        /* Fixme: Refactor this API to return wifi failed reason */
+        *result = ret_msg.result;
         ret = -EIO;
+        goto __exit;
+    } else if (ret_msg.result < 0) {
+        ret = ret_msg.result;
+        *result = CSK_WIFI_ERR_SCAN_FAILED;
         goto __exit;
     }
     wifi_scan_list_t *scan_list = ret_msg.arg;
@@ -108,9 +110,14 @@ int csk_wifi_sta_connect(csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *r
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(&ret_msg, timeout);
     if (ret != 0)   goto __exit;
-    *result = ret_msg.result;
-    if (*result != CSK_WIFI_SUCCESS) {
+    if (ret_msg.result > 0) {
+        /* Fixme: Refactor this API to return wifi failed reason */
+        *result = ret_msg.result;
         ret = -EIO;
+        goto __exit;
+    } else if (ret_msg.result < 0) {
+        ret = ret_msg.result;
+        *result = CSK_WIFI_ERR_STA_FAILED;
         goto __exit;
     }
     memcpy(sta_config->ssid, data->sta_config.ssid, sizeof(sta_config->ssid));
@@ -138,81 +145,17 @@ int csk_wifi_sta_disconnect(csk_wifi_result_t *result, k_timeout_t timeout)
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(&ret_msg, timeout);
     if (ret != 0)   goto __exit;
-    *result = ret_msg.result;
-    if (*result != CSK_WIFI_SUCCESS) {
+    if (ret_msg.result > 0) {
+        /* Fixme: Refactor this API to return wifi failed reason */
+        *result = ret_msg.result;
         ret = -EIO;
+        goto __exit;
+    } else if (ret_msg.result < 0) {
+        ret = ret_msg.result;
+        *result = CSK_WIFI_ERR_STA_FAILED;
         goto __exit;
     }
     k_mutex_unlock(&wifi_api_mutex);
-    return 0;
-
-__exit:
-    k_mutex_unlock(&wifi_api_mutex);
-    return ret;
-}
-
-#endif
-
-#ifdef CONFIG_CSK_WIFI_SOFTAP
-
-int csk_wifi_ap_start(const csk_wifi_softap_config_t *ap_config, csk_wifi_result_t *result, k_timeout_t timeout)
-{
-    CSK_WIFI_CHECK(ap_config != NULL && result != NULL, -EINVAL);
-    CSK_WIFI_CHECK(ap_config->encryption_mode >= 0 &&
-                   ap_config->encryption_mode < CSK_WIFI_AUTH_MAX,
-                   -EINVAL);
-    CSK_WIFI_CHECK(ap_config->bandwidth >= 0 &&
-                   ap_config->bandwidth <= CSK_WIFI_BW_HT40,
-                   -EINVAL);
-
-    int ret = 0;
-    wifi_ret_msg_t ret_msg;
-    k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    const struct device *dev = wifi_get_dev(WIFI_MODE_AP);
-    struct csk_wifi_data *data = dev->data;
-
-    memcpy(data->ap_config.ssid, ap_config->ssid, sizeof(data->ap_config.ssid));
-    memcpy(data->ap_config.pwd, ap_config->pwd, sizeof(data->ap_config.pwd));
-    data->ap_config.encryption_mode = wifi_get_encryption_mode(ap_config->encryption_mode);
-    data->ap_config.bandwidth = (ap_config->bandwidth == CSK_WIFI_BW_HT20) ? WIFI_BW_HT20 : WIFI_BW_HT40;
-    data->ap_config.channel = ap_config->channel;
-    data->ap_config.max_connections = ap_config->max_connections;
-    data->ap_config.ssid_hidden = ap_config->ssid_hidden;
-
-    ret = wifi_send_command(dev, WIFI_CMD_AP_START, K_NO_WAIT);
-    if (ret != 0)   goto __exit;
-    ret = wifi_take_result(&ret_msg, timeout);
-    if (ret != 0)   goto __exit;
-    *result = ret_msg.result;
-    if (*result != CSK_WIFI_SUCCESS) {
-        ret = -EIO;
-        goto __exit;
-    }
-    k_mutex_unlock(&wifi_api_mutex);
-    return 0;
-
-__exit:
-    k_mutex_unlock(&wifi_api_mutex);
-    return ret;
-}
-
-int csk_wifi_ap_stop(csk_wifi_result_t *result, k_timeout_t timeout)
-{
-    CSK_WIFI_CHECK(result != NULL, -EINVAL);
-
-    int ret = 0;
-    wifi_ret_msg_t ret_msg;
-    k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    const struct device *dev = wifi_get_dev(WIFI_MODE_AP);
-    ret = wifi_send_command(dev, WIFI_CMD_AP_STOP, K_NO_WAIT);
-    if (ret != 0)   goto __exit;
-    ret = wifi_take_result(&ret_msg, timeout);
-    if (ret != 0)   goto __exit;
-    *result = ret_msg.result;
-    if (*result != CSK_WIFI_SUCCESS) {
-        ret = -EIO;
-        goto __exit;
-    }
     return 0;
 
 __exit:
