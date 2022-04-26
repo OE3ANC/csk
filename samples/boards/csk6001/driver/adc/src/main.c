@@ -13,14 +13,8 @@
 
 #define ADC_NUM_CHANNELS	DT_PROP_LEN(DT_PATH(zephyr_user), io_channels)
 
-#if ADC_NUM_CHANNELS > 2
+#if ADC_NUM_CHANNELS > 3
 #error "Currently only 1 or 2 channels supported in this sample"
-#endif
-
-#if ADC_NUM_CHANNELS == 2 && !DT_SAME_NODE( \
-	DT_PHANDLE_BY_IDX(DT_PATH(zephyr_user), io_channels, 0), \
-	DT_PHANDLE_BY_IDX(DT_PATH(zephyr_user), io_channels, 1))
-#error "Channels have to use the same ADC."
 #endif
 
 #define ADC_NODE		DT_PHANDLE(DT_PATH(zephyr_user), io_channels)
@@ -35,6 +29,11 @@ static uint8_t channel_ids[ADC_NUM_CHANNELS] = {
 	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 0),
 #if ADC_NUM_CHANNELS == 2
 	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 1)
+#endif
+
+#if ADC_NUM_CHANNELS == 3
+	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 1),
+	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 2)
 #endif
 };
 
@@ -109,6 +108,6 @@ void main(void)
 		}
 		printk("\n");
 
-		k_sleep(K_MSEC(1300));
+		k_sleep(K_MSEC(5000));
 	}
 }
