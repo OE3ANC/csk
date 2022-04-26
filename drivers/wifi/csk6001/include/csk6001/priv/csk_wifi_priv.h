@@ -47,6 +47,8 @@ struct csk_wifi_data {
     };
 #ifdef CONFIG_ESP_HOSTED
    hosted_event_callback_t hosted_event_cb;
+#else
+    wlan_event_t wifi_status;
 #endif
 };
 
@@ -61,7 +63,7 @@ typedef enum {
 } wifi_cmd_t;
 
 typedef struct {
-    csk_wifi_result_t result;
+    int result;
     void *arg;
 } wifi_ret_msg_t;
 

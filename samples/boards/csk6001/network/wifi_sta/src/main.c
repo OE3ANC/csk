@@ -68,7 +68,7 @@ void main(void)
                 printk("retry to connecting wifi ... %d\n", retry_count);
             } else {
                 printk("AP not found or invalid password\n");
-                abort();
+                return;
             }
         }
     } while (retry_count < 10);
