@@ -1,4 +1,0 @@
-tests:
-  sample.board.csk6001.apps.startup:
-    platform_allow: csk6001_tester
-    tags: csk6001
