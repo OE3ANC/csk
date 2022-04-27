@@ -1,11 +1,8 @@
-# this file only use by listenai inner developer
-# listenai cloud developer shoule use https://cloud.listenai.com/zephyr/manifest
-
 manifest:
 
   remotes:
     - name: listenai
-      url-base: git@git.iflyos.cn:venus/zephyr/modules
+      url-base: https://cloud.listenai.com/zephyr
 
   projects:
     - name: hal_listenai
