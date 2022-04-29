@@ -15,7 +15,6 @@
 		zephyr,flash_sysfs_storage = &filesystem_part;
 		zephyr,flash_controller = &flash;
 		zephyr,uart-mcumgr = &uart0;
-		zephyr,lisa_heap = &psram_region1;
 	};
 	fstab {
 		compatible = "zephyr,fstab";
@@ -30,13 +29,6 @@
 			cache-size = <64>;
 			lookahead-size = <32>;
 			block-cycles = <512>;
-		};
-	};
-
-    camera_pclk {
-		camera_pclk: camera_pclk {
-			pwms = <&pwm4 4 PWM_POLARITY_NORMAL>;
-			label = "PWM TO CAMERA PCLK";
 		};
 	};
 
@@ -78,7 +70,8 @@
     };
 
 	pwm4: pwm4 {
-        pinmuxs = <&pinmuxa 4 11>;
+		pinctrl-0 = <&pinctrl_pwm4_default>; 
+        pinctrl-names = "default";
         clock-prescaler = <1>;
         status = "okay";
     };
@@ -92,8 +85,12 @@
 
 &i2c0 {
         status = "okay";
-        pinmuxs = <&pinmuxb 0 8>, <&pinmuxb 1 8>;
-        pinmux-names = "SCL", "SDA";
+        //pinmuxs = <&pinmuxb 0 8>, <&pinmuxb 1 8>;
+        //pinmux-names = "SCL", "SDA";
+
+        pinctrl-0 = <&pinctrl_i2c0_scl_default &pinctrl_i2c0_sda_default>; 
+        pinctrl-names = "default";
+        status = "okay";
 
         bf30a2: bf30a2@6e {
             compatible = "byd,bf30a2";
@@ -104,7 +101,7 @@
             pwr-gpios = <&gpioa 5 0>;
             product-id = <0x3b02>;
             spi = <&spi0>;
-            xclk-pwm = <&pwm4>;
+			pwms = <&pwm4 4 PWM_POLARITY_NORMAL>;
             xclk-freq = <12500>;
             csk6-spec;
     };
