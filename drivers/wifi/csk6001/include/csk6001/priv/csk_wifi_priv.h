@@ -13,7 +13,7 @@
 #include "spi_drv.h"
 #include "netdev_api.h"
 #include "hosted/hosted.h"
-#include "csk6001/csk_wifi.h"
+#include "csk6/csk_wifi.h"
 #elif CONFIG_XR819S
 #include "net/wlan/wlan_defs.h"
 #include "net/wlan/wlan.h"
@@ -22,7 +22,7 @@
 #error "Please select a wifi module driver"
 #endif
 
-#include "csk6001/csk_wifi.h"
+#include "csk6/csk_wifi.h"
 
 #ifdef __cplusplus
 extern "C" {

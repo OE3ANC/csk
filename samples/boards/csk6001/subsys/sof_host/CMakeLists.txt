@@ -31,7 +31,7 @@ if(BUILD_DSP_FIRMWARE)
 
   enable_language(C ASM)
 
-  #target_sources(app PRIVATE src/load_fw.c src/mem_image_store.c src/platform_info.c src/zynqmp_csk6001_rproc_example.c )
+  #target_sources(app PRIVATE src/load_fw.c src/mem_image_store.c src/platform_info.c src/zynqmp_csk6_rproc_example.c )
 
   include(ExternalProject)
 

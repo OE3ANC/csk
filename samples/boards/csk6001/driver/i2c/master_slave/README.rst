@@ -1,11 +1,11 @@
 
-CSK6001 I2C Master/Slave transimit/recieve
+CSK6 I2C Master/Slave transimit/recieve
 ##########################################
 
 Overview
 ********
 
-This sample demonstrates how to use CSK6001 i2c peripheral to transimit/recieve data.
+This sample demonstrates how to use CSK6 i2c peripheral to transimit/recieve data.
 
 Requirements
 ************
@@ -16,13 +16,13 @@ as slave. make sure to connect GPIO_A_04 to GPIO_A_07, GPIO_A_05 to GPIO_A_06 al
 Building and Running
 ********************
 
-Make sure you have the csk6001 boards connected over Jlink debuger.
+Make sure you have the csk6 boards connected over Jlink debuger.
 
 The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6001_xxx samples/boards/csk6001/drivers/i2c/master_slave
+   west build -b csk6_xxx samples/boards/csk6/drivers/i2c/master_slave
    west flash
 
 Sample Output

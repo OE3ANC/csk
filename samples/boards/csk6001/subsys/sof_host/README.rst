@@ -22,7 +22,7 @@ Building the application for csk6002_c3_nano
 ***********************************************
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6001/subsys/sof_host
+   :zephyr-app: samples/boards/csk6/subsys/sof_host
    :board: csk6002_c3_nano
    :goals: debug
 

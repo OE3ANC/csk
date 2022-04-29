@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  */
-#ifdef CONFIG_SOC_CSK6001
+#ifdef CONFIG_SOC_CSK6
 #pragma GCC push_options
 #pragma GCC optimize("O0")
 #endif
@@ -17,7 +17,7 @@
 #include <soc_dt.h>
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(csk6001_spi, CONFIG_SPI_LOG_LEVEL);
+LOG_MODULE_REGISTER(csk6_spi, CONFIG_SPI_LOG_LEVEL);
 
 #include "spi_context.h"
 
@@ -299,6 +299,6 @@ static int spi_csk_init(const struct device *dev)
 
 DT_INST_FOREACH_STATUS_OKAY(SPI_DEVICE_INIT)
 
-#ifdef CONFIG_SOC_CSK6001
+#ifdef CONFIG_SOC_CSK6
 #pragma GCC pop_options
 #endif

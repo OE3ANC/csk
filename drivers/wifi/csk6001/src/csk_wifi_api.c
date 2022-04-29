@@ -1,7 +1,7 @@
-#include "csk6001/priv/csk_wifi_priv.h"
+#include "csk6/priv/csk_wifi_priv.h"
 
 #include <logging/log.h>
-LOG_MODULE_REGISTER(csk6001_wifi, CONFIG_WIFI_LOG_LEVEL);
+LOG_MODULE_REGISTER(csk6_wifi, CONFIG_WIFI_LOG_LEVEL);
 
 #define CSK_WIFI_CHECK(cond, ret_val) ({                                      \
     if (!(cond)) {                                                            \

@@ -10,12 +10,12 @@ This application demonstrates how to use OpenAMP with Zephyr. It is designed to
 demonstrate how to integrate OpenAMP with Zephyr both from a build perspective
 and code.
 
-Building the application for csk6001
+Building the application for csk6
 ***********************************************
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6001/subsys/ipc/openamp_load_fw
-   :board: csk6001
+   :zephyr-app: samples/boards/csk6/subsys/ipc/openamp_load_fw
+   :board: csk6
    :goals: debug
 
 Open a serial terminal (minicom, putty, etc.) and connect the board with the
@@ -50,7 +50,7 @@ metal: debug:     registered generic bus
   F 63152 zephyr_cp_bin - 副本.bin
 End of files
 /lfs1 closedir
-csk6001_rproc_init: node id: 2
+csk6_rproc_init: node id: 2
 Step1: Create rproc success!
 /lfs1/cp_fw.bin stat: 0
 Get file 'cp_fw.bin' size 79696

@@ -1,5 +1,5 @@
 
-csk6001 soc flash sample
+csk6 soc flash sample
 ####################
 
 Overview
@@ -17,8 +17,8 @@ The application will build only for a target that has a :ref:`devicetree
 <dt-guide>` entry with ``listenai,csk-nv-flash`` as a compatible.
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6001/driver/soc_flash_listenai
-   :board: csk6001
+   :zephyr-app: samples/boards/csk6/driver/soc_flash_listenai
+   :board: csk6
    :goals: build flash
    :compact:
 
@@ -29,7 +29,7 @@ Sample Output
 
    *** Booting Zephyr OS build b5a7185bc25f  ***
 
-Litenai CSK6001 Flash Testing
+Litenai CSK6 Flash Testing
 =========================
 
 Test 1: Flash erase page at 0x7f8000

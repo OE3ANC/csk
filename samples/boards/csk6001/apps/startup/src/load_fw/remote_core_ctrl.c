@@ -17,13 +17,13 @@
 static struct remoteproc rproc_inst;
 static struct remoteproc_ops ops;
 
-extern struct remoteproc_ops csk6001_rproc_ops;
+extern struct remoteproc_ops csk6_rproc_ops;
 extern struct image_store_ops mem_image_store_ops;
 
 struct remoteproc *remote_core_create(unsigned int cpu_id)
 {
 	struct remoteproc *rproc;
-	ops = csk6001_rproc_ops;
+	ops = csk6_rproc_ops;
 	rproc = remoteproc_init(&rproc_inst, &ops, &cpu_id);
 	if (!rproc)
 		return NULL;

@@ -12,7 +12,7 @@
 #include <net/net_mgmt.h>
 
 
-#include "csk6001/csk_wifi.h"
+#include "csk6/csk_wifi.h"
 
 static csk_wifi_event_cb_t wifi_event_cb;
 static struct net_mgmt_event_callback dhcp_cb;

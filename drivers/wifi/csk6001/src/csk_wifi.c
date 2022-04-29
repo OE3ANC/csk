@@ -4,7 +4,7 @@
 
 #define DT_DRV_COMPAT listenai_csk_wifi
 
-#include "csk6001/priv/csk_wifi_priv.h"
+#include "csk6/priv/csk_wifi_priv.h"
 
 #define MAC_BYTES_LEN                     6
 #define MAC_STRING_LEN                    18

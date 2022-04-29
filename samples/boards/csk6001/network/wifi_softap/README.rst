@@ -1,23 +1,23 @@
 .. _wifi_softap:
 
-CSK6001 WiFi SoftAP
+CSK6 WiFi SoftAP
 ###################
 
 Overview
 ********
 
-This sample demonstrates how to use csk6001 to startup a WiFi hotspot
+This sample demonstrates how to use csk6 to startup a WiFi hotspot
 
 Building and Running
 ********************
 
-Make sure you have the CSK6001 connected over USB port.
+Make sure you have the CSK6 connected over USB port.
 
 The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6001 samples/boards/csk6001/wifi_softap
+   west build -b csk6 samples/boards/csk6/wifi_softap
    west flash
 
 Sample Output
@@ -33,6 +33,6 @@ This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
 .. code-block:: console
 
     *** Booting Zephyr OS build f4ee5f98ad0b  ***
-   ssid: CSK6001_SoftAP password: 12345678
+   ssid: CSK6_SoftAP password: 12345678
    [WiFi softap] started
    [WiFi softap] station joined

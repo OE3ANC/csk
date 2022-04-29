@@ -28,20 +28,20 @@
 
 typedef struct {
 	FLASH_DEV flash_dev;
-} csk6001_flash_config_t;
+} csk6_flash_config_t;
 
-csk6001_flash_config_t csk6001_flash_config = { .flash_dev = {
+csk6_flash_config_t csk6_flash_config = { .flash_dev = {
 							.base_addr = DT_INST_REG_ADDR(0),
 							.spi_enum = FLASH_SPI_1_INN,
 							.w_protect = false,
 						} };
 
-static const struct flash_parameters flash_csk6001_parameters = {
+static const struct flash_parameters flash_csk6_parameters = {
 	.write_block_size = FLASH_WRITE_BLK_SZ,
 	.erase_value = 0xff,
 };
 
-static int flash_csk6001_read(const struct device *dev, off_t address, void *buffer, size_t length)
+static int flash_csk6_read(const struct device *dev, off_t address, void *buffer, size_t length)
 {
 	int iret = 0;
 	if (length == 0) {
@@ -60,7 +60,7 @@ static int flash_csk6001_read(const struct device *dev, off_t address, void *buf
 
 /*If from data address in soc flash area ,copy to ram area first*/
 #define ADDRESS_IS_IN_SOC_FLASH_AREA(address) (((address >= FLASH_BASE_ADDRESS)&&(address < FLASH_BASE_ADDRESS + FLASH_CHIP_SZ))?1:0)
-static int inline flash_csk6001_write_with_cp(const struct device *dev, off_t address, const void *buffer,size_t length){
+static int inline flash_csk6_write_with_cp(const struct device *dev, off_t address, const void *buffer,size_t length){
 
 	char cbuffer[32];
 	char* pos = (char*) buffer;
@@ -80,7 +80,7 @@ static int inline flash_csk6001_write_with_cp(const struct device *dev, off_t ad
 
 	return iret;
 }
-static int flash_csk6001_write(const struct device *dev, off_t address, const void *buffer,
+static int flash_csk6_write(const struct device *dev, off_t address, const void *buffer,
 			       size_t length)
 {
 	int iret = 0;
@@ -95,7 +95,7 @@ static int flash_csk6001_write(const struct device *dev, off_t address, const vo
 	FLASH_OPT_ENTER();
 	sflash_write_protection_set((void *)dev->config, false);
 	if(0 != ADDRESS_IS_IN_SOC_FLASH_AREA((uint32_t)buffer)){
-		iret = flash_csk6001_write_with_cp(dev,address,buffer,length);
+		iret = flash_csk6_write_with_cp(dev,address,buffer,length);
 	}
 	else{
 		if (0 != sflash_write((void *)dev->config, FLASH_BASE_ADDRESS + address, buffer, length)) {
@@ -110,7 +110,7 @@ static int flash_csk6001_write(const struct device *dev, off_t address, const vo
 	return iret;
 }
 
-static int flash_csk6001_erase(const struct device *dev, off_t start, size_t len)
+static int flash_csk6_erase(const struct device *dev, off_t start, size_t len)
 {
 	int iret;
 
@@ -134,27 +134,27 @@ static int flash_csk6001_erase(const struct device *dev, off_t start, size_t len
 }
 
 #if CONFIG_FLASH_PAGE_LAYOUT
-static const struct flash_pages_layout flash_csk6001_pages_layout = {
+static const struct flash_pages_layout flash_csk6_pages_layout = {
 	.pages_count = DT_REG_SIZE(SOC_NV_FLASH_NODE) / FLASH_ERASE_BLK_SZ,
 	.pages_size = DT_PROP(SOC_NV_FLASH_NODE, erase_block_size),
 };
 
-void flash_csk6001_page_layout(const struct device *dev, const struct flash_pages_layout **layout,
+void flash_csk6_page_layout(const struct device *dev, const struct flash_pages_layout **layout,
 			       size_t *layout_size)
 {
-	*layout = &flash_csk6001_pages_layout;
+	*layout = &flash_csk6_pages_layout;
 	*layout_size = 1;
 }
 #endif /* CONFIG_FLASH_PAGE_LAYOUT */
 
-static const struct flash_parameters *flash_csk6001_get_parameters(const struct device *dev)
+static const struct flash_parameters *flash_csk6_get_parameters(const struct device *dev)
 {
 	ARG_UNUSED(dev);
 
-	return &flash_csk6001_parameters;
+	return &flash_csk6_parameters;
 }
 
-static int flash_csk6001_init(const struct device *dev)
+static int flash_csk6_init(const struct device *dev)
 {
 	unsigned int key;
 	key = irq_lock();
@@ -163,15 +163,15 @@ static int flash_csk6001_init(const struct device *dev)
 	return 0;
 }
 
-static const struct flash_driver_api flash_csk6001_driver_api = {
-	.read = flash_csk6001_read,
-	.write = flash_csk6001_write,
-	.erase = flash_csk6001_erase,
-	.get_parameters = flash_csk6001_get_parameters,
+static const struct flash_driver_api flash_csk6_driver_api = {
+	.read = flash_csk6_read,
+	.write = flash_csk6_write,
+	.erase = flash_csk6_erase,
+	.get_parameters = flash_csk6_get_parameters,
 #ifdef CONFIG_FLASH_PAGE_LAYOUT
-	.page_layout = flash_csk6001_page_layout,
+	.page_layout = flash_csk6_page_layout,
 #endif
 };
 
-DEVICE_DT_INST_DEFINE(0, flash_csk6001_init, NULL, NULL, &csk6001_flash_config, POST_KERNEL,
-		      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &flash_csk6001_driver_api);
+DEVICE_DT_INST_DEFINE(0, flash_csk6_init, NULL, NULL, &csk6_flash_config, POST_KERNEL,
+		      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &flash_csk6_driver_api);

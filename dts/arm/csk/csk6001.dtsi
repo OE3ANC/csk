@@ -249,7 +249,7 @@
 		};
 
 		wdt: watchdog@44200000 {
-			compatible = "listenai,csk6001-watchdog";
+			compatible = "listenai,csk6-watchdog";
 			reg = <0x44200000 0x100000>;
 			interrupts = <7 0>;
 			label = "WDT";

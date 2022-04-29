@@ -18,7 +18,7 @@ The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6002_c3_nano samples/boards/csk6001/wifi_mgr
+   west build -b csk6002_c3_nano samples/boards/csk6/wifi_mgr
    west flash
 
 Sample Output
@@ -38,7 +38,7 @@ This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
    [00:00:01.534,000] <inf> fs_nvs: 5 Sectors of 4096 bytes
    [00:00:01.534,000] <inf> fs_nvs: alloc wra: 2, fa0
    [00:00:01.534,000] <inf> fs_nvs: data wra: 2, 10c
-   [00:00:01.535,000] <inf> csk6001_spi: CS control inhibited (no GPIO device)
+   [00:00:01.535,000] <inf> csk6_spi: CS control inhibited (no GPIO device)
    WiFi scan done
    -------------------------------Scan AP list---------------------------------
    |ssid: Xiaomi-LINGSI_2.4G   | bssid: 3c:cd:57:f4:d5:6a  | channel: 6   | rssi: -15|
@@ -79,7 +79,7 @@ This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
    [00:00:01.544,000] <inf> fs_nvs: 5 Sectors of 4096 bytes
    [00:00:01.544,000] <inf> fs_nvs: alloc wra: 2, f88
    [00:00:01.544,000] <inf> fs_nvs: data wra: 2, 194
-   [00:00:01.544,000] <inf> csk6001_spi: CS control inhibited (no GPIO device)
+   [00:00:01.544,000] <inf> csk6_spi: CS control inhibited (no GPIO device)
    WiFi scan done
    -------------------------------Scan AP list---------------------------------
    |ssid: Xiaomi-LINGSI_2.4G   | bssid: 3c:cd:57:f4:d5:6a  | channel: 6   | rssi: -14|
@@ -127,7 +127,7 @@ This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
    [00:00:01.524,000] <inf> fs_nvs: 5 Sectors of 4096 bytes
    [00:00:01.524,000] <inf> fs_nvs: alloc wra: 2, f88
    [00:00:01.524,000] <inf> fs_nvs: data wra: 2, 194
-   [00:00:01.525,000] <inf> csk6001_spi: CS control inhibited (no GPIO device)
+   [00:00:01.525,000] <inf> csk6_spi: CS control inhibited (no GPIO device)
    WiFi scan done
    -------------------------------Scan AP list---------------------------------
    |ssid: Xiaomi-LINGSI_2.4G   | bssid: 3c:cd:57:f4:d5:6a  | channel: 6   | rssi: -14|
@@ -175,7 +175,7 @@ This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
    [00:00:01.534,000] <inf> fs_nvs: 5 Sectors of 4096 bytes
    [00:00:01.534,000] <inf> fs_nvs: alloc wra: 2, f88
    [00:00:01.534,000] <inf> fs_nvs: data wra: 2, 194
-   [00:00:01.534,000] <inf> csk6001_spi: CS control inhibited (no GPIO device)
+   [00:00:01.534,000] <inf> csk6_spi: CS control inhibited (no GPIO device)
    WiFi scan done
    -------------------------------Scan AP list---------------------------------
    |ssid: Xiaomi-LINGSI_2.4G   | bssid: 3c:cd:57:f4:d5:6a  | channel: 6   | rssi: -14|

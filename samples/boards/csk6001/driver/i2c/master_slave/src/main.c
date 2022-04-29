@@ -23,7 +23,7 @@
 #error "can't find I2C1 device"
 #endif
 
-#define SLAVE_ADDRESS (0x35) /* csk6001 default i2c slave address 0x35 */
+#define SLAVE_ADDRESS (0x35) /* csk6 default i2c slave address 0x35 */
 uint32_t i2c0_cfg = I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER;
 uint32_t i2c1_cfg = 0;
 

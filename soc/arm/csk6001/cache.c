@@ -1,4 +1,4 @@
-/* cache.c - d-cache support for CSK6001  */
+/* cache.c - d-cache support for CSK6  */
 
 /*
  *

@@ -1,4 +1,4 @@
 tests:
-  sample.board.csk6001.driver.ipm_csk6001:
+  sample.board.csk6.driver.ipm_csk6:
     platform_allow: csk6002_c3_nano
     tags: csk6

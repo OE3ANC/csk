@@ -1,9 +1,9 @@
 # Copyright (c) 2022 listenai
 # SPDX-License-Identifier: Apache-2.0
 
-description: listenai csk6001 watchdog
+description: listenai csk6 watchdog
 
-compatible: "listenai,csk6001-watchdog"
+compatible: "listenai,csk6-watchdog"
 
 include: base.yaml
 

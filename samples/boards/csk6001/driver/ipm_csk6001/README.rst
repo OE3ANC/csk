@@ -1,6 +1,6 @@
-.. _ipm_csk6001:
+.. _ipm_csk6:
 
-CSK6001 IPM example
+CSK6 IPM example
     ################
 
 Overview

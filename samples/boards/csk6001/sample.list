@@ -14,4 +14,4 @@ samples/subsys/console/getchar
 samples/subsys/shell/shell_module
 samples/subsys/ipc/openamp
 
-samples/boards/csk6001/*
+samples/boards/csk6/*

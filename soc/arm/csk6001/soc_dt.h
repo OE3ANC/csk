@@ -3,8 +3,8 @@
  */
 #include <device.h>
 
-#ifndef _LISTENAI_CSK6001_SOC_DT_H_
-#define _LISTENAI_CSK6001_SOC_DT_H_
+#ifndef _LISTENAI_CSK6_SOC_DT_H_
+#define _LISTENAI_CSK6_SOC_DT_H_
 
 #define CSK6_DEV_PINMUX(idx, inst)    DEVICE_DT_GET(DT_PHANDLE(DT_INST_PINCTRL_0(inst, idx), pinctrls))
 
@@ -62,4 +62,4 @@ struct csk6_pinctrl_cfg {
 		     inst)					\
 	}
 
-#endif /* _LISTENAI_CSK6001_SOC_DT_H_ */
+#endif /* _LISTENAI_CSK6_SOC_DT_H_ */

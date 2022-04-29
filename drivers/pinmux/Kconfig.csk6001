@@ -1,9 +1,9 @@
 # Copyright (c) 2021 listenai Systems (anhui) Co., Ltd.
 # SPDX-License-Identifier: Apache-2.0
 
-config PINMUX_CSK6001
-	bool "CSK6001 PINMUX driver"
+config PINMUX_CSK6
+	bool "CSK6 PINMUX driver"
 	default y
-	depends on HAS_CSK6001
+	depends on HAS_CSK6
 	help
-	  Enable driver for CSK6001 PINMUX driver.
+	  Enable driver for CSK6 PINMUX driver.

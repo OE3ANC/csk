@@ -1,22 +1,22 @@
-CSK6001 dma memory copy
+CSK6 dma memory copy
 #######################
 
 Overview
 ********
 
-This sample demonstrates how to use CSK6001 dma(working in Memory to Memory mode) to perform a `memcpy()`-like manner.
+This sample demonstrates how to use CSK6 dma(working in Memory to Memory mode) to perform a `memcpy()`-like manner.
 And give a speed comparison between in standard lib `memcpy()` and dma copy.
 
 Building and Running
 ********************
 
-Make sure you have the CSK6001 connected over Jlink debuger.
+Make sure you have the CSK6 connected over Jlink debuger.
 
 The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6001 samples/boards/csk6001/dma_memcpy
+   west build -b csk6 samples/boards/csk6/dma_memcpy
    west flash
 
 Sample Output

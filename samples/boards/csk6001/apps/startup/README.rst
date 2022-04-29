@@ -9,12 +9,12 @@ related configuration.
 Before running this example, you first need to package the second core firmware into the file system 
 and burn it to the corresponding Flash area address.
 
-Building the application for csk6001
+Building the application for csk6
 ***********************************************
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6001/apps/startup/
-   :board: csk6001
+   :zephyr-app: samples/boards/csk6/apps/startup/
+   :board: csk6
    :goals: debug
 
 Open a serial terminal (minicom, putty, etc.) and connect the board with the
@@ -45,7 +45,7 @@ metal: debug:     registered generic bus
   F 4014860 venus_cp_fw.bin
 End of files
 /lfs1 closedir
-csk6001_rproc_init: node id: 2
+csk6_rproc_init: node id: 2
 Step1: Create rproc success!
 /lfs1/cp_fw.bin stat: 0
 Get file 'cp_fw.bin' size 71056

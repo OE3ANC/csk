@@ -15,7 +15,7 @@ venus_system_tag[] = { 0x48, 0x72, 0x01, 0x00, 0xA4, 0x52, 0x08, 0x00, 0x00, 0x0
 		       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x05, 0xD7, 0x2C };
 
-#ifdef CONFIG_HAS_CSK6001_GPT
+#ifdef CONFIG_HAS_CSK6_GPT
 static void GPT_Init_Handler(void)
 {
 	IP_SYSCTRL->REG_MISC_CLK_CFG1.bit.DIV_GPT_CLKS = 0x2;
@@ -27,11 +27,11 @@ static void GPT_Init_Handler(void)
 }
 #endif
 
-static int csk6001_init(const struct device *arg)
+static int csk6_init(const struct device *arg)
 {
 	extern void BootClock_Init();
 
-#if CONFIG_USB_DC_CSK6001
+#if CONFIG_USB_DC_CSK6
 	SYSTEM_CLK->REG_MISC_CLK_CFG2.bit.ENA_USBC_CLK = 0x01;
 #endif
 
@@ -40,14 +40,14 @@ static int csk6001_init(const struct device *arg)
 	SCB_EnableICache();
 	SCB_EnableDCache();
 	/*TODO: will rewrite later*/
-#ifdef CONFIG_HAS_CSK6001_GPT
+#ifdef CONFIG_HAS_CSK6_GPT
 	GPT_Init_Handler();
 #endif
 
-#if CONFIG_CSK6001_PSRAM
+#if CONFIG_CSK6_PSRAM
 	PSRAM_Initialize();
 #endif
 	return 0;
 }
 
-SYS_INIT(csk6001_init, PRE_KERNEL_1, 0);
+SYS_INIT(csk6_init, PRE_KERNEL_1, 0);

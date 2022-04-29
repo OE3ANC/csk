@@ -18,13 +18,13 @@ Building and Running
 ********************
 
 
-Make sure you have the CSK6001 connected over Jlink debuger.
+Make sure you have the CSK6 connected over Jlink debuger.
 
 The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6001_xxx samples/boards/csk6001/subsys/usb/cdc/console_shell
+   west build -b csk6_xxx samples/boards/csk6/subsys/usb/cdc/console_shell
    west flash
 
 Plug the board into a host device, for sample, a PC running Linux OS.

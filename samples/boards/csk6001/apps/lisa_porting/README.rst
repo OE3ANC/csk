@@ -12,8 +12,8 @@ Overview
 
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6001/apps/lisa_porting
-   :board: csk6001
+   :zephyr-app: samples/boards/csk6/apps/lisa_porting
+   :board: csk6
    :goals: build
    :compact:
 

@@ -23,7 +23,7 @@ LOG_MODULE_REGISTER(i2c_csk);
 #define MAX_MSG (40)
 #define Q_ALIGN (4)
 
-#define I2C_SLAVE_ADDR (0x35) /* csk6001 default i2c slave address 0x35 */
+#define I2C_SLAVE_ADDR (0x35) /* csk6 default i2c slave address 0x35 */
 
 
 

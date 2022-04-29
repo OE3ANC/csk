@@ -21,7 +21,7 @@
 #include <logging/log.h>
 #include "hal/gpt.h"
 
-LOG_MODULE_REGISTER(pwm_csk6001, CONFIG_PWM_LOG_LEVEL);
+LOG_MODULE_REGISTER(pwm_csk6, CONFIG_PWM_LOG_LEVEL);
 
 #define MAX_PWM_CHANNEL  8
 

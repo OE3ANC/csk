@@ -1,16 +1,16 @@
 # ESP32 board configuration
 
 
-if SOC_CSK6001
+if SOC_CSK6
 
 
 config SOC
-	default "csk6001"
+	default "csk6"
 
 config NUM_IRQS
 	default 32
 
-config HAS_CSK6001_GPT
+config HAS_CSK6_GPT
 	bool
 	help
 	  Set if the general purpose timer (GPT) module is present in the SoC.

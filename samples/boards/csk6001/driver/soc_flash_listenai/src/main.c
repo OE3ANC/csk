@@ -47,13 +47,13 @@ void main(void)
 	uint32_t buf_word = 0U;
 	uint32_t i, offset;
 
-	printf("\nLitenai CSK6001 Flash Testing\n");
+	printf("\nLitenai CSK6 Flash Testing\n");
 	printf("=========================\n");
 
 	flash_dev = device_get_binding(FLASH_DEVICE);
 
 	if (!flash_dev) {
-		printf("Litenai CSK6001 flash driver was not found!\n");
+		printf("Litenai CSK6 flash driver was not found!\n");
 		return;
 	}
 

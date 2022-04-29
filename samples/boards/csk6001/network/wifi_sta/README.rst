@@ -1,23 +1,23 @@
 .. _wifi_sta:
 
-CSK6001 WiFi Station
+CSK6 WiFi Station
 ####################
 
 Overview
 ********
 
-This sample demonstrates how to use csk6001 to connect to a WiFi network as a station device.
+This sample demonstrates how to use csk6 to connect to a WiFi network as a station device.
 
 Building and Running
 ********************
 
-Make sure you have the CSK6001 connected over USB port.
+Make sure you have the CSK6 connected over USB port.
 
 The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6001 samples/boards/csk6001/wifi_station
+   west build -b csk6 samples/boards/csk6/wifi_station
    west flash
 
 Sample Output

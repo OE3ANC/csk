@@ -11,7 +11,7 @@
 #include <net/net_context.h>
 #include <net/net_mgmt.h>
 
-#include "csk6001/csk_wifi.h"
+#include "csk6/csk_wifi.h"
 
 static csk_wifi_event_cb_t wifi_event_cb;
 

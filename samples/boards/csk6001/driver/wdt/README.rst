@@ -1,1 +1,1 @@
-CSK6001 wtd test sample
+CSK6 wtd test sample

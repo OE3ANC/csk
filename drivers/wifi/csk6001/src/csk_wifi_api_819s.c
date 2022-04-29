@@ -1,4 +1,4 @@
-#include "csk6001/priv/csk_wifi_priv.h"
+#include "csk6/priv/csk_wifi_priv.h"
 
 #include <logging/log.h>
 LOG_MODULE_REGISTER(csk_wifi, CONFIG_WIFI_LOG_LEVEL);

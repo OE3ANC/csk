@@ -10,7 +10,7 @@
 #define SYSCTRL_RELEASE_CP 0xCAFE100B
 #define SYSCTRL_RESET_NPU 0xCAFE000
 
-static struct remoteproc *csk6001_rproc_init(struct remoteproc *rproc, struct remoteproc_ops *ops,
+static struct remoteproc *csk6_rproc_init(struct remoteproc *rproc, struct remoteproc_ops *ops,
 					     void *arg)
 {
 	struct rproc_priv *priv;
@@ -30,7 +30,7 @@ static struct remoteproc *csk6001_rproc_init(struct remoteproc *rproc, struct re
 	return priv->rproc;
 }
 
-static void csk6001_rproc_remove(struct remoteproc *rproc)
+static void csk6_rproc_remove(struct remoteproc *rproc)
 {
 	struct rproc_priv *priv;
 
@@ -38,7 +38,7 @@ static void csk6001_rproc_remove(struct remoteproc *rproc)
 	metal_free_memory(priv);
 }
 
-static void *csk6001_rproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
+static void *csk6_rproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
 				metal_phys_addr_t *da, size_t size, unsigned int attribute,
 				struct metal_io_region **io)
 {
@@ -89,7 +89,7 @@ static void *csk6001_rproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
 	return metal_io_phys_to_virt(*io, mem->pa);
 }
 
-int csk6001_rproc_start(struct remoteproc *rproc)
+int csk6_rproc_start(struct remoteproc *rproc)
 {
 	SYSCFG_RegDef *cmn_sys_ctrl = (SYSCFG_RegDef *)CMN_SYSCTRL_BASE;
 
@@ -117,7 +117,7 @@ int csk6001_rproc_start(struct remoteproc *rproc)
 	return 0;
 }
 
-static int csk6001_rproc_stop(struct remoteproc *rproc)
+static int csk6_rproc_stop(struct remoteproc *rproc)
 {
 	/* It is lacking a stop operation in the libPM */
 	// stall HIFI4
@@ -132,7 +132,7 @@ static int csk6001_rproc_stop(struct remoteproc *rproc)
 	return 0;
 }
 
-static int csk6001_rproc_shutdown(struct remoteproc *rproc)
+static int csk6_rproc_shutdown(struct remoteproc *rproc)
 {
 	struct rproc_priv *priv;
 	int ret;
@@ -165,17 +165,17 @@ static int csk6001_rproc_shutdown(struct remoteproc *rproc)
 	return 0;
 }
 
-static int csk6001_rproc_config(struct remoteproc *rproc, void *data)
+static int csk6_rproc_config(struct remoteproc *rproc, void *data)
 {
 	return 0;
 }
 
-struct remoteproc_ops csk6001_rproc_ops = {
-	.init = csk6001_rproc_init,
-	.remove = csk6001_rproc_remove,
-	.start = csk6001_rproc_start,
-	.stop = csk6001_rproc_stop,
-	.shutdown = csk6001_rproc_shutdown,
-	.mmap = csk6001_rproc_mmap,
-	.config = csk6001_rproc_config,
+struct remoteproc_ops csk6_rproc_ops = {
+	.init = csk6_rproc_init,
+	.remove = csk6_rproc_remove,
+	.start = csk6_rproc_start,
+	.stop = csk6_rproc_stop,
+	.shutdown = csk6_rproc_shutdown,
+	.mmap = csk6_rproc_mmap,
+	.config = csk6_rproc_config,
 };

@@ -14,7 +14,7 @@
 #include <logging/log.h>
 LOG_MODULE_REGISTER(_wifi_, LOG_LEVEL_DBG);
 
-#include "csk6001/csk_wifi.h"
+#include "csk6/csk_wifi.h"
 
 
 static csk_wifi_event_cb_t wifi_event_cb;

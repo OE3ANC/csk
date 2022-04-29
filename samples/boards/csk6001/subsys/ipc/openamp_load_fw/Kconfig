@@ -5,7 +5,7 @@
 # Workaround for not being able to have commas in macro arguments
 
 menu "Load Second Core Options"
-	depends on SOC_CSK6001
+	depends on SOC_CSK6
 
 choice
 	prompt "The second core load method selection"
