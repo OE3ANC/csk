@@ -483,7 +483,7 @@ static int bf30a2_driv_get_caps(const struct device *dev, enum video_endpoint_id
 
 /* TODO: Remove it */
 #define RECV_BUFS_COUNT 1
-static Z_GENERIC_SECTION(.csk6_psram_section0) __attribute__((aligned(4))) uint8_t recv_bufs[RECV_BUFS_COUNT][25219 + 1] = {0};
+static __attribute__((aligned(4))) uint8_t recv_bufs[RECV_BUFS_COUNT][25219 + 1] = {0};
 static SPI_DEV *spi_hal;
 
 static int bf30a2_decode_XX(char *in, char *out, uint32_t l, uint16_t h, uint16_t w);
