@@ -483,7 +483,7 @@ static int bf30a2_driv_get_caps(const struct device *dev, enum video_endpoint_id
 
 /* TODO: Remove it */
 #define RECV_BUFS_COUNT 1
-static __attribute__((aligned(4))) uint8_t recv_bufs[RECV_BUFS_COUNT][25219 + 1] = {0};
+static Z_GENERIC_SECTION(.csk6_psram_section0) __attribute__((aligned(4))) uint8_t recv_bufs[RECV_BUFS_COUNT][25219 + 1] = {0};
 static SPI_DEV *spi_hal;
 
 static int bf30a2_decode_XX(char *in, char *out, uint32_t l, uint16_t h, uint16_t w);
@@ -945,7 +945,7 @@ typedef struct {
     volatile uint32_t tag;
 } __packed frames_info_t;
 
-Z_GENERIC_SECTION(.csk6_psram_section1) __attribute__((aligned(32))) static char swp_frames[3][180 * 128] = {0};
+Z_GENERIC_SECTION(.csk6_psram_section0) __attribute__((aligned(32))) static char swp_frames[3][180 * 128] = {0};
 
 static inline char *bf30a2_frames_info_get_free(frames_info_t *info)
 {
@@ -1202,7 +1202,7 @@ static int bf30a2_dev_init(const struct device *dev)
     }
 
 #define BF30A2_PWM_DT_SPEC_GET(node_id)                                             \
-	{                                                                                          \
+	{                                                                               \
 	}
 
 #define BF30A2_CHIP_DATA(inst)                                                                     \

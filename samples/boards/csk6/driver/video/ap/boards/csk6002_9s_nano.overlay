@@ -18,7 +18,6 @@
                 pinctrl_spi1_cs_default: spi1_cs_default {
                     pinctrls = < &pinmuxa 9 7 >;
                 };
-
 };
 
 &gpt0 {
