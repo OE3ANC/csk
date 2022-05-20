@@ -142,7 +142,7 @@
             spi = <&spi1>;
         };
 };
- 
+
 &uart0 {
     current-speed = <921600>;
 };
