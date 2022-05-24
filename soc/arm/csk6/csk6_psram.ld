@@ -7,17 +7,17 @@
 #ifdef CONFIG_CSK6_PSRAM
 
 /* to make this section is existent */
-#if DT_NODE_HAS_STATUS(DT_NODELABEL(ap_partition), okay)
+#if DT_NODE_HAS_STATUS(DT_NODELABEL(psram_ap), okay)
 
 /* setion start */
 GROUP_START(PSRAM_AP)
 
-	SECTION_PROLOGUE(csk6_psram_section, (NOLOAD),)
+	SECTION_PROLOGUE(psram_section, (NOLOAD),)
 	{
-		__csk6_psram_section_start = .;
-		KEEP(*(.csk6_psram_section))
-		KEEP(*(".csk6_psram_section.*"))
-		__csk6_psram_section_end = .;
+		__psram_section_start = .;
+		KEEP(*(.psram_section))
+		KEEP(*(".psram_section.*"))
+		__psram_section_end = .;
 	} GROUP_LINK_IN(PSRAM_AP)
 
 GROUP_END(PSRAM_AP)
