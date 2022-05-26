@@ -4,7 +4,7 @@
  * Copyright (c) 2021 STMicroelectronics
  */
 
-&csk6002_c3_nano_pinctrl{
+&csk6002_9s_nano_pinctrl{
 				/* I2C alternate function */
                 pinctrl_i2c0_scl_default: i2c0_scl_default{
 						pinctrls = <&pinmuxa 4 8>;
