@@ -25,7 +25,7 @@
 
 #define SLAVE_ADDRESS (0x35) /* csk6 default i2c slave address 0x35 */
 uint32_t i2c0_cfg = I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER;
-uint32_t i2c1_cfg = 0;/* default mode£ºslave*/
+uint32_t i2c1_cfg = 0; /* default mode:slave*/
 
 const struct device *i2c0_dev = NULL;
 const struct device *i2c1_dev = NULL;
@@ -88,20 +88,20 @@ void i2c_master_thread(void *v1, void *v2, void *v3)
 
 	/* 1. master send, slave receive */
 	i2c_write(i2c0_dev, data0, sizeof(data0) - 1, SLAVE_ADDRESS);
-    
+
 	/* 2. master receive, slave send */
 	i2c_read(i2c0_dev, data0, sizeof(data0), SLAVE_ADDRESS);
-    printk("master receive data\n");
+	printk("master receive data\n");
 
 	for (int i = 0; i < sizeof(data1); i++) {
 		printk("data0[%d]: %d \n", i, data0[i]);
 	}
 
-    /* 3. master send data to slave */
+	/* 3. master send data to slave */
 	while (1) {
 		k_msleep(10000);
-        printk("master send data, size: %d \n",  sizeof(data0));
-        i2c_write(i2c0_dev, data0, sizeof(data0) - 1, SLAVE_ADDRESS);  
+		printk("master send data, size: %d \n", sizeof(data0));
+		i2c_write(i2c0_dev, data0, sizeof(data0) - 1, SLAVE_ADDRESS);
 	}
 }
 
@@ -126,18 +126,19 @@ void i2c_slave_thread(void *v1, void *v2, void *v3)
 	printk("slave send data\n");
 	i2c_write(i2c1_dev, data1, sizeof(data1) - 1, 0);
 
-    /* 3. slave receive data from master*/
+	/* 3. slave receive data from master*/
 	while (1) {
-        /* reset data value */
-	    memset(data1, sizeof(data1), 0);
-        i2c_read(i2c1_dev, data1, sizeof(data1), 0);
-        printk("slave receive date complete");
-	    
-        for (int i = 0; i < sizeof(data1); i++) {
-            if(data0[i] != data1[i]){
-                printk("data1[%d]: %d != data0[%d]: %d\n", i, data1[i], i, data0[i]);
-            }
-	    }
+		/* reset data value */
+		memset(data1, sizeof(data1), 0);
+		i2c_read(i2c1_dev, data1, sizeof(data1), 0);
+		printk("slave receive date complete");
+
+		for (int i = 0; i < sizeof(data1); i++) {
+			if (data0[i] != data1[i]) {
+				printk("data1[%d]: %d != data0[%d]: %d\n", i, data1[i], i,
+				       data0[i]);
+			}
+		}
 	}
 }
 
@@ -153,12 +154,12 @@ void main(void)
 	int pri = k_thread_priority_get(k_current_get());
 
 	k_thread_create(&slave_thread_data, slave_stack_area,
-					K_THREAD_STACK_SIZEOF(slave_stack_area),
-					i2c_slave_thread, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
+			K_THREAD_STACK_SIZEOF(slave_stack_area), i2c_slave_thread, NULL, NULL, NULL,
+			pri, 0, K_NO_WAIT);
 
 	k_thread_create(&master_thread_data, master_stack_area,
-					K_THREAD_STACK_SIZEOF(master_stack_area), i2c_master_thread, NULL,
-					NULL, NULL, pri, 0, K_NO_WAIT);
+			K_THREAD_STACK_SIZEOF(master_stack_area), i2c_master_thread, NULL, NULL,
+			NULL, pri, 0, K_NO_WAIT);
 
 	printk("i2c thread creaeted\n");
 
