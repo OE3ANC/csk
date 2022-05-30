@@ -94,7 +94,9 @@ void i2c_master_thread(void *v1, void *v2, void *v3)
 	printk("master receive data\n");
 
 	for (int i = 0; i < sizeof(data1); i++) {
-		printk("data0[%d]: %d \n", i, data0[i]);
+		if (data0[i] != data1[i]) {
+			printk("data0[%d]: %d != data1[%d]: %d\n", i, data0[i], i, data1[i]);
+		}
 	}
 
 	/* 3. master send data to slave */
@@ -107,13 +109,15 @@ void i2c_master_thread(void *v1, void *v2, void *v3)
 
 void i2c_slave_thread(void *v1, void *v2, void *v3)
 {
-	/* 1. master send, alave receive */
-	printk("slave receive data\n");
+	/* 1. master send, slave receive */
+	printk("master send, slave receive\n");
 	i2c_read(i2c1_dev, data1, sizeof(data1), 0);
 
 	/* print data */
 	for (int i = 0; i < sizeof(data1); i++) {
-		printk("data1[%d]: %d\n", i, data1[i]);
+		if (data0[i] != data1[i]) {
+			printk("data0[%d]: %d != data1[%d]: %d\n", i, data0[i], i, data1[i]);
+		}
 	}
 
 	/* reset data value */
@@ -122,8 +126,8 @@ void i2c_slave_thread(void *v1, void *v2, void *v3)
 		data1[i] = 256 - i;
 	}
 
-	/* 2. master recevice, alave send */
-	printk("slave send data\n");
+	/* 2. master recevice, slave send */
+	printk("master receive, slave send\n");
 	i2c_write(i2c1_dev, data1, sizeof(data1) - 1, 0);
 
 	/* 3. slave receive data from master*/
