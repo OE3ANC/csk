@@ -17,7 +17,6 @@
 #include <drivers/gpio.h>
 #include <sys/byteorder.h>
 #include <drivers/display.h>
-#include <drivers/pinmux.h>
 
 #define LOG_LEVEL CONFIG_DISPLAY_LOG_LEVEL
 #include <logging/log.h>
