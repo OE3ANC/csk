@@ -13,10 +13,10 @@
 #define MASTER_MODE 1
 #define BUF_SIZE 9
 #if MASTER_MODE
-uint8_t master_buffer_tx[BUF_SIZE] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+uint8_t master_buffer_tx[BUF_SIZE] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 uint8_t master_buffer_rx[BUF_SIZE] = {};
 #else
-uint8_t slave_buffer_tx[BUF_SIZE] = {9,8,7,6,5,4,3,2,1};
+uint8_t slave_buffer_tx[BUF_SIZE] = { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 uint8_t slave_buffer_rx[BUF_SIZE] = {};
 #endif
 
@@ -35,7 +35,7 @@ const struct device *spi_slave = NULL;
 #if MASTER_MODE
 void spi_master_init(void)
 {
-    spi_master = DEVICE_DT_GET(DT_NODELABEL(spi1));
+	spi_master = DEVICE_DT_GET(DT_NODELABEL(spi1));
 	if (spi_master == NULL) {
 		printk("spi_master: Device is not found.\n");
 		return;
@@ -45,12 +45,11 @@ void spi_master_init(void)
 		printk("spi_master: Device is not ready.\n");
 		return;
 	}
-
 }
 #else
 void spi_slave_init(void)
 {
-    spi_slave = DEVICE_DT_GET(DT_NODELABEL(spi1));
+	spi_slave = DEVICE_DT_GET(DT_NODELABEL(spi1));
 	if (spi_slave == NULL) {
 		printk("spi_slave: Device is not found.\n");
 		return;
@@ -66,7 +65,7 @@ void spi_slave_init(void)
 #if MASTER_MODE
 void master_thread(void *v1, void *v2, void *v3)
 {
-	struct spi_config spi_cfg = {0};
+	struct spi_config spi_cfg = { 0 };
 	const struct spi_buf tx_bufs[] = {
 		{
 			.buf = master_buffer_tx,
@@ -79,37 +78,29 @@ void master_thread(void *v1, void *v2, void *v3)
 			.len = BUF_SIZE,
 		},
 	};
-	const struct spi_buf_set tx = {
-		.buffers = tx_bufs,
-		.count = ARRAY_SIZE(tx_bufs)
-	};
-	const struct spi_buf_set rx = {
-		.buffers = rx_bufs,
-		.count = ARRAY_SIZE(rx_bufs)
-	};
+	const struct spi_buf_set tx = { .buffers = tx_bufs, .count = ARRAY_SIZE(tx_bufs) };
+	const struct spi_buf_set rx = { .buffers = rx_bufs, .count = ARRAY_SIZE(rx_bufs) };
 
-    /* spi master 8bit, LSB first*/
+	/* spi master 8bit, LSB first*/
 	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_MASTER | SPI_TRANSFER_LSB;
 	spi_cfg.frequency = 10 * 1000000UL;
 
 	while (1) {
-        k_msleep(1000);
-        memset(master_buffer_rx, 0, BUF_SIZE);
-        printk("[Master]spi send data \n");
+		k_msleep(1000);
+		memset(master_buffer_rx, 0, BUF_SIZE);
+		printk("[Master]spi send data \n");
 		spi_transceive(spi_master, &spi_cfg, &tx, &rx);
-        printk("[Master]spi received data \n");
-		for(uint8_t i = 0; i < BUF_SIZE; i++)
-		{
+		printk("[Master]spi received data \n");
+		for (uint8_t i = 0; i < BUF_SIZE; i++) {
 			printk("0x%x", master_buffer_rx[i]);
 		}
 		printk("\n");
-
 	}
 }
 #else
 void slave_thread(void *v1, void *v2, void *v3)
 {
-	struct spi_config spi_cfg = {0};
+	struct spi_config spi_cfg = { 0 };
 	const struct spi_buf tx_bufs[] = {
 		{
 			.buf = slave_buffer_tx,
@@ -122,38 +113,29 @@ void slave_thread(void *v1, void *v2, void *v3)
 			.len = BUF_SIZE,
 		},
 	};
-	const struct spi_buf_set tx = {
-		.buffers = tx_bufs,
-		.count = ARRAY_SIZE(tx_bufs)
-	};
-	const struct spi_buf_set rx = {
-		.buffers = rx_bufs,
-		.count = ARRAY_SIZE(rx_bufs)
-	};
+	const struct spi_buf_set tx = { .buffers = tx_bufs, .count = ARRAY_SIZE(tx_bufs) };
+	const struct spi_buf_set rx = { .buffers = rx_bufs, .count = ARRAY_SIZE(rx_bufs) };
 
-    /* spi slave 8bit, LSB first*/
+	/* spi slave 8bit, LSB first*/
 	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_SLAVE | SPI_TRANSFER_LSB;
 	spi_cfg.frequency = 10 * 1000000UL;
 
 	while (1) {
-		
-        memset(slave_buffer_rx, 0, BUF_SIZE);
+		memset(slave_buffer_rx, 0, BUF_SIZE);
 		spi_transceive(spi_slave, &spi_cfg, &tx, &rx);
 
-        printk("[Slave]spi receive data, and send back \n");
-		for(uint8_t i = 0; i < BUF_SIZE; i++)
-		{
+		printk("[Slave]spi receive data, and send back \n");
+		for (uint8_t i = 0; i < BUF_SIZE; i++) {
 			printk("0x%x", slave_buffer_rx[i]);
 		}
 		printk("\n");
-
 	}
 }
 #endif
 
 void main(void)
 {
-    printk("SPI test start \n");
+	printk("SPI test start \n");
 
 #if MASTER_MODE
 	spi_master_init();
@@ -164,15 +146,15 @@ void main(void)
 	int pri = k_thread_priority_get(k_current_get());
 
 #if MASTER_MODE
-    k_thread_create(&master_thread_data, master_stack_area,
-                    K_THREAD_STACK_SIZEOF(master_stack_area), master_thread, NULL,
-                    NULL, NULL, pri, 0, K_NO_WAIT);
+	k_thread_create(&master_thread_data, master_stack_area,
+			K_THREAD_STACK_SIZEOF(master_stack_area), master_thread, NULL, NULL, NULL,
+			pri, 0, K_NO_WAIT);
 #else
-    k_thread_create(&slave_thread_data, slave_stack_area,
-                    K_THREAD_STACK_SIZEOF(slave_stack_area),
-                    slave_thread, NULL, NULL, NULL, pri, 0, K_NO_WAIT);
+	k_thread_create(&slave_thread_data, slave_stack_area,
+			K_THREAD_STACK_SIZEOF(slave_stack_area), slave_thread, NULL, NULL, NULL,
+			pri, 0, K_NO_WAIT);
 #endif
-    printk("SPI thread created\n");
+	printk("SPI thread created\n");
 
 	while (1) {
 		k_msleep(10);
