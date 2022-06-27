@@ -35,7 +35,7 @@ const struct device *spi_slave = NULL;
 #if MASTER_MODE
 void spi_master_init(void)
 {
-	spi_master = DEVICE_DT_GET(DT_NODELABEL(spi1));
+    spi_master = DEVICE_DT_GET(DT_NODELABEL(spi1));
 	if (spi_master == NULL) {
 		printk("spi_master: Device is not found.\n");
 		return;
