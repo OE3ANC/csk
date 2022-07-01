@@ -166,6 +166,11 @@ typedef enum {
 } wifi_cmd_t;
 
 typedef struct {
+    wifi_cmd_t cmd;
+    bool async_mode;
+} wifi_req_t;
+
+typedef struct {
     int result;
     void *arg;
 } wifi_ret_msg_t;
@@ -176,7 +181,7 @@ typedef struct {
 } wifi_scan_list_t;
 
 const struct device * wifi_obj_get_dev(csk_wifi_mode_t mode);
-int wifi_send_command(const struct device *dev, wifi_cmd_t command, k_timeout_t timeouts);
+int wifi_send_command(const struct device *dev, wifi_cmd_t command, k_timeout_t timeouts, bool async_mode);
 int wifi_take_result(wifi_ret_msg_t *ret_msg, k_timeout_t timeout);
 
 void wifi_dispatch_callbacks(csk_wifi_event_t events, void *event_data, uint32_t event_data_len);
