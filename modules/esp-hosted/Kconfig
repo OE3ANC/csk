@@ -26,4 +26,20 @@ config HOSTED_PROCESS_RX_PRIORITY
 	int "Hosted Processing Thread priority"
 	default -1
 
+config HOSTED_TX_QUEUE_LEN
+	int "Hosted TX Queue Len"
+	default 30
+
+config HOSTED_RX_QUEUE_LEN
+	int "Hosted RX Queue Len"
+	default 30
+
+config HOSTED_SERIALIF_QUEUE_LEN
+	int "Hosted Serial if queue len"
+	default 50
+
+config HOSTED_NETIF_QUEUE_LEN
+	int "Hosted Net if queue len"
+	default 50
+
 endif # ESP_HOSTED
