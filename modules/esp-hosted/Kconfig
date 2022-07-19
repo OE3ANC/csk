@@ -16,7 +16,7 @@ config HOSTED_TRANSACTION_STACK
 
 config HOSTED_TRANSACTION_PRIORITY
 	int "Hosted Transaction Thread priority"
-	default 4
+	default -1
 
 config HOSTED_PROCESS_RX_STACK
 	int "Hosted Processing Thread Stack"
@@ -24,6 +24,6 @@ config HOSTED_PROCESS_RX_STACK
 
 config HOSTED_PROCESS_RX_PRIORITY
 	int "Hosted Processing Thread priority"
-	default 5
+	default -1
 
 endif # ESP_HOSTED
