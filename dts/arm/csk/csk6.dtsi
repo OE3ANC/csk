@@ -29,20 +29,23 @@
 	};
 
 	sram0: memory@80000 {
-		compatible = "mmio-sram";
+		compatible = "zephyr,memory-region";
 		reg = <0x00080000 (320*1024)>;
+		zephyr,memory-region = "SRAM0";
 	};
 
     itcm0: code@10000 {
-        compatible = "listenai,csk-itcm";
+        compatible = "zephyr,memory-region";
         reg = <0x00010000 (16*1024)>;
         label = "itcm CODE";
+		zephyr,memory-region = "ITCM";
     };
 
 	psram0: psram@30000000 {
-		compatible = "listenai,csk6-psram";
+		compatible = "zephyr,memory-region";
 		reg = <0x30000000 DT_SIZE_M(8)>;
 		label = "psram0";
+		zephyr,memory-region = "PSRAM0";
 	};
 
 	soc {
