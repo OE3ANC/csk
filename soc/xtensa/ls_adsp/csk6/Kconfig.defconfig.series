@@ -4,6 +4,10 @@
 if SOC_SERIES_LS_CSK6
 
 
+config KERNEL_BIN_NAME
+	string
+	default "zephyr_csk6_dsp"
+
 config SOC_SERIES
 	string
 	default "csk6"
