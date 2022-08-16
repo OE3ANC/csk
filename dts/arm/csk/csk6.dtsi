@@ -42,10 +42,9 @@
     };
 
 	psram0: psram@30000000 {
-		compatible = "zephyr,memory-region";
+		compatible = "listenai,csk6-psram";
 		reg = <0x30000000 DT_SIZE_M(8)>;
 		label = "psram0";
-		zephyr,memory-region = "PSRAM0";
 	};
 
 	soc {
