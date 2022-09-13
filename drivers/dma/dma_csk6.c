@@ -293,11 +293,11 @@ static bool csk_dma_addr_is_right_access(void *addr, uint32_t size)
 		return false;
 	}
 
+#ifndef CONFIG_SOC_LS_ADSP_CSK6
 	/* D-Cache is disabled? */
 	if (!(SCB->CCR & SCB_CCR_DC_Msk)) {
 		return true;
 	}
-
 #if CONFIG_NOCACHE_MEMORY
 	extern char _nocache_ram_start[];
 	extern char _nocache_ram_end[];
@@ -313,8 +313,10 @@ static bool csk_dma_addr_is_right_access(void *addr, uint32_t size)
 	}
 
 #endif
-
 	return !((uint32_t)addr & (__SCB_DCACHE_LINE_SIZE - 1U));
+#else
+	return true;
+#endif
 }
 
 static int csk_dma_start(const struct device *dev, uint32_t channel)
