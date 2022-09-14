@@ -99,21 +99,6 @@ static int csk_dma_configure(const struct device *dev, uint32_t channel, struct 
 		return -ENOTSUP;
 	}
 
-	if (config->head_block == NULL) {
-		LOG_ERR("Head blocl is null.");
-		return -EINVAL;
-	}
-
-	if (config->head_block->source_address == 0 || config->head_block->dest_address == 0) {
-		LOG_ERR("Dest address or source address is null.");
-		return -EINVAL;
-	}
-
-	if (config->head_block->dest_reload_en || config->head_block->source_reload_en) {
-		LOG_ERR("Do not support reload mode.");
-		return -ENOTSUP;
-	}
-
 	/**
 	 *  CSK6 DMA controller is not support hardware LLP mode.
 	 * 
@@ -140,9 +125,13 @@ static int csk_dma_configure(const struct device *dev, uint32_t channel, struct 
 	}
 
 	if (config->head_block != NULL) {
+		if (config->head_block->dest_reload_en || config->head_block->source_reload_en) {
+			LOG_ERR("Do not support reload mode.");
+			return -ENOTSUP;
+		}
+
 		ch_info->dst_addr = config->head_block->dest_address;
 		ch_info->src_addr = config->head_block->source_address;
-
 		ch_info->xfer_count = config->head_block->block_size / config->source_data_size;
 
 		__ASSERT(config->head_block->block_size % config->dest_data_size == 0,
@@ -358,6 +347,11 @@ static int csk_dma_start(const struct device *dev, uint32_t channel)
 				ch_info->dst_addr);
 			return -EINVAL;
 		}
+	}
+
+	if (ch_info->src_addr == 0 || ch_info->dst_addr == 0) {
+		LOG_ERR("Source address or destination address is null!");
+		return -EINVAL;
 	}
 
 	int ret = dma_channel_configure(channel, ch_info->src_addr, ch_info->dst_addr,
