@@ -218,6 +218,8 @@ static int csk6_dvp_start(const struct device *dev, struct video_buffer *vbuf)
 	dvp_buf.pAddrY = (uint8_t *)DVP_PSRAM_ADDR_WRAP(vbuf->buffer);
 	dvp_buf.bufLenY = vbuf->size;
 
+	SCB_InvalidateDCache_by_Addr((void *)vbuf->buffer, vbuf->bytesused);
+
 	ret = DVP_Start(dvp_dev, dvp_buf);
 	if(ret != 0){
 		LOG_ERR("dvp satrt faild \r\n");
