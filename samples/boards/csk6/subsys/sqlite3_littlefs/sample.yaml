@@ -4,11 +4,8 @@ sample:
   name: sqlite3_littefs
 tests:
   sample.board.csk6.subsys.sqlite3_littefs:
-    tags: csk
-    integration_platforms:
-        - csk6002_9s_nano
-        - csk6002_c3_nano
-        - csk6012_c3_nano
+    tags: csk6
+    platform_allow: csk6002_c3_nano csk6002_9s_nano csk6012_c3_nano
     harness: console
     timeout: 20
     harness_config:
