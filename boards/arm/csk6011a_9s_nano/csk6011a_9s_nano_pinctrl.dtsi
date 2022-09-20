@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-
+#include <dt-bindings/pinctrl/csk6-pinctrl.h>
 / {
         csk6011a_9s_nano_pinctrl:csk6011a_pinctrl{
                 compatible = "listenai,csk-pinctrl";
