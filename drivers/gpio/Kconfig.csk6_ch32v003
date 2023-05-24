@@ -21,3 +21,10 @@ config GPIO_CSK6_CH32V003_INIT_DELAY_MS
 	depends on GPIO_CSK6_CH32V003
 	help
 	   init delay
+
+config GPIO_CSK6_CH32V003_NON_BLOCK_INIT
+	bool "non-block init for ch32v003"
+	default n
+	depends on GPIO_CSK6_CH32V003
+	help
+		non-block init for ch32v003
