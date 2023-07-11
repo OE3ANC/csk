@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2018 Nordic Semiconductor
+# Copyright (c) 2023 listenai Intelligent Technology (anhui) Co., Ltd.
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: Apache-2.0
 #
 
 # Usually BOARD_DIR is an absolute path and sourced through '<ZEPHYR_ROOT>/boards/Kconfig'.
