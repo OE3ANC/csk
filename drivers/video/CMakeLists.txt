@@ -1,14 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-zephyr_library()
+set(TARGET_LIB drivers__video)
 
-zephyr_library_sources(video_common.c)
-
-zephyr_library_sources_ifdef(CONFIG_VIDEO_MCUX_CSI	video_mcux_csi.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_SW_GENERATOR	video_sw_generator.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_MT9M114	mt9m114.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_OV7725	ov7725.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_OV2640	ov2640.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_CSK6_DVP	video_csk6_dvp.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_OV9655	ov9655.c)
-zephyr_library_sources_ifdef(CONFIG_VIDEO_GC032A	gc032a.c)
+target_sources_ifdef(CONFIG_VIDEO_CSK6_DVP ${TARGET_LIB} PRIVATE video_csk6_dvp.c)
