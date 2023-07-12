@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 #include <string.h>
-
 #include <device.h>
+#include "csk6_driver.h"
 #include <drivers/flash.h>
 #include <storage/flash_map.h>
 #include <zephyr.h>
@@ -61,7 +61,8 @@ void main(void)
 	
 #ifdef CONFIG_FLASH_CSK6_LOCK
 
-	uint32_t id = flash_read_id(flash_dev);
+	uint32_t id = 0;
+	flash_read_jedec_id(flash_dev, (uint8_t*)&id);
 	printk("Flash ID: 0x%x\n", id);
 
 	flash_lock(flash_dev);
