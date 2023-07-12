@@ -285,20 +285,43 @@ int flash_csk6_get_lock_status(const struct device *dev)
 
 	return status;
 }
-#endif
 
-int32_t flash_csk6_read_id(const struct device *dev)
+int32_t flash_csk6_read_id(const struct device * dev, uint8_t * id)
 {
-	int32_t id = 0;
+	int32_t iret = 0;
+	int32_t tempid=0;
 	FLASH_OPT_ENTER();
 	sflash_write_protection_set((void *)dev->config, false);
 
-	id = sflash_read_id((void *)dev->config);
+	tempid = sflash_read_id((void *)dev->config);
 
 	sflash_write_protection_set((void *)dev->config, true);
 	FLASH_OPT_EXIT();
-	return id;
+	if(tempid){
+		*(uint32_t*)id = tempid;
+	}else{
+		iret = -EIO;
+	}
+	return iret;
 }
+
+/*
+*  these functions are additional API for csk flash.
+*  but for staying the same with zephyr __syscall flash API, they named like flash_write/flash_read.
+*  attention: these functions are not maked support userspace mode.
+* */
+int flash_lock(const struct device *dev){
+	return flash_csk6_lock(dev);	
+}
+
+int flash_unlock(const struct device *dev){
+	return flash_csk6_unlock(dev);
+}
+
+int flash_get_lock_status(const struct device *dev){
+	return flash_csk6_get_lock_status(dev);
+}
+#endif
 
 
 static const struct flash_driver_api flash_csk6_driver_api = {
@@ -306,15 +329,12 @@ static const struct flash_driver_api flash_csk6_driver_api = {
 	.write = flash_csk6_write,
 	.erase = flash_csk6_erase,
 	.get_parameters = flash_csk6_get_parameters,
-#ifdef CONFIG_FLASH_CSK6_LOCK
-	.lock = flash_csk6_lock,
-	.unlock = flash_csk6_unlock,
-	.get_lock_status = flash_csk6_get_lock_status,
-#endif
-	.read_id = flash_csk6_read_id,
 #ifdef CONFIG_FLASH_PAGE_LAYOUT
 	.page_layout = flash_csk6_page_layout,
 #endif
+#if defined(CONFIG_FLASH_JESD216_API)
+	.read_jedec_id = flash_csk6_read_id,
+#endif /* CONFIG_FLASH_JESD216_API */
 };
 
 DEVICE_DT_INST_DEFINE(0, flash_csk6_init, NULL, NULL, &csk6_flash_config, POST_KERNEL,
