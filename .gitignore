@@ -12,3 +12,6 @@ build/
 twister-out*
 *pyc
 */__pycache__
+
+# clangd cache
+.cache/
