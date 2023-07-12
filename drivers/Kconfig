@@ -50,4 +50,6 @@ rsource "infrared/Kconfig"
 
 rsource "display/Kconfig"
 
+rsource "rtc/Kconfig"
+
 endmenu
