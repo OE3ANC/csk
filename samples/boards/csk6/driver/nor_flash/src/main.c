@@ -11,6 +11,7 @@
 #include <drivers/flash.h>
 #include <storage/flash_map.h>
 #include <zephyr.h>
+#include "csk6_driver.h"
 
 #if DT_NODE_HAS_STATUS(DT_INST(0, listenai_csk_flash_controller), okay)
 #define FLASH_DEVICE DT_LABEL(DT_INST(0, listenai_csk_flash_controller))
@@ -61,7 +62,8 @@ void main(void)
 	
 #ifdef CONFIG_FLASH_CSK6_LOCK
 
-	uint32_t id = flash_read_id(flash_dev);
+	uint32_t id = 0;
+	flash_read_jedec_id(flash_dev, (uint8_t*)&id);
 	printk("Flash ID: 0x%x\n", id);
 
 	flash_lock(flash_dev);

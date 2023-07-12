@@ -1,12 +1,7 @@
+set(CSK_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE PATH "CSK root directory")
+
 add_subdirectory(drivers)
 
-if(CONFIG_LEGACY_INCLUDE_PATH)
-  zephyr_include_directories(include/zephyr)
-endif()
+zephyr_include_directories(include/drivers)
 
-zephyr_include_directories(
-  include
-  ${PROJECT_BINARY_DIR}/include/generated
-  ${USERINCLUDE}
-  ${STDINCLUDE}
-)
+
