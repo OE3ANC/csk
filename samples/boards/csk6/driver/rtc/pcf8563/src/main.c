@@ -14,7 +14,7 @@
 
 LOG_MODULE_REGISTER(rtc, LOG_LEVEL_INF);
 
-#define RTC DT_LABEL(DT_NODELABEL(rtc))
+static const struct device *rtc_dev = DEVICE_DT_GET(DT_ALIAS(rtc));
 
 int rtc_user_set_time(const struct device *dev, struct tm *tm)
 {
@@ -42,12 +42,11 @@ int rtc_user_get_time(const struct device *dev, struct tm *tm)
 	return ret;
 }
 
-const struct device *rtc_dev;
 
 int main()
 {
 	struct tm time;
-	rtc_dev = device_get_binding(RTC);
+
 	if (!rtc_dev) {
 		LOG_INF("Failed to get device binding %p\n", rtc_dev);
 		return -ENODEV;
