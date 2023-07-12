@@ -48,4 +48,6 @@ rsource "disk/Kconfig"
 
 rsource "pinctrl/Kconfig"
 
+rsource "infrared/Kconfig"
+
 endmenu
