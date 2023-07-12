@@ -37,6 +37,10 @@ struct counter_alarm_cfg alarm_cfg2;
 			    INST_DT_COMPAT_LABEL, (,), compat),), ())
 
 static const char * const devices[] = {
+
+#ifdef CONFIG_COUNTER_CSK6_DUAL
+	DT_LABEL(DT_NODELABEL(dual_timer)),
+#endif
 #ifdef CONFIG_COUNTER_CSK6_GPTCHANNEL
 	DT_LABEL(DT_NODELABEL(gptchannel0)),
 	DT_LABEL(DT_NODELABEL(gptchannel1)),
