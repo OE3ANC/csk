@@ -79,3 +79,6 @@ manifest:
       path: modules/fs/fatfs
       groups:
         - fs
+
+  self:
+    path: csk
