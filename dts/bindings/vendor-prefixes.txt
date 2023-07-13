@@ -11,3 +11,4 @@
 # <vendor-prefix><TAB><Full name of vendor>
 
 listenai	LISTENAI
+betterlife	betterlife
