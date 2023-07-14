@@ -3,7 +3,8 @@
 
 config KSCAN_CSK6
 	bool "CSK6 keysense driver"
-	depends on ADC
+	select ADC
+	select CSK6_ADC
 	help
 		Enable driver for CSK6 keysense
 

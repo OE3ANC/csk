@@ -1,0 +1,6 @@
+tests:
+  drivers.kscan.kscan_api:
+    tags: drivers kscan userspace
+    depends_on: kscan
+    platform_allow: csk6011a_nano csk6012_nano
+
