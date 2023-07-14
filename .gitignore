@@ -11,4 +11,6 @@ build/
 
 twister-out*
 *pyc
-*/__pycache__
+__pycache__/
+.cache/
+*.pyc
