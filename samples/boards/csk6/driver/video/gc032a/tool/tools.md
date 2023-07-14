@@ -25,7 +25,7 @@ pipreqs ./ --force
 ```shell
 python3 ./show_image.py
 # Or customize the device and baud rate
-python3 ./show_image.y -d /dev/ttyACM0 -d b 921600
+python3 ./show_image.py -b 921600 -d /dev/ttyACM0
 ```
 
 - Help
