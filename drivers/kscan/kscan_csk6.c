@@ -176,6 +176,11 @@ static int kscan_csk6_config(const struct device *dev,
 		return -EINVAL;
 	}
 
+	if(callback ==  NULL){
+		LOG_ERR("callback is null \n");
+		return -EINVAL;
+	}
+
 	DEV_CB(dev) = callback;
 
 	LOG_DBG("analog key trigger %d %d %d \n", config->analog_key_voltage[0], config->analog_key_voltage[1], config->analog_key_voltage[2]);
@@ -186,6 +191,22 @@ static int kscan_csk6_config(const struct device *dev,
 							| CSK_KEYSENSE_INTERRUPT_MODE_PRESS);
 
 	HAL_KEYSENSE_Enable(DEV_HANDLER(dev));
+
+	return 0;
+}
+
+static int kscan_csk6_disable(const struct device *dev)
+{
+	HAL_KEYSENSE_InterruptDisable(DEV_HANDLER(dev), CSK_KEYSENSE_INTERRUPT_MODE_RELEASE 
+							| CSK_KEYSENSE_INTERRUPT_MODE_PRESS);
+
+	return 0;
+}
+
+static int kscan_csk6_enable(const struct device *dev)
+{
+	HAL_KEYSENSE_InterruptEnable(DEV_HANDLER(dev), CSK_KEYSENSE_INTERRUPT_MODE_RELEASE 
+							| CSK_KEYSENSE_INTERRUPT_MODE_PRESS);
 
 	return 0;
 }
@@ -207,6 +228,8 @@ static int kscan_csk6_init(const struct device *dev)
 
 static const struct kscan_driver_api kscan_csk6_api = {
 	.config = kscan_csk6_config,
+	.disable_callback = kscan_csk6_disable,
+	.enable_callback = kscan_csk6_enable,
 };
 
 
