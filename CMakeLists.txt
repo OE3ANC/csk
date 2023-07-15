@@ -4,4 +4,7 @@ add_subdirectory(drivers)
 
 zephyr_include_directories(include)
 
+# override the default linker script,so that we can make more infomation in the zephyr.stat
+set_property(TARGET bintools PROPERTY readelf_flag_headers -a)
+
 
