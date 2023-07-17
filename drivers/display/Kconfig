@@ -1,0 +1,2 @@
+rsource "Kconfig.csk6_lcd"
+rsource "Kconfig.st7789v_csk6"
