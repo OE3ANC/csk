@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(TARGET_LIB drivers__gpio)
+zephyr_library_amend()
 
-target_sources_ifdef(CONFIG_GPIO_CSK6 ${TARGET_LIB} PRIVATE gpio_csk6.c)
-target_sources_ifdef(CONFIG_GPIO_CSK6_CH32V003 ${TARGET_LIB} PRIVATE gpio_csk6_ch32v003.c)
+zephyr_library_sources_ifdef(CONFIG_GPIO_CSK6 gpio_csk6.c)
+zephyr_library_sources_ifdef(CONFIG_GPIO_CSK6_CH32V003 gpio_csk6_ch32v003.c)
 
-target_include_directories_ifdef(CONFIG_GPIO_CSK6 ${TARGET_LIB} PRIVATE ${ZEPHYR_BASE}/drivers/gpio)
+zephyr_library_include_directories_ifdef(CONFIG_GPIO_CSK6 ${ZEPHYR_BASE}/drivers/gpio)
