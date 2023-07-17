@@ -1,0 +1,10 @@
+tests:
+  samples.boards.csk6.driver.kscan.bl6xxx:
+    platform_allow: csk6011a_nano csk6012_nano
+    tags: csk6
+    timeout: 10
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "bl6xxx sample application start"
