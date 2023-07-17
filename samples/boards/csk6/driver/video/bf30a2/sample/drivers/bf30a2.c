@@ -18,8 +18,12 @@
 #include <drivers/pwm.h>
 #include <drivers/uart.h>
 
-#include <hal/spi.h>
-#include <hal/dma.h>
+#include <drivers/spi.h>
+#include <drivers/dma.h>
+
+#include "spi.h"
+#include "Driver_SPI.h"
+#include "IOMuxManager.h"
 
 #include <stdbool.h>
 #include <logging/log.h>
@@ -135,11 +139,10 @@ void bf30a2_spi_evt_callback(unsigned int event_info, unsigned int xfer_bytes,
 			     unsigned int usr_param);
 
 #ifdef CONFIG_SOC_LS_ADSP_CSK6
-#include "hal/gpio_venus.h"
+#include "drivers/gpio_venus.h"
 #else
-#include "hal/gpio.h"
+#include "drivers/gpio.h"
 #endif
-#include "hal/IOMuxManager.h"
 
 #define SPI1_CS_PIN 9
 
