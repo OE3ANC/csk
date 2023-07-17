@@ -12,3 +12,5 @@
 
 listenai	LISTENAI
 betterlife	betterlife
+galaxyc		GalaxyCore
+smartsens	smartsens
