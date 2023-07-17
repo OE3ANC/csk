@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(TARGET_LIB drivers__adc)
+zephyr_library_amend()
 
-target_sources_ifdef(CONFIG_ADC_CSK6 ${TARGET_LIB} PRIVATE adc_csk6.c)
-target_include_directories_ifdef(CONFIG_ADC_CSK6 ${TARGET_LIB} PRIVATE ${ZEPHYR_BASE}/drivers/adc)
+zephyr_library_sources_ifdef(CONFIG_ADC_CSK6 adc_csk6.c)
+zephyr_library_sources_ifdef(CONFIG_ADC_CSK6_CH32V003 adc_csk6_ch32v003.c)
 
-target_sources_ifdef(CONFIG_ADC_CSK6_CH32V003 ${TARGET_LIB} PRIVATE adc_csk6_ch32v003.c)
-target_include_directories_ifdef(CONFIG_ADC_CSK6_CH32V003 ${TARGET_LIB} PRIVATE ${ZEPHYR_BASE}/drivers/adc)
+zephyr_library_include_directories(${ZEPHYR_BASE}/drivers/adc)

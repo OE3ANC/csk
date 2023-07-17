@@ -1,6 +1,6 @@
 # Copyright (c) 2021 Nordic Semiconductor ASA
 # SPDX-License-Identifier: Apache-2.0
 
-set(TARGET_LIB drivers__pinctrl)
+zephyr_library_amend()
 
-target_sources_ifdef(CONFIG_PINCTRL_CSK6 ${TARGET_LIB} PRIVATE pinctrl_csk6.c)
+zephyr_library_sources_ifdef(CONFIG_PINCTRL_CSK6 pinctrl_csk6.c)

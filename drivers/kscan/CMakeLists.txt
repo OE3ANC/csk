@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(TARGET_LIB drivers__kscan)
+zephyr_library_amend()
 
-target_sources_ifdef(CONFIG_KSCAN_CSK6 ${TARGET_LIB} PRIVATE kscan_csk6.c)
-target_sources_ifdef(CONFIG_KSCAN_BL6XXX ${TARGET_LIB} PRIVATE kscan_bl6xxx.c)
+zephyr_library_sources_ifdef(CONFIG_KSCAN_CSK6  kscan_csk6.c)
+zephyr_library_sources_ifdef(CONFIG_KSCAN_BL6XXX  kscan_bl6xxx.c)

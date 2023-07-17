@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(TARGET_LIB drivers__crypto)
+zephyr_library_amend()
 
-target_sources_ifdef(CONFIG_CRYPTO_CSK6 ${TARGET_LIB} PRIVATE crypto_csk6.c)
+zephyr_library_sources_ifdef(CONFIG_CRYPTO_CSK6 crypto_csk6.c)
