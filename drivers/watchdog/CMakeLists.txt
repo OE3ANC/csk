@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-set(TARGET_LIB drivers__watchdog)
+zephyr_library_amend()
 
-target_sources_ifdef(CONFIG_WDT_CSK6 ${TARGET_LIB} PRIVATE wdt_csk6.c)
+zephyr_library_sources_ifdef(CONFIG_WDT_CSK6  wdt_csk6.c)
 
