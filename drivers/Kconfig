@@ -50,4 +50,6 @@ rsource "pinctrl/Kconfig"
 
 rsource "infrared/Kconfig"
 
+rsource "display/Kconfig"
+
 endmenu
