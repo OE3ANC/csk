@@ -1,5 +1,50 @@
+# VIDEO driver configuration options
+
+# Copyright (c) 2019 Linaro Limited
+# SPDX-License-Identifier: Apache-2.0
+
+#
+# VIDEO Drivers
+#
+menuconfig VIDEO
+	bool "VIDEO hardware support"
+	help
+	  Enable support for the VIDEO.
+
 if VIDEO
 
+config VIDEO_INIT_PRIORITY
+	int "Video initialization priority"
+	default 90
+	help
+	  System initialization priority for video drivers.
+
+config VIDEO_BUFFER_POOL_SZ_MAX
+	int "Size of the largest buffer in the video pool"
+	default 1048576
+
+config VIDEO_BUFFER_POOL_NUM_MAX
+	int "Number of maximum sized buffer in the video pool"
+	default 2
+
+config VIDEO_BUFFER_POOL_ALIGN
+	int "Alignment of the video pool’s buffer"
+	default 64
+
+config VIDEO_CUSTOM_SECTION
+    bool "custom video mem pool section"
+    default n
+
+config VIDEO_CUSTOM_SECTION_NAME
+    string "custom video mem pool section name"
+    default ""
+
 rsource "Kconfig.csk6_dvp"
+
+rsource "Kconfig.ov9655"
+
+rsource "Kconfig.gc032a"
+
+rsource "Kconfig.sco30iot"
 
 endif # VIDEO
