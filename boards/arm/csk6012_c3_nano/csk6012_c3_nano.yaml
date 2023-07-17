@@ -10,5 +10,7 @@ supported:
   - gpio
   - uart
   - ipm
+  - dma
+
 ram: 320
 flash: 8000
