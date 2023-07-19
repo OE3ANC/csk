@@ -15,6 +15,7 @@ supported:
   - usb_device
   - pwm
   - dma
+  - nvs
 
 ram: 320
 flash: 16000

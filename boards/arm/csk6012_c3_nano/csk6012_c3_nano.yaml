@@ -11,6 +11,7 @@ supported:
   - uart
   - ipm
   - dma
+  - nvs
 
 ram: 320
 flash: 8000
