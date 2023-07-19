@@ -286,25 +286,6 @@ int flash_csk6_get_lock_status(const struct device *dev)
 	return status;
 }
 
-int32_t flash_csk6_read_id(const struct device * dev, uint8_t * id)
-{
-	int32_t iret = 0;
-	int32_t tempid=0;
-	FLASH_OPT_ENTER();
-	sflash_write_protection_set((void *)dev->config, false);
-
-	tempid = sflash_read_id((void *)dev->config);
-
-	sflash_write_protection_set((void *)dev->config, true);
-	FLASH_OPT_EXIT();
-	if(tempid){
-		*(uint32_t*)id = tempid;
-	}else{
-		iret = -EIO;
-	}
-	return iret;
-}
-
 /*
 *  these functions are additional API for csk flash.
 *  but for staying the same with zephyr __syscall flash API, they named like flash_write/flash_read.
@@ -323,6 +304,24 @@ int flash_get_lock_status(const struct device *dev){
 }
 #endif
 
+int32_t flash_csk6_read_id(const struct device * dev, uint8_t * id)
+{
+	int32_t iret = 0;
+	int32_t tempid=0;
+	FLASH_OPT_ENTER();
+	sflash_write_protection_set((void *)dev->config, false);
+
+	tempid = sflash_read_id((void *)dev->config);
+
+	sflash_write_protection_set((void *)dev->config, true);
+	FLASH_OPT_EXIT();
+	if(tempid){
+		*(uint32_t*)id = tempid;
+	}else{
+		iret = -EIO;
+	}
+	return iret;
+}
 
 static const struct flash_driver_api flash_csk6_driver_api = {
 	.read = flash_csk6_read,
