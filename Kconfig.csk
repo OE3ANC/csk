@@ -9,4 +9,7 @@ orsource "./$(BOARD_DIR)/Kconfig"
 
 menu "LISTENAI CSK"
 rsource "drivers/Kconfig"
+
+rsource "modules/Kconfig"
+
 endmenu
