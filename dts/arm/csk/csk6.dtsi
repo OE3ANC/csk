@@ -37,28 +37,24 @@
 	itcm0: code@10000 {
 		compatible = "zephyr,memory-region";
 		reg = <0x00010000 (16*1024)>;
-		label = "itcm CODE";
 		zephyr,memory-region = "ITCM";
 	};
 
 	dtcm0: code@20000000 {
 		compatible = "zephyr,memory-region";
 		reg = <0x20000000 (16*1024)>;
-		label = "dtcm CODE";
 		zephyr,memory-region = "DTCM";
 	};
 
 	psram0: psram@30000000 {
 		compatible = "listenai,csk6-psram";
 		reg = <0x30000000 DT_SIZE_M(8)>;
-		label = "psram0";
 	};
 
 	soc {
 
 		flash: flash-controller@46400000 {
 			compatible = "listenai,csk-flash-controller";
-			label = "FLASH_CTRL";
 			reg = <0x46400000 DT_SIZE_M(1)>;
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -66,7 +62,6 @@
 
 			flash0: flash@18000000 {
 				compatible = "listenai,csk-nv-flash","soc-nv-flash";
-				label = "FLASH_INN";
 				reg = <0x18000000 DT_SIZE_M(8)>;
 				write-block-size = <1>;
 				erase-block-size = <4096>;
@@ -78,7 +73,6 @@
 			compatible = "listenai,csk-dma";
 			reg = <0x40000000 0x1000000>;
 			interrupts = <0 0>;
-			label = "DMA_0";
 			#dma-cells = <1>;
 		};
 
@@ -86,21 +80,18 @@
 			compatible = "listenai,csk-uart";
 			reg = <0x45000000 0x100000>;
 			interrupts = <8 2>;
-			label = "UART_0";
 		};
 
 		uart1: uart@45100000 {
 			compatible = "listenai,csk-uart";
 			reg = <0x45100000 0x100000>;
 			interrupts = <9 2>;
-			label = "UART_1";
 		};
 
 		uart2: uart@45200000 {
 			compatible = "listenai,csk-uart";
 			reg = <0x45200000 0x100000>;
 			interrupts = <10 2>;
-			label = "UART_2";
 		};
 
 		pinmuxa: pinmux@46200000 {
@@ -108,7 +99,6 @@
 			reg = <0x46200000 0x80>;
 			#pinmux-cells = <2>;
 			#pinctrl-cells = <2>;
-			label = "PINMUX_A";
 			status = "okay";
 		};
 
@@ -117,7 +107,6 @@
 			reg = <0x46200080 0xc0>;
 			#pinmux-cells = <2>;
 			#pinctrl-cells = <2>;
-			label = "PINMUX_B";
 			status = "okay";
 		};
 
@@ -125,7 +114,6 @@
 			compatible = "listenai,csk-gpio";
 			reg = <0x45900000 0x100000>;
 			interrupts = <17 2>;
-			label = "GPIO_A";
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
@@ -134,7 +122,6 @@
 			compatible = "listenai,csk-gpio";
 			reg = <0x45a00000 0x100000>;
 			interrupts = <18 2>;
-			label = "GPIO_B";
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
@@ -143,14 +130,12 @@
 			compatible = "listenai,csk-ir";
 			reg = <0x45300000 0x100000>;
 			interrupts = <11 2>;
-			label = "IR_0";
 		};
 
 		spi0: spi@45400000 {
 			compatible = "listenai,csk-spi";
 			reg = <0x45400000 0x100000>;
 			interrupts = <12 2>;
-			label = "SPI_0";
 			#address-cells = <1>;
 			#size-cells = <0>;
 		};
@@ -159,7 +144,6 @@
 			compatible = "listenai,csk-spi";
 			reg = <0x45500000 0x100000>;
 			interrupts = <13 2>;
-			label = "SPI_1";
 			#address-cells = <1>;
 			#size-cells = <0>;
 		};
@@ -168,7 +152,6 @@
 			compatible = "listenai,csk-mailbox";
 			reg = <0x46100000 0x100000>;
 			interrupts = <21 2>;
-			label = "MAILBOX_0";
 			status = "disabled";
 		};
 
@@ -178,12 +161,10 @@
 			interrupts = <16 2>;
 			interrupt-names = "csk_gpt_isr";
 			gptfreq = <25000000>;
-			label = "GPT0";
 
 			gptchannel0:gptchannel0 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <0>;
-				label = "GPTCHANNEL_0";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -193,7 +174,6 @@
 			gptchannel1:gptchannel1 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <1>;
-				label = "GPTCHANNEL_1";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -203,7 +183,6 @@
 			gptchannel2:gptchannel2 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <2>;
-				label = "GPTCHANNEL_2";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -213,7 +192,6 @@
 			gptchannel3:gptchannel3 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <3>;
-				label = "GPTCHANNEL_3";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -223,7 +201,6 @@
 			gptchannel4:gptchannel4 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <4>;
-				label = "GPTCHANNEL_4";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -233,7 +210,6 @@
 			gptchannel5:gptchannel5 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <6>;
-				label = "GPTCHANNEL_6";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -243,7 +219,6 @@
 			gptchannel6:gptchannel6 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <6>;
-				label = "GPTCHANNEL_6";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -253,7 +228,6 @@
 			gptchannel7:gptchannel7 {
 				compatible = "listenai,csk-gptchannel";
 				channel-id = <7>;
-				label = "GPTCHANNEL_7";
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
@@ -268,7 +242,6 @@
 			interrupts = <14 2>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			label = "I2C_0";
 		};
 
 		i2c1: i2c@45700000 {
@@ -277,7 +250,6 @@
 			interrupts = <15 2>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			label = "I2C_1";
 		};
 
 		usbotg: usbd@41000000 {
@@ -287,14 +259,12 @@
 			interrupt-names = "usb_otg";
 			num-bidir-endpoints = <6>;
 			status = "disabled";
-			label = "USBD";
 		};
 
 		wdt: watchdog@46b00000 {
 			compatible = "listenai,csk6-watchdog";
 			reg = <0x46B00000 0x100000>;
 			interrupts = <26 0>;
-			label = "WDT";
 			status = "okay";
 		};
 
@@ -302,20 +272,17 @@
 			compatible = "listenai,csk-rtc";
 			reg = <0x46c00000 0x1000000>;
 			status = "disabled";
-			label = "RTC_1";
 		};
 		dual_timer: dual@44100000 {
 			compatible = "listenai,csk-dual";
 			reg = <0x44100000 0x1000000>;
 			interrupts = <6 0>;
-			label = "DUL_TIM";
 		};
 		adc0: adc0@45b00000 {
 			compatible = "listenai,csk-adc";
 			reg = <0x45b00000 0x100000>;
 			interrupts = <19 0>;
 			status = "disabled";
-			label = "ADC";
 			#io-channel-cells = <1>;
 		};
 
@@ -324,7 +291,6 @@
 			reg = <0x46900000 0x100000>;
 			interrupts = <23 0>;
 			status = "disabled";
-			label = "KEYSENSE";
 		};
 
 		dvp: dvp@4a050000{
@@ -332,7 +298,6 @@
 			reg = <0x4a050000 0x100000>;
 			interrupts = <29 0>;
 			status = "disabled";
-			label = "DVPI";			
 		};
 		
 		crypto: crypto@44300000{
@@ -340,7 +305,6 @@
 			reg = <0x44300000 0x100000>;
 			interrupts = <3 0>;
 			status = "disabled";
-			label = "CRYPTO";
 		};
 
 		trng: trng@45c00000{
@@ -348,7 +312,6 @@
 			reg = <0x45c00000 0x100000>;
 			interrupts = <20 0>;
 			status = "okay";
-			label = "ENTROPY";			
 		};
 
 		sdmmc:sdmmc@42000000{
@@ -356,7 +319,6 @@
 			reg = <0x42000000 DT_SIZE_M(16)>;
 			interrupts = <2 0>;
 			status = "disabled";
-			label = "SDMCC";
 		};
 
 	};
