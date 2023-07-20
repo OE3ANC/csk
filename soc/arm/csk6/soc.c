@@ -99,18 +99,6 @@ static int csk6_init(void)
 #if defined(CONFIG_CPU_HAS_FPU)
 static void z_arm_floating_point_init(void)
 {
-	static uint8_t inited = 0;
-
-	/**
-	 * This function will be called by z_arm_prep_c and z_arm_platform_init
-	 * 
-	 * add inited flag to avoid being called twice
-	 */
-	if (inited) {
-		return;
-	}
-	inited = 1;
-
 	/*
 	 * Upon reset, the Co-Processor Access Control Register is, normally,
 	 * 0x00000000. However, it might be left un-cleared by firmware running
