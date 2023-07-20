@@ -4,6 +4,6 @@
 
 #include "ARMCM33_DSP_FP.h"
 #include "cachel1_armv7.h"
-#include <devicetree.h>
+#include <zephyr/devicetree.h>
 
 #endif /* _CSK6_SOC_H_ */
