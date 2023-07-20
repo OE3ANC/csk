@@ -18,8 +18,6 @@ rsource "i2c/Kconfig"
 
 rsource "pwm/Kconfig"
 
-rsource "pinmux/Kconfig"
-
 rsource "adc/Kconfig"
 
 rsource "watchdog/Kconfig"
