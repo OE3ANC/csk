@@ -1,4 +1,4 @@
-#include <toolchain.h>
+#include <zephyr/toolchain.h>
 
 SECTION_FUNC(csk6_private, csk6_image_header)
 
