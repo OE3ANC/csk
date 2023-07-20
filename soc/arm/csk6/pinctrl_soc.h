@@ -22,8 +22,6 @@ extern "C" {
 
 
 typedef struct pinctrl_soc_pin {
-	/* Pinmux control group */
-	const struct device *pinctrls;
 	/* GPIO pin */
 	uint8_t pin;
 	/* Alternate function */
@@ -62,8 +60,6 @@ typedef struct pinctrl_soc_pin {
  */
 #define Z_PINCTRL_STATE_PIN_INIT(node_id, state_prop, idx)		       \
     {                                                                  \
-	    .pinctrls = Z_PINCTRL_CSK6_PICTRL_INIT(                        \
-		    DT_PROP_BY_IDX(node_id, state_prop, idx)),                 \
         .pin = Z_PINCTRL_CSK6_PIN_INIT(                                \
             DT_PROP_BY_IDX(node_id, state_prop, idx)),                 \
         .alt_func = Z_PINCTRL_CSK6_ALT_INIT(                           \
