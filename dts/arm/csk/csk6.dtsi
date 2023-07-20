@@ -347,7 +347,7 @@
 			compatible = "listenai,csk-entropy";
 			reg = <0x45c00000 0x100000>;
 			interrupts = <20 0>;
-			status = "disabled";
+			status = "okay";
 			label = "ENTROPY";			
 		};
 

@@ -1,5 +1,5 @@
-#include <init.h>
-#include <arch/cpu.h>
+#include <zephyr/init.h>
+#include <zephyr/arch/cpu.h>
 
 #include "soc.h"
 #include "autoconf.h"
