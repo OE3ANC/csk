@@ -6,7 +6,6 @@
 
 #include <soc.h>
 #include <zephyr/drivers/pinctrl.h>
-#include <zephyr/drivers/pinmux.h>
 
 static int csk6_pin_configure(const struct device *pinctrls, uint8_t pin, uint8_t alt_fun)
 {
