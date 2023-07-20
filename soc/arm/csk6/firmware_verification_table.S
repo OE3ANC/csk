@@ -1,6 +1,6 @@
 #include <zephyr/toolchain.h>
 
-SECTION_FUNC(csk6_private, csk6_image_header)
+SECTION_FUNC(csk6_boot_tag, csk6_image_header)
 
     /******************** header begin ******************/
     .ascii   "Hr"                                 /*   byte(0~1):   header mark */
