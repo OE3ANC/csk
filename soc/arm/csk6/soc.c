@@ -1,5 +1,5 @@
-#include <init.h>
-#include <arch/cpu.h>
+#include <zephyr/init.h>
+#include <zephyr/arch/cpu.h>
 
 #include "soc.h"
 #include "autoconf.h"
@@ -10,12 +10,17 @@
 
 #define SYSTEM_CLK ((SYSCFG_RegDef *)CMN_SYSCTRL_BASE)
 
+
 volatile static const char __attribute__((section(".vectors")))
 venus_system_tag[] = { 0x48, 0x72, 0x01, 0x00, 0xA4, 0x52, 0x08, 0x00, 0x00, 0x00, 0x00, 0x18, 0x01,
 		       0x00, 0x00, 0x00, 0x56, 0x45, 0x4E, 0x55, 0x53, 0x5F, 0x52, 0x54, 0x4F, 0x53,
 		       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x05, 0xD7, 0x2C };
+
+volatile static const uint32_t __attribute__((section(".vectors")))
+dummy_vectors[32] = {0x00};
+
 
 #ifdef CONFIG_HAS_CSK6_GPT
 static void GPT_Init_Handler(void)
@@ -74,7 +79,7 @@ void sys_arch_reboot(int type)
 }
 
 
-static int csk6_init(const struct device *arg)
+static int csk6_init(void)
 {
 	/*TODO: will rewrite later*/
 #ifdef CONFIG_HAS_CSK6_GPT
@@ -99,18 +104,6 @@ static int csk6_init(const struct device *arg)
 #if defined(CONFIG_CPU_HAS_FPU)
 static void z_arm_floating_point_init(void)
 {
-	static uint8_t inited = 0;
-
-	/**
-	 * This function will be called by z_arm_prep_c and z_arm_platform_init
-	 * 
-	 * add inited flag to avoid being called twice
-	 */
-	if (inited) {
-		return;
-	}
-	inited = 1;
-
 	/*
 	 * Upon reset, the Co-Processor Access Control Register is, normally,
 	 * 0x00000000. However, it might be left un-cleared by firmware running

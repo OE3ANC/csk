@@ -2,12 +2,13 @@
 #define DT_DRV_COMPAT listenai_csk_gpio
 
 #include <errno.h>
-#include <device.h>
-#include <drivers/gpio.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
 #include <soc.h>
-#include <sys/util.h>
+#include <zephyr/sys/util.h>
 
-#include "gpio_utils.h"
+#include "zephyr/drivers/gpio/gpio_utils.h"
 
 #include "gpio.h"
 #include "Driver_GPIO.h"

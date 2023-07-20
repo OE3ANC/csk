@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <arch/arm/aarch32/mpu/arm_mpu.h>
+#include <zephyr/arch/arm/aarch32/mpu/arm_mpu.h>
 
 
 #define REGION_RAM_NOCACHE_ATTR(base, size) \
