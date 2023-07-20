@@ -19,7 +19,7 @@
 #include <zephyr/drivers/dma.h>
 #include <zephyr/drivers/pinctrl.h>
 
-#include <drivers/uart.h>
+#include <zephyr/drivers/uart.h>
 #include <string.h>
 
 #define DEV_CFG(dev)  ((const struct csk_uart_config *const)(dev)->config)
