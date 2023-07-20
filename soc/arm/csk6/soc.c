@@ -74,7 +74,7 @@ void sys_arch_reboot(int type)
 }
 
 
-static int csk6_init(const struct device *arg)
+static int csk6_init(void)
 {
 	/*TODO: will rewrite later*/
 #ifdef CONFIG_HAS_CSK6_GPT
