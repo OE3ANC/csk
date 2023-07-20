@@ -1,5 +1,0 @@
-if PINMUX
-
-rsource "Kconfig.csk6"
-
-endif # PINMUX
