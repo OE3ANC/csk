@@ -1,9 +1,0 @@
-
-# path to custom driver Kconfig file.
-rsource "drivers/Kconfig.bf30a2"
-
-# path to zephyr base Kconfig file.
-source "Kconfig.zephyr"
-
-
-
