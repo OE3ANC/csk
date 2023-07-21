@@ -123,7 +123,8 @@ static int flash_csk6_read(const struct device *dev, off_t address, void *buffer
 	if (buffer == NULL || address > FLASH_CHIP_SZ || address + length > FLASH_CHIP_SZ) {
 		return -EINVAL;
 	}
-	sys_cache_data_range((void*)(FLASH_BASE_ADDRESS+address), length, K_CACHE_INVD);
+	
+	sys_cache_data_invd_range((void*)(FLASH_BASE_ADDRESS+address), length);
 	memcpy(buffer,(void*)(FLASH_BASE_ADDRESS+address),length);
 	return 0;
 }
