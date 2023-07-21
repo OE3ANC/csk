@@ -8,6 +8,7 @@
 #include "gpt_timer.h"
 #include "gpt.h"
 
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/counter.h>
 
 #define DEV_CFG(dev)  ((struct counter_csk_config *)(dev)->config)
