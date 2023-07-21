@@ -141,7 +141,7 @@ void bf30a2_spi_evt_callback(unsigned int event_info, unsigned int xfer_bytes,
 #ifdef CONFIG_SOC_LS_ADSP_CSK6
 #include "drivers/gpio_venus.h"
 #else
-#include "drivers/gpio.h"
+#include "zephyr/drivers/gpio.h"
 #endif
 
 #define SPI1_CS_PIN 9
@@ -387,7 +387,7 @@ static int bf30a2_chip_i2c_init(const struct device *dev)
 	}
 
 	if (i2c_configure(data->chip_data.i2c_bus.bus,
-			  I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER)) {
+			  I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER)) {
 		LOG_ERR("I2C config failed!");
 		return -1;
 	}

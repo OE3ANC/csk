@@ -13,7 +13,6 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(main);
 
-#define VIDEO_DEV    DT_LABEL(DT_NODELABEL(dvp))
 #define VBUF_NUM     2
 #define IMAGE_HEIGHT 240
 #define IMAGE_WIDTH  320
@@ -47,17 +46,17 @@ void main(void)
 	size_t bsize;
 	int i = 0;
 
-	video = device_get_binding(VIDEO_DEV);
+	video = DEVICE_DT_GET(DT_NODELABEL(dvp));
 
 	if (video == NULL) {
 		LOG_ERR("Video device %s not found, "
 			"fallback to software generator.",
-			VIDEO_DEV);
+			"dvp");
 
 		return;
 	}
 
-	printk("- Device name: %s\n", VIDEO_DEV);
+	printk("- Device name: %s\n", video->name);
 
 	// /* Get capabilities */
 	if (video_get_caps(video, VIDEO_EP_OUT, &caps)) {
