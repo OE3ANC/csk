@@ -14,16 +14,16 @@
 #include <zephyr/storage/flash_map.h>
 
 #if DT_NODE_HAS_STATUS(DT_INST(0, listenai_csk_flash_controller), okay)
-#define FLASH_DEVICE DT_LABEL(DT_INST(0, listenai_csk_flash_controller))
+#define FLASH_DEVICE DT_LABEL()
 #define FLASH_NAME   "LISTENAI INN-FLASH"
 #else
 #error Unsupported flash driver
 #endif
 
 #ifdef CONFIG_TRUSTED_EXECUTION_NONSECURE
-#define FLASH_TEST_OFFSET FLASH_AREA_OFFSET(image_1_nonsecure)
+#define FLASH_TEST_OFFSET FIXED_PARTITION_OFFSET(image_1_nonsecure)
 #else
-#define FLASH_TEST_OFFSET FLASH_AREA_OFFSET(storage)
+#define FLASH_TEST_OFFSET FIXED_PARTITION_OFFSET(storage_partition)
 #endif
 
 #define FLASH_PAGE_SIZE	 4096
@@ -53,9 +53,9 @@ void main(void)
 	printf("\nLitenai CSK6 Flash Testing\n");
 	printf("=========================\n");
 
-	flash_dev = device_get_binding(FLASH_DEVICE);
+	flash_dev = DEVICE_DT_GET(DT_INST(0, listenai_csk_flash_controller));
 
-	if (!flash_dev) {
+	if (!device_is_ready(flash_dev)) {
 		printf("Litenai CSK6 flash driver was not found!\n");
 		return;
 	}
@@ -186,7 +186,7 @@ void main(void)
 
 	if (!rc) {
 		printf("   Offset  0x%08x:\n", FLASH_TEST_OFFSET2);
-		printf("     belongs to the page %u of start offset 0x%08x\n", info.index,
+		printf("     belongs to the page %u of start offset 0x%lx\n", info.index,
 		       info.start_offset);
 		printf("     and the size of 0x%08x B.\n", info.size);
 	} else {
@@ -196,9 +196,9 @@ void main(void)
 	rc = flash_get_page_info_by_idx(flash_dev, FLASH_TEST_PAGE_IDX, &info);
 
 	if (!rc) {
-		printf("   Page of number %u has start offset 0x%08x\n", FLASH_TEST_PAGE_IDX,
+		printf("   Page of number %u has start offset 0x%lx\n", FLASH_TEST_PAGE_IDX,
 		       info.start_offset);
-		printf("     and size of 0x%08x B.\n", info.size);
+		printf("     and size of 0x%x B.\n", info.size);
 		if (info.index == FLASH_TEST_PAGE_IDX) {
 			printf("     Page index resolved properly\n");
 		} else {
