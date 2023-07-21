@@ -9,7 +9,7 @@
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/logging/log.h>
 
-#include "gpio_utils.h"
+#include "zephyr/drivers/gpio/gpio_utils.h"
 #include "exmcu_comm.h"
 
 #define DT_DRV_COMPAT listenai_csk_gpio_ch32003_port
