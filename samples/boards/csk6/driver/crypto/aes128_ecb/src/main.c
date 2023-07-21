@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "crypto/crypto.h"
+#include "zephyr/crypto/crypto.h"
 
 #include <string.h>
 
