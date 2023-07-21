@@ -23,7 +23,7 @@ static void kb_callback(const struct device *dev, uint32_t row, uint32_t col, bo
 
 void main(void)
 {
-	const struct device *kscan_dev = device_get_binding(KSCAN_DEVICE);
+	const struct device *kscan_dev = DEVICE_DT_GET(DT_NODELABEL(keysense));
 	int ret = 0;
 
 	if (!device_is_ready(kscan_dev)) {

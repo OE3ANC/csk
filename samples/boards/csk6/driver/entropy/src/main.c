@@ -34,9 +34,9 @@ void main(void)
 	const struct device *dev;
 	int ret = 0;
 
-	dev = device_get_binding(DT_LABEL(DT_CHOSEN(zephyr_entropy)));
-	if (!dev) {
-		printk("error: no random device %s\r\n", DT_LABEL(DT_CHOSEN(zephyr_entropy)));
+	dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_entropy));
+	if (!device_is_ready(dev)) {
+		printk("error: no random device\n");
 		return;
 	}
 

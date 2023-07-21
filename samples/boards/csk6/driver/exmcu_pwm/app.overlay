@@ -11,14 +11,12 @@
          */
         compatible = "listenai,csk-i2c-ch32v003";
         reg = <0x6c>;
-        label = "GPIO-CSK6-CH32003";
         status = "okay";
         #address-cells = <1>;
         #size-cells = <0>;
 
         expwm: pwm-controller@0 {
             compatible = "listenai,csk-ch32v003-pwm";
-            label = "EXPWM";
             reg = <0>;
             status = "okay";
             clock-prescaler = <4800>;
