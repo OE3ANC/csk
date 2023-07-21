@@ -8,7 +8,7 @@
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #include <lvgl.h>
 

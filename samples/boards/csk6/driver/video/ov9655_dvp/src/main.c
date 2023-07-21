@@ -7,7 +7,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>

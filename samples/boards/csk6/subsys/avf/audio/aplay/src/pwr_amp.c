@@ -6,7 +6,7 @@
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #if defined(__ZEPHYR__) && (DT_NODE_HAS_STATUS(DT_ALIAS(avf_audio_pwr_amp), okay))
 

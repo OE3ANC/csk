@@ -9,7 +9,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
 #include <lvgl.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>

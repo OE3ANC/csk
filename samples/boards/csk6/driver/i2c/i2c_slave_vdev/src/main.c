@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <stdio.h>
 #include <zephyr/sys/util.h>

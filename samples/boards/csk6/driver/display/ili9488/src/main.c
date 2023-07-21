@@ -9,7 +9,7 @@ LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define DISPLAY_DEV_NAME DT_LABEL(DT_INST(0, ilitek_ili9488))
 

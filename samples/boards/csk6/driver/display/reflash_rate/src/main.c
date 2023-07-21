@@ -9,7 +9,7 @@ LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #if CONFIG_FRAME_MEM_PSRAM
 #define K_HEAP_CUSTOM_SECTION_DEFINE(name, bytes)                                                  \
