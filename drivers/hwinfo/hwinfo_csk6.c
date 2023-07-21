@@ -67,7 +67,7 @@ ssize_t z_impl_hwinfo_get_device_id(uint8_t *buffer, size_t length)
     return length;
 }
 
-static int hwinfo_csk6_init(const struct device *arg)
+static int hwinfo_csk6_init(void)
 {
 //  enable ldo25
 	ana_aon_regs->REG_0X038.bit.LDO25_EN = 1;
