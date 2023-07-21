@@ -6,7 +6,7 @@
 
 #include "Driver_AON_WDT.h"
 #include "aon_timer.h"
-
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/watchdog.h>
 
 #define DT_DRV_COMPAT listenai_csk6_watchdog
