@@ -10,12 +10,6 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/counter.h>
 
-#ifdef CONFIG_COUNTER_CSK6_GPTCHANNEL
-	#define DEVICE_NAME  DT_LABEL(DT_NODELABEL(gptchannel0))
-#elif CONFIG_COUNTER_CSK6_DUAL
-	#define DEVICE_NAME "DUL_TIM"
-#endif
-
 #define DELAY_US 1000000
 
 
@@ -36,7 +30,11 @@ void main(void)
 	int err;
 	struct counter_top_cfg top_cfg;
 	printk("Counter alarm sample\n\n");
-	counter_dev = device_get_binding(DEVICE_NAME);
+#ifdef CONFIG_COUNTER_CSK6_GPTCHANNEL
+	counter_dev = DEVICE_DT_GET(DT_NODELABEL(gptchannel0));
+#elif
+	counter_dev = DEVICE_DT_GET(DT_NODELABEL(dual_timer));
+#endif
 	if (counter_dev == NULL) {
 		printk("counter device not found\n");
 		return;
