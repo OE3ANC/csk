@@ -2,7 +2,7 @@ sample:
   name: exmcu_gpio_led Sample
 
 tests:
-  sample.board.csk6.driver.exmcu_gpio_led:
+  sample.board.csk6.drivers.exmcu.gpio_led:
     harness: console
     harness_config:
       fixture: ch32v003

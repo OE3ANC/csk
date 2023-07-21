@@ -1,5 +1,5 @@
 tests:
-  sample.board.csk6.driver.i2c.master_slave:
+  sample.board.csk6.driver.i2c.i2c_slave_vdev:
     platform_allow: csk6011a_nano
     tags: csk6
     timeout: 10
