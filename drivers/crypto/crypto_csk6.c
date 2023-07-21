@@ -9,7 +9,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/sys/__assert.h>
-#include "crypto/crypto.h"
+#include "zephyr/crypto/crypto.h"
 
 #include "Driver_CRYPTO.h"
 #include "crypto.h"
