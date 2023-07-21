@@ -9,6 +9,7 @@
 #include <soc.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/i2c.h>
 
 #define KSCAN_DEVICE DT_LABEL(DT_INST(0, betterlife_bl6xxx))
 
@@ -21,7 +22,7 @@ static void kb_callback(const struct device *dev, uint32_t row, uint32_t col, bo
 
 void main(void)
 {
-	const struct device *kscan_dev = device_get_binding(KSCAN_DEVICE);
+	const struct device *kscan_dev = DEVICE_DT_GET(DT_NODELABEL(bl6xxx));
 	int ret = 0;
 
 	if (!device_is_ready(kscan_dev)) {
