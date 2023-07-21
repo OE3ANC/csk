@@ -44,7 +44,7 @@ struct i2c_csk_data {
 	struct k_event *evt;
 	uint32_t status; /* driver event status */
 	bool mode;	 /* transfer mode: true: master, false: slave */
-	struct i2c_slave_config *slave_cfg;
+	struct i2c_target_config *slave_cfg;
 	struct k_sem lock;
 };
 
@@ -115,7 +115,7 @@ static void i2c_csk_slave_event_handler(const struct i2c_csk_data *data, uint32_
 	I2C_RESOURCES *i2c = (I2C_RESOURCES *)I2C_Handler;
 	// Slave Event handler
 	if (data->slave_cfg) {
-		const struct i2c_slave_callbacks *slave_cb = data->slave_cfg->callbacks;
+		const struct i2c_target_callbacks *slave_cb = data->slave_cfg->callbacks;
 		if (event & CSK_I2C_EVENT_SLAVE_RECEIVE) {
 			if (slave_cb->write_requested) {
 				slave_cb->write_requested(data->slave_cfg);
@@ -415,7 +415,7 @@ static int i2c_csk_transfer_safe(const struct device *dev, struct i2c_msg *msgs,
 }
 
 #if defined(CONFIG_I2C_SLAVE)
-static int i2c_csk_slave_register(const struct device *dev, struct i2c_slave_config *config)
+static int i2c_csk_slave_register(const struct device *dev, struct i2c_target_config *config)
 {
 	int ret = 0;
 	struct i2c_csk_data *data = DEV_DATA(dev);
@@ -442,7 +442,7 @@ static int i2c_csk_slave_register(const struct device *dev, struct i2c_slave_con
 	return ret;
 }
 
-static int i2c_csk_slave_unregister(const struct device *dev, struct i2c_slave_config *config)
+static int i2c_csk_slave_unregister(const struct device *dev, struct i2c_target_config *config)
 {
 	int ret = 0;
 
@@ -503,8 +503,8 @@ static const struct i2c_driver_api i2c_csk_driver_api = {
 	.configure = i2c_csk_runtime_configure,
 	.transfer = i2c_csk_transfer_safe,
 #if defined(CONFIG_I2C_SLAVE)
-	.slave_register = i2c_csk_slave_register,
-	.slave_unregister = i2c_csk_slave_unregister,
+	.target_register = i2c_csk_slave_register,
+	.target_unregister = i2c_csk_slave_unregister,
 #endif
 	.recover_bus = NULL,
 };
