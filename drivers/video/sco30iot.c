@@ -513,7 +513,7 @@ static int sco30iot_ctrl_init(const struct device *dev)
 	LOG_DBG("I2C bus %s is ready.", drv_data->i2c_bus.bus->name);
 
 	if (i2c_configure(drv_data->i2c_bus.bus,
-			I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER)) {
+			I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER)) {
 		LOG_ERR("I2C config failed!");
 		return -EIO;
 	}

@@ -183,7 +183,7 @@ int exmcu_init(const struct device *dev)
 		return -EIO;
 	}
 
-	r = i2c_configure(config->bus.bus, I2C_SPEED_SET(I2C_SPEED_FAST) | I2C_MODE_MASTER);
+	r = i2c_configure(config->bus.bus, I2C_SPEED_SET(I2C_SPEED_FAST) | I2C_MODE_CONTROLLER);
 	if (r) {
 		LOG_ERR("exmcu i2c_configure failed, return value: %d", r);
 		return r;

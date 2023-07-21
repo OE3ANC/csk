@@ -616,7 +616,7 @@ static int gc032a_init(const struct device *dev)
 	uint8_t pid;
 
 	if (i2c_configure(drv_data->i2c_bus.bus,
-			I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER)) {
+			I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER)) {
 		LOG_ERR("I2C config failed!");
 		return -EIO;
 	}
