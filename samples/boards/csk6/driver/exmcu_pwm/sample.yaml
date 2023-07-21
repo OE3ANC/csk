@@ -1,8 +1,10 @@
 sample:
   name: gpio_led Sample
 tests:
-  sample.basic.blinky:
-    tags: LED gpio
+  sample.board.csk6.drivers.exmcu.pwm:
+    tags:
+      - LED
+      - gpio
     filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds")
     depends_on: gpio
     harness: led

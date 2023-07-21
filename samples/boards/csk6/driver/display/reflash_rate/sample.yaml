@@ -2,7 +2,7 @@ sample:
   description: Sample application for displays ili9488
   name: display_sample
 tests:
-  sample.board.csk6.display.kscan:
+  sample.board.csk6.display.reflash_rate:
     platform_allow: csk6011a_nano
     tags: csk6
     harness: console
