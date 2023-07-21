@@ -247,7 +247,7 @@ static int bl6xxx_dev_init(const struct device *dev)
         LOG_ERR("[BL6XXX]i2c device is not ready.\n");
         return -1;
     }
-    r = i2c_configure(i2c_dev, I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER);
+    r = i2c_configure(i2c_dev, I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER);
     if (r < 0) {
         LOG_ERR("[BL6XXX] i2c config failed\n");
         return -1;

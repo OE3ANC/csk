@@ -197,7 +197,7 @@ static int i2c_csk_runtime_configure(const struct device *dev, uint32_t dev_conf
 
 	k_sem_take(&data->lock, K_FOREVER);
 
-	if (!(I2C_MODE_MASTER & dev_config)) { /* slave mode */
+	if (!(I2C_MODE_CONTROLLER & dev_config)) { /* slave mode */
 
 		/* slave address 10bit*/
 		if (I2C_ADDR_10_BITS & dev_config) {
