@@ -93,7 +93,7 @@ static void k_callback(const struct device *dev, uint32_t row, uint32_t col, boo
 
 void kscan_init(void)
 {
-	const struct device *kscan_dev = device_get_binding(DISPLAY_KSAN_DEV_NAME);
+	const struct device *kscan_dev = DEVICE_DT_GET(DT_INST(0, focaltech_ft5336));
 
 	if (!device_is_ready(kscan_dev)) {
 		LOG_ERR("kscan device %s not ready", kscan_dev->name);
@@ -230,14 +230,12 @@ void main(void)
 	size_t buf_size = 0;
 	fill_buffer fill_buffer_fnc = NULL;
 
-	LOG_INF("Display sample for %s", DISPLAY_DEV_NAME);
-
 	kscan_init();
 
-	display_dev = device_get_binding(DISPLAY_DEV_NAME);
+	display_dev = DEVICE_DT_GET(DT_INST(0, sitronix_st7789v));
 
 	if (display_dev == NULL) {
-		LOG_ERR("Device %s not found. Aborting sample.", DISPLAY_DEV_NAME);
+		LOG_ERR("Device not found. Aborting sample.");
 		RETURN_FROM_MAIN(1);
 	}
 
