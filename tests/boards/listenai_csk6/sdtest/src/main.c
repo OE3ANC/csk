@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/device.h>

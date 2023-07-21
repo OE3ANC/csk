@@ -8,7 +8,7 @@
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/uart.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define UART0		 DT_NODELABEL(uart1)
 #define MAX_TX_FRAME_LEN (32 * 1024)

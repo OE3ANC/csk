@@ -6,7 +6,7 @@
 
 #define DT_DRV_COMPAT galaxyc_gc032a
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/device.h>
 
 #include <zephyr/drivers/gpio.h>

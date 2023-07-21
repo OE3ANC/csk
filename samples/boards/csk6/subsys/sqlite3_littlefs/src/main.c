@@ -13,7 +13,7 @@
 #include <zephyr/fs/fs.h>
 #include <zephyr/fs/littlefs.h>
 #include <zephyr/storage/flash_map.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 /* Matches LFS_NAME_MAX */
 #define MAX_PATH_LEN 255

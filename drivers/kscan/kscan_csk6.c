@@ -6,7 +6,7 @@
 
 #define DT_DRV_COMPAT listenai_csk_keysense
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/kscan.h>
 #include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/pinctrl.h>
