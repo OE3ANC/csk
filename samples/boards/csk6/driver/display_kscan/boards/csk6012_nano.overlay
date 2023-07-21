@@ -35,7 +35,6 @@
 
 	st7789v@0 {
 		compatible = "sitronix,st7789v";
-		label = "ST7789V";
 		status = "okay";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
