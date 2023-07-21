@@ -11,8 +11,6 @@ LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 #include <zephyr/drivers/display.h>
 #include <zephyr/kernel.h>
 
-#define DISPLAY_DEV_NAME DT_LABEL(DT_INST(0, ilitek_ili9488))
-
 enum corner {
 	TOP_LEFT,
 	TOP_RIGHT,
@@ -148,12 +146,10 @@ void main(void)
 	size_t buf_size = 0;
 	fill_buffer fill_buffer_fnc = NULL;
 
-	LOG_INF("Display sample for %s", DISPLAY_DEV_NAME);
-
-	display_dev = device_get_binding(DISPLAY_DEV_NAME);
+	display_dev = DEVICE_DT_GET(DT_INST(0, ilitek_ili9488));
 
 	if (display_dev == NULL) {
-		LOG_ERR("Device %s not found. Aborting sample.", DISPLAY_DEV_NAME);
+		LOG_ERR("Device not found. Aborting sample");
 		return;
 	}
 
