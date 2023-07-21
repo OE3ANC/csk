@@ -22,7 +22,6 @@
 	i2cslavevdev0: i2cslavevdev@32 {
 		compatible = "listenai,i2c-slavevdev";
 		reg = <0x32>;
-		label = "SLAVE_VDEV_0";
 		size = <256>;
 	};
 };
