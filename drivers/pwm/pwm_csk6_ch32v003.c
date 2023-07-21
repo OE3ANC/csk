@@ -11,7 +11,7 @@
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/drivers/pwm.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(pwm_csk_ch32v003, CONFIG_PWM_LOG_LEVEL);
 

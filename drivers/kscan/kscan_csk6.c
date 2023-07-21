@@ -6,16 +6,16 @@
 
 #define DT_DRV_COMPAT listenai_csk_keysense
 
-#include <zephyr.h>
-#include <drivers/kscan.h>
-#include <drivers/adc.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/kscan.h>
+#include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/pinctrl.h>
 #include "Driver_KEYSENSE.h"
 #include "keysense.h"
 #include "AON_IOMuxManager.h"
 #include "IOMuxManager.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_keysense, LOG_LEVEL_WRN);
 
 #define DEV_DATA(dev) ((struct keysense_csk6_data * const)(dev)->data)

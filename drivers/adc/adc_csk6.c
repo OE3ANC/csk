@@ -7,8 +7,8 @@
 #define DT_DRV_COMPAT listenai_csk_adc
 
 #include <assert.h>
-#include <drivers/adc.h>
-#include <kernel.h>
+#include <zephyr/drivers/adc.h>
+#include <zephyr/kernel.h>
 #include <soc.h>
 #include <zephyr/drivers/pinctrl.h>
 
@@ -20,7 +20,7 @@
 #define ADC_CONTEXT_USES_KERNEL_TIMER
 #include "adc_context.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_adc, LOG_LEVEL_WRN);
 
 #define DEV_DATA(dev) ((struct adc_csk6_data * const)(dev)->data)

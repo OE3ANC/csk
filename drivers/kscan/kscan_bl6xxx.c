@@ -5,10 +5,10 @@
  */
 #include <stdint.h>
 
-#include <drivers/kscan.h>
-#include <drivers/i2c.h>
-#include <drivers/gpio.h>
-#include <logging/log.h>
+#include <zephyr/drivers/kscan.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
 
 #define DT_DRV_COMPAT betterlife_bl6xxx
 

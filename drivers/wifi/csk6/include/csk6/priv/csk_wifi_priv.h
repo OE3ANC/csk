@@ -4,10 +4,10 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include <kernel.h>
-#include <net/ethernet.h>
-#include <net/net_pkt.h>
-#include <net/net_if.h>
+#include <zephyr/kernel.h>
+#include <zephyr/net/ethernet.h>
+#include <zephyr/net/net_pkt.h>
+#include <zephyr/net/net_if.h>
 
 #if CONFIG_ESP_HOSTED
 #include "spi_drv.h"

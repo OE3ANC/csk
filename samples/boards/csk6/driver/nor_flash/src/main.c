@@ -7,11 +7,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <device.h>
-#include <drivers/flash.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/flash.h>
 #include "drivers/csk6_driver.h"
-#include <storage/flash_map.h>
+#include <zephyr/storage/flash_map.h>
 
 #if DT_NODE_HAS_STATUS(DT_INST(0, listenai_csk_flash_controller), okay)
 #define FLASH_DEVICE DT_LABEL(DT_INST(0, listenai_csk_flash_controller))

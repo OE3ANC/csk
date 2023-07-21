@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <device.h>
-#include <drivers/gpio.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/zephyr.h>
 
 #if defined(__ZEPHYR__) && (DT_NODE_HAS_STATUS(DT_ALIAS(avf_audio_pwr_amp), okay))
 

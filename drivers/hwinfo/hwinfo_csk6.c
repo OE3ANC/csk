@@ -11,7 +11,7 @@
 #include <string.h>
 #include <zephyr/init.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_hwinfo);
 
 EFUSE_RegDef *efuse = (EFUSE_RegDef *)AON_EFUSECTRL_BASE;

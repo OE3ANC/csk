@@ -1,6 +1,6 @@
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 #include <stdbool.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #include <ztest.h>
 
 #include "kernel.h"

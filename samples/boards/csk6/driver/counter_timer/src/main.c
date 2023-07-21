@@ -2,13 +2,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <kernel.h>
+#include <zephyr/kernel.h>
 #include <string.h>
 #include <errno.h>
-#include <zephyr.h>
-#include <sys/printk.h>
-#include <device.h>
-#include <drivers/counter.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/counter.h>
 
 #ifdef CONFIG_COUNTER_CSK6_GPTCHANNEL
 	#define DEVICE_NAME  DT_LABEL(DT_NODELABEL(gptchannel0))

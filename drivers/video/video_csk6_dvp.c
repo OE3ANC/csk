@@ -6,8 +6,8 @@
 
 #define DT_DRV_COMPAT listenai_csk_dvp
 
-#include <zephyr.h>
-#include <drivers/video.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
 #include "Driver_DVP.h"
 #include <soc.h>
@@ -15,7 +15,7 @@
 #include "venus_ap.h"
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_dvp);
 
 #define AP2CP_PSRAM_ADDR_OFFSET   (0x30000000)

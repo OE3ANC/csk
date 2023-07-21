@@ -5,15 +5,15 @@
  */
 
 #include <stdlib.h>
-#include <sys/printk.h>
-#include <sys/sys_heap.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/sys/sys_heap.h>
 
-#include <net/net_if.h>
-#include <net/net_core.h>
-#include <net/net_context.h>
-#include <net/net_mgmt.h>
+#include <zephyr/net/net_if.h>
+#include <zephyr/net/net_core.h>
+#include <zephyr/net/net_context.h>
+#include <zephyr/net/net_mgmt.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk_wifi_sta, LOG_LEVEL_DBG);
 
 #include "csk6/csk_wifi.h"

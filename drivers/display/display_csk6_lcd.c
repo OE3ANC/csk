@@ -1,7 +1,7 @@
 #include "display_csk6_lcd.h"
 #include <stdint.h>
 #include <zephyr/kernel.h>
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 #define LCD_SPI_FAST_CODE __attribute__((section(".itcm")))
 

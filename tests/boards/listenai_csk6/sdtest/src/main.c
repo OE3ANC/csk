@@ -6,7 +6,7 @@
 #include <ztest.h>
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/device.h>
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_DBG);
 
 /* 最大支持block size为512字节 */

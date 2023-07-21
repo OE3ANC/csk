@@ -11,9 +11,9 @@
 
 #include <infrared.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/drivers/pinctrl.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 
 LOG_MODULE_REGISTER(csk6_infrared, CONFIG_LOG_DEFAULT_LEVEL);

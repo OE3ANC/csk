@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <device.h>
-#include <drivers/video.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(main);
 
 #define VIDEO_DEV    DT_LABEL(DT_NODELABEL(dvp))

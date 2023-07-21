@@ -11,8 +11,8 @@
 
 #include <zephyr/drivers/pinctrl.h>
 
-#include <drivers/i2c.h>
-#include <logging/log.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(i2c_csk, CONFIG_I2C_LOG_LEVEL);
 
 #define DEV_CFG(dev)	 ((const struct i2c_csk_config *const)(dev)->config)

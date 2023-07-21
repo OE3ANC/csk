@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 
-#include <device.h>
-#include <drivers/display.h>
-#include <drivers/kscan.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/display.h>
+#include <zephyr/drivers/kscan.h>
+#include <zephyr/zephyr.h>
 
 #if DT_NODE_HAS_STATUS(DT_INST(0, ilitek_ili9340), okay)
 #define DISPLAY_DEV_NAME DT_LABEL(DT_INST(0, ilitek_ili9340))
