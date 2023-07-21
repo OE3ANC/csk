@@ -5,13 +5,13 @@
 #define DT_DRV_COMPAT listenai_csk_spi
 
 #include <assert.h>
-#include <kernel.h>
+#include <zephyr/kernel.h>
 #include <errno.h>
-#include <drivers/spi.h>
-#include <drivers/clock_control.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/pinctrl.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_spi, CONFIG_SPI_LOG_LEVEL);
 
 #include "spi_context.h"

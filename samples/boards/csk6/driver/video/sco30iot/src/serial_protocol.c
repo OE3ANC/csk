@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <device.h>
-#include <drivers/uart.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/zephyr.h>
 
 #define UART0		 DT_NODELABEL(uart1)
 #define MAX_TX_FRAME_LEN (32 * 1024)

@@ -10,7 +10,7 @@
 #include <zephyr/drivers/rtc.h>
 #include <zephyr/zephyr.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(rtc, LOG_LEVEL_INF);
 

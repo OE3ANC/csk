@@ -6,16 +6,16 @@
 
 #define DT_DRV_COMPAT ovti_ov9655
 
-#include <zephyr.h>
-#include <device.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/device.h>
 
-#include <drivers/video.h>
+#include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
-#include <drivers/i2c.h>
-#include <drivers/gpio.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(ov9655);
 
 /** 

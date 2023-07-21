@@ -6,12 +6,12 @@
 
 #include <stdlib.h>
 
-#include <net/net_context.h>
-#include <net/net_core.h>
-#include <net/net_if.h>
-#include <net/net_mgmt.h>
-#include <sys/printk.h>
-#include <sys/sys_heap.h>
+#include <zephyr/net/net_context.h>
+#include <zephyr/net/net_core.h>
+#include <zephyr/net/net_if.h>
+#include <zephyr/net/net_mgmt.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/sys/sys_heap.h>
 
 #include "csk6/csk_wifi.h"
 

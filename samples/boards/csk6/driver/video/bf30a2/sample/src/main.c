@@ -4,20 +4,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr.h>
-#include <sys/printk.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/sys/printk.h>
 
-#include <cache.h>
-#include <drivers/video.h>
-#include <device.h>
+#include <zephyr/cache.h>
+#include <zephyr/drivers/video.h>
+#include <zephyr/device.h>
 
 #include "venus_ap.h"
 #include "cmn_sysctrl_reg_venus.h"
 #include "PSRAMManager.h"
 
-#include <logging/log.h>
-#include <drivers/uart.h>
-#include <drivers/ipm.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/drivers/ipm.h>
 
 LOG_MODULE_REGISTER(main, 4);
 

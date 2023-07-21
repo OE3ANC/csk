@@ -10,7 +10,7 @@
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/zephyr.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_DBG);
 
 #define NUM_SECTORS (1U)

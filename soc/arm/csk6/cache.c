@@ -12,7 +12,7 @@
  * This module contains functions for manipulation of the d-cache.
  */
 
-#include <kernel.h>
+#include <zephyr/kernel.h>
 #include <kernel_internal.h>
 #include "cache.h"
 

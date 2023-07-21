@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <drivers/entropy.h>
-#include <zephyr.h>
+#include <zephyr/drivers/entropy.h>
+#include <zephyr/zephyr.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sample);
 
 #define ENTROPY_LEN_MAX 256

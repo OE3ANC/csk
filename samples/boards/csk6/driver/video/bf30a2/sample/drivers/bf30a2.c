@@ -6,27 +6,27 @@
 
 #define DT_DRV_COMPAT byd_bf30a2
 
-#include <zephyr.h>
-#include <device.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/device.h>
 
-#include <sys/byteorder.h>
+#include <zephyr/sys/byteorder.h>
 
-#include <drivers/video.h>
-#include <drivers/i2c.h>
-#include <drivers/gpio.h>
-#include <drivers/spi.h>
-#include <drivers/pwm.h>
-#include <drivers/uart.h>
+#include <zephyr/drivers/video.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/drivers/pwm.h>
+#include <zephyr/drivers/uart.h>
 
-#include <drivers/spi.h>
-#include <drivers/dma.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/drivers/dma.h>
 
 #include "spi.h"
 #include "Driver_SPI.h"
 #include "IOMuxManager.h"
 
 #include <stdbool.h>
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 

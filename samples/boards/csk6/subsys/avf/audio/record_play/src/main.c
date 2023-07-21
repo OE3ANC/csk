@@ -6,13 +6,13 @@
 #include "pwr_amp.c"
 #include <avf/framework/avf_platform.h>
 #include <avf/slogger.h>
-#include <device.h>
-#include <devicetree.h>
-#include <drivers/gpio.h>
+#include <zephyr/device.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/gpio.h>
 #include <licak/licak.h>
 #include <licak/modules/audio/acapture.h>
 #include <licak/modules/audio/aplay.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 
 #define ACAPTURE_DATA_EVENT_THRES  (1024)
 #define ACAPTURE_DATA_TOTAL_LENGTH (1024 * 100)

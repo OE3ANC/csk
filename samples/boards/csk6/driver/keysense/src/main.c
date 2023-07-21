@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <drivers/gpio.h>
-#include <drivers/kscan.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/kscan.h>
 #include <soc.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/zephyr.h>
 
 #define KSCAN_DEVICE DT_LABEL(DT_ALIAS(analogkey))
 

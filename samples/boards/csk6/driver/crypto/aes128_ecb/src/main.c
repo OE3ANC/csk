@@ -8,9 +8,9 @@
 
 #include <string.h>
 
-#include <device.h>
-#include <logging/log.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/zephyr.h>
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 #if DT_NODE_HAS_STATUS(DT_NODELABEL(crypto), okay)

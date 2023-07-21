@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <drivers/adc.h>
-#include <sys/printk.h>
-#include <zephyr.h>
-#include <drivers/gpio.h>
+#include <zephyr/drivers/adc.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/gpio.h>
 
 #if !DT_NODE_EXISTS(DT_PATH(zephyr_user)) || !DT_NODE_HAS_PROP(DT_PATH(zephyr_user), io_channels)
 #error "No suitable devicetree overlay specified"

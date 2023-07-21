@@ -8,12 +8,12 @@
 
 #include <stdlib.h>
 
-#include <net/net_context.h>
-#include <net/net_core.h>
-#include <net/net_if.h>
-#include <net/net_mgmt.h>
-#include <sys/printk.h>
-#include <sys/reboot.h>
+#include <zephyr/net/net_context.h>
+#include <zephyr/net/net_core.h>
+#include <zephyr/net/net_if.h>
+#include <zephyr/net/net_mgmt.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/sys/reboot.h>
 
 K_SEM_DEFINE(wifi_conn_sem, 0, 1);
 K_SEM_DEFINE(ipv4_sem, 0, 1);

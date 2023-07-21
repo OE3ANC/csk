@@ -5,12 +5,12 @@
  */
 #include <string.h>
 
-#include <devicetree.h>
-#include <drivers/uart.h>
-#include <kernel.h>
-#include <logging/log.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/zephyr.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 #define UART0 DT_NODELABEL(uart0)
 #define UART1 DT_NODELABEL(uart1)
