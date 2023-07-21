@@ -11,7 +11,7 @@
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/sys/printk.h>
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #if DT_NODE_HAS_STATUS(DT_ALIAS(i2c_0), okay)
 #define I2C0_DEV_NAME DT_LABEL(DT_ALIAS(i2c_0))

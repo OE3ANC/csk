@@ -7,7 +7,7 @@
 
 
 #include <zephyr/drivers/adc.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 
 #if defined(CONFIG_SHIELD_MIKROE_ADC_CLICK)

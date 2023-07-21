@@ -8,7 +8,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/drivers/rtc.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #include <zephyr/logging/log.h>
 

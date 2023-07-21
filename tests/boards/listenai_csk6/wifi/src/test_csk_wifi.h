@@ -4,7 +4,7 @@
 #include "sys_clock.h"
 #include "ztest_assert.h"
 #include "ztest_test.h"
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 #include "csk6/csk_wifi.h"
 

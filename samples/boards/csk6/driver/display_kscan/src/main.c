@@ -10,7 +10,7 @@ LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
 #include <zephyr/drivers/kscan.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #if DT_NODE_HAS_STATUS(DT_INST(0, ilitek_ili9340), okay)
 #define DISPLAY_DEV_NAME DT_LABEL(DT_INST(0, ilitek_ili9340))

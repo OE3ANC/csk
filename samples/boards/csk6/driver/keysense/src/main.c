@@ -8,7 +8,7 @@
 #include <zephyr/drivers/kscan.h>
 #include <soc.h>
 #include <zephyr/sys/printk.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define KSCAN_DEVICE DT_LABEL(DT_ALIAS(analogkey))
 
