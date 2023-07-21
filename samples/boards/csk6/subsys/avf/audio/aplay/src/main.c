@@ -11,7 +11,7 @@
 #include <avf/slogger.h>
 #include <licak/licak.h>
 #include <licak/modules/audio/aplay.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define ID_RIFF 0x46464952
 #define ID_WAVE 0x45564157

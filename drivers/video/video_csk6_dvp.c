@@ -6,7 +6,7 @@
 
 #define DT_DRV_COMPAT listenai_csk_dvp
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
 #include "Driver_DVP.h"

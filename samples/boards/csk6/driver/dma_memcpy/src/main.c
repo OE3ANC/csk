@@ -12,7 +12,7 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define BUFFER_SIZE		    (1024 * 10)
 #define CONFIG_TEST_DMA_CHANNEL_NUN (1)

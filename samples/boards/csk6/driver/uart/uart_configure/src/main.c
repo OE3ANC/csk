@@ -9,7 +9,7 @@
 #include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #define DELAY_TIME_SEC 6
 #define NEW_BAUDRATE   115200
