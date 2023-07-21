@@ -85,7 +85,6 @@
 	ov9655: ov9655@30 {
 		compatible = "ovti,ov9655";
 		status = "okay";
-		label = "OV9655";
 		reg = <0x30>;
 		reset-gpios = <&gpioa 6 0>;
 

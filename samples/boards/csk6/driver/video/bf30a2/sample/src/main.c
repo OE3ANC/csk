@@ -21,7 +21,6 @@
 
 LOG_MODULE_REGISTER(main, 4);
 
-#define VIDEO_DEV DT_LABEL(DT_INST(0, byd_bf30a2))
 
 void main(void)
 {
@@ -34,7 +33,7 @@ void main(void)
 
 static void test_thread_0(void *p1, void *p2, void *p3)
 {
-	const struct device *video = device_get_binding(VIDEO_DEV);
+	const struct device *video = DEVICE_DT_GET(DT_INST(0, byd_bf30a2));
 	uint32_t loop_cnt = 0;
 	uint32_t last_tick = 0;
 	uint32_t frame_cnt = 0;

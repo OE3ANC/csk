@@ -43,7 +43,6 @@
 	bf30a2: bf30a2@6e {
 		compatible = "byd,bf30a2";
 		status = "okay";
-		label = "VIDEO";
 		reg = <0x6e>;
 		product-id = <0x3b02>;
 		spi = <&spi1>;
