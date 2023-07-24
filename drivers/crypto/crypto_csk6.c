@@ -5,16 +5,16 @@
  */
 #define DT_DRV_COMPAT listenai_csk_crypto
 
-#include <init.h>
-#include <kernel.h>
-#include <device.h>
-#include <sys/__assert.h>
-#include "crypto/crypto.h"
+#include <zephyr/init.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/sys/__assert.h>
+#include "zephyr/crypto/crypto.h"
 
 #include "Driver_CRYPTO.h"
 #include "crypto.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(crypto_csk6, LOG_LEVEL_DBG);
 
 

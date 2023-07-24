@@ -5,19 +5,17 @@
  */
 #include <string.h>
 
-#include <devicetree.h>
-#include <drivers/uart.h>
-#include <kernel.h>
-#include <logging/log.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
 
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 
 K_SEM_DEFINE(tx_done, 0, 1);
 K_SEM_DEFINE(rx_rdy, 0, 1);
-
-#define UART_ASYNC_SAMPLE_DEVICE_NAME DT_LABEL(DT_NODELABEL(uart1))
 
 static void uart_async_callback(const struct device *dev, struct uart_event *evt, void *user_data)
 {
@@ -47,7 +45,7 @@ static uint8_t rx_buf[sizeof(tx_buf)] __attribute__((section(".nocache"))) = {0}
 
 void main(void)
 {
-	const struct device *uart_dev = device_get_binding(UART_ASYNC_SAMPLE_DEVICE_NAME);
+	const struct device *uart_dev = DEVICE_DT_GET(DT_NODELABEL(uart1));
 
 	if (!device_is_ready(uart_dev)) {
 		LOG_ERR("uart device not ready!");

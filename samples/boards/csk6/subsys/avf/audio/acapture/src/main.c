@@ -8,7 +8,7 @@
 #include <avf/slogger.h>
 #include <licak/licak.h>
 #include <licak/modules/audio/acapture.h>
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 #define ACAPTURE_DATA_EVENT_THRES  (1024)
 #define ACAPTURE_DATA_TOTAL_LENGTH (1024 * 100)

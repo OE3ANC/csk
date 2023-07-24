@@ -18,9 +18,6 @@ properties:
       required: true
       description: channel id num of the hardware gpt
 
-    label:
-      required: true
-
     clock-source:
       type: int
       required: false

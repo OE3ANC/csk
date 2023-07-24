@@ -4,11 +4,11 @@
 
 #define DT_DRV_COMPAT listenai_csk_dma
 
-#include <kernel.h>
-#include <device.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <soc.h>
-#include <drivers/dma.h>
-#include <logging/log.h>
+#include <zephyr/drivers/dma.h>
+#include <zephyr/logging/log.h>
 
 #define DMA_CHANNEL_NUM_MAX DT_INST_PROP(0, dma_channels)
 

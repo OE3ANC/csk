@@ -10,7 +10,6 @@
          */
         compatible = "listenai,csk-i2c-ch32v003";
         reg = <0x6c>;
-        label = "GPIO-CSK6-CH32003";
         status = "okay";
         #address-cells = <1>;
         #size-cells = <0>;
@@ -31,7 +30,6 @@
              */
 
             compatible = "listenai,csk-adc-ch32v003";
-            label = "EXADC";
             reg = <0>;
             status = "okay";
             #io-channel-cells = <1>;
@@ -40,7 +38,6 @@
         /* CH32V003-GPIOA */
         exgpioa: gpio@0 {
             compatible = "listenai,csk-gpio-ch32003-port";
-            label = "EX-GPIOA";
             reg = <0x00>;
             status = "okay";
             ngpios = <8>;
@@ -52,7 +49,6 @@
         /* CH32V003-GPIOB */
         exgpiob: gpio@1 {
             compatible = "listenai,csk-gpio-ch32003-port";
-            label = "EX-GPIOB";
             reg = <0x01>;
             status = "okay";
             ngpios = <8>;
@@ -64,7 +60,6 @@
         /* CH32V003-GPIOC */
         exgpioc: gpio@2 {
             compatible = "listenai,csk-gpio-ch32003-port";
-            label = "EX-GPIOC";
             reg = <0x02>;
             status = "okay";
             ngpios = <8>;
@@ -76,7 +71,6 @@
         /* CH32V003-GPIOD */
         exgpiod: gpio@3 {
             compatible = "listenai,csk-gpio-ch32003-port";
-            label = "EX-GPIOD";
             reg = <0x03>;
             status = "okay";
             ngpios = <8>;

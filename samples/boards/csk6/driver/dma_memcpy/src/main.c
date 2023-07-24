@@ -7,12 +7,12 @@
 #include <errno.h>
 #include <string.h>
 
-#include <device.h>
-#include <drivers/dma.h>
-#include <drivers/spi.h>
-#include <kernel.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/dma.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
 
 #define BUFFER_SIZE		    (1024 * 10)
 #define CONFIG_TEST_DMA_CHANNEL_NUN (1)

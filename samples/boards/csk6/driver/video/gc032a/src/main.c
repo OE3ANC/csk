@@ -3,16 +3,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include <device.h>
-#include <drivers/video.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(main);
 
-#define VIDEO_DEV		DT_LABEL(DT_NODELABEL(dvp))
 #define VBUF_NUM		2
 #define IMAGE_HEIGHT		480
 #define IMAGE_WIDTH		640
@@ -122,17 +121,17 @@ void main(void)
 	size_t bsize;
 	int i = 0;
 
-	video = device_get_binding(VIDEO_DEV);
+	video = DEVICE_DT_GET(DT_NODELABEL(dvp));
 
 	if (video == NULL) {
 		LOG_ERR("Video device %s not found, "
 			"fallback to software generator.",
-			VIDEO_DEV);
+			"dvp");
 
 		return;
 	}
 
-	printk("- Device name: %s\n", VIDEO_DEV);
+	printk("- Device name: %s\n", "dvp");
 
 	// /* Get capabilities */
 	if (video_get_caps(video, VIDEO_EP_OUT, &caps)) {

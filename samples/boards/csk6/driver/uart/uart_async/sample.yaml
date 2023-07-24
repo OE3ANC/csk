@@ -1,6 +1,6 @@
 tests:
   sample.board.csk6.driver.uart.uart_async:
-    platform_allow: csk6011a_c3_nano
+    platform_allow: csk6011a_nano
     build_only: true
     timeout: 20
     tags: csk6

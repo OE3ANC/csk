@@ -8,7 +8,7 @@
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/display.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
 #include <lvgl.h>
 
@@ -24,7 +24,7 @@ void main(void)
 	lv_obj_t *hello_world_label;
 	lv_obj_t *count_label;
 
-	display_dev = device_get_binding(CONFIG_LV_Z_DISPLAY_DEV_NAME);
+	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display_dev)) {
 		LOG_ERR("Device not ready, aborting test");
 		return;

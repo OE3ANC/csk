@@ -8,6 +8,7 @@ tests:
     harness: console
     timeout: 10
     harness_config:
+      fixture: display_st7789_ft5336
       type: one_line
       regex:
         - "Display sample for"

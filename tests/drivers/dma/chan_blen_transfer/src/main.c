@@ -5,7 +5,7 @@
  */
 
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 
 extern void test_dma_m2m_chan0_burst8(void);

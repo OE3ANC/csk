@@ -17,6 +17,8 @@ config SOC_CSK6
 	select BUILD_OUTPUT_HEX
 	select PLATFORM_SPECIFIC_INIT
 	select PINCTRL
+	select CPU_HAS_DCACHE
+	select CPU_HAS_ICACHE
 
 config HAS_CSK6
 	bool

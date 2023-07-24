@@ -6,7 +6,7 @@
  */
 
 
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 
 extern void test_adc_sample_one_channel(void);

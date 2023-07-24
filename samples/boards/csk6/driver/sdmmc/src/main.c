@@ -8,9 +8,9 @@
 
 #include <zephyr/device.h>
 #include <zephyr/storage/disk_access.h>
-#include <zephyr/zephyr.h>
+#include <zephyr/kernel.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_DBG);
 
 #define NUM_SECTORS (1U)

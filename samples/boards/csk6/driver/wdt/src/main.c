@@ -5,10 +5,10 @@
  */
 #include <stdbool.h>
 
-#include <device.h>
-#include <drivers/watchdog.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/watchdog.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
 
 #define WDT_FEED_TRIES 1
 

@@ -18,11 +18,11 @@ FILE(GLOB app_sources src/*.c)
 target_sources(app PRIVATE ${app_sources})
 
 # Code relocation feature
-zephyr_code_relocate(src/test_file1.c PSRAMAP)
-zephyr_code_relocate(src/test_file2.c SRAM)
-zephyr_code_relocate(src/test_file3.c PSRAMAP_TEXT)
-zephyr_code_relocate(src/test_file3.c SRAM_DATA)
-zephyr_code_relocate(src/test_file3.c PSRAMAP_BSS)
+zephyr_code_relocate(FILES src/test_file1.c LOCATION PSRAMAP)
+zephyr_code_relocate(FILES src/test_file2.c LOCATION RAM)
+zephyr_code_relocate(FILES src/test_file3.c LOCATION PSRAMAP_TEXT)
+zephyr_code_relocate(FILES src/test_file3.c LOCATION RAM_DATA)
+zephyr_code_relocate(FILES src/test_file3.c LOCATION PSRAMAP_BSS)
 
-zephyr_code_relocate(${ZEPHYR_BASE}/kernel/sem.c SRAM)
+zephyr_code_relocate(FILES ${ZEPHYR_BASE}/kernel/sem.c LOCATION RAM)
 

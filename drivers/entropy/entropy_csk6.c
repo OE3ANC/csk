@@ -7,10 +7,11 @@
 #define DT_DRV_COMPAT listenai_csk_entropy
 
 #include <string.h>
-#include <drivers/entropy.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/entropy.h>
 #include "Driver_TRNG.h"
 	
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_entropy);
 
 #ifndef typeof

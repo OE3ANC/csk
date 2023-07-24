@@ -6,16 +6,16 @@
 
 #define DT_DRV_COMPAT ovti_ov9655
 
-#include <zephyr.h>
-#include <device.h>
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
 
-#include <drivers/video.h>
+#include <zephyr/drivers/video.h>
 #include <drivers/csk6_video_extend.h>
-#include <drivers/i2c.h>
-#include <drivers/gpio.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(ov9655);
 
 /** 
@@ -559,7 +559,7 @@ static int ov9655_init(const struct device *dev)
 	uint8_t pid;
 
 	if (i2c_configure(drv_data->i2c_bus.bus,
-			I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER)) {
+			I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER)) {
 		LOG_ERR("I2C config failed!");
 		return -EIO;
 	}

@@ -10,10 +10,10 @@
 #include "logging/log.h"
 #include <stdint.h>
 #include <string.h>
-#include <zephyr.h>
-#include <sys/ring_buffer.h>
-#include <usb/usb_device.h>
-#include <usb/class/usb_audio.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/ring_buffer.h>
+#include <zephyr/usb/usb_device.h>
+#include <zephyr/usb/class/usb_audio.h>
 #include <avf/framework/avf_platform.h>
 #include <licak/modules/audio/aplay.h>
 #include <licak/licak.h>

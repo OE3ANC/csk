@@ -5,7 +5,8 @@
 #define DT_DRV_COMPAT listenai_csk_rtc
 
 
-#include <drivers/counter.h>
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/counter.h>
 #include "Driver_RTC.h"
 #include "rtc.h"
 
