@@ -4,6 +4,7 @@ sample:
 tests:
   sample.board.csk6.drivers.exmcu.gpio_led:
     harness: console
+    platform_allow: csk6011a_nano csk6012_nano
     harness_config:
       fixture: ch32v003
       type: one_line
