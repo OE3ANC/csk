@@ -8,4 +8,4 @@ tests:
       type: one_line
       ordered: true
       regex:
-        - "I2C Slave Virtual device Note: SLAVE_VDEV_0"
+        - "I2C Addr:"

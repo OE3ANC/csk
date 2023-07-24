@@ -18,10 +18,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(vdev_demo, LOG_LEVEL_INF);
 
-
 #define NODE_VIRTUAL_DEV DT_INST(0, listenai_i2c_slavevdev)
 
-#define TEST_DATA_SIZE	256
+#define TEST_DATA_SIZE 256
 static uint8_t i2_vdev_0_data[TEST_DATA_SIZE] = "0123456789abcdefghij";
 
 const struct device *i2_vdev_0 = NULL;
@@ -31,17 +30,16 @@ void i2_slave_vdev_init(void)
 
 	i2_vdev_0 = DEVICE_DT_GET(NODE_VIRTUAL_DEV);
 	int addr_0 = DT_REG_ADDR(NODE_VIRTUAL_DEV);
-	
-    if (i2_vdev_0 == NULL)
-    {
-        printk("I2C Slave Virtual device not found \n");
-        return;
-    }
 
-	printk("I2C Addr: 0x%X", addr_0);
+	if (i2_vdev_0 == NULL) {
+		LOG_ERR("I2C Slave Virtual device not found \n");
+		return;
+	}
 
-	int i=0;
-	for(i=0; i<TEST_DATA_SIZE; i++) {
+	LOG_INF("I2C Addr: 0x%X", addr_0);
+
+	int i = 0;
+	for (i = 0; i < TEST_DATA_SIZE; i++) {
 		i2_vdev_0_data[i] = i;
 	}
 	ret = slave_vdev_program(i2_vdev_0, i2_vdev_0_data, TEST_DATA_SIZE);
@@ -72,8 +70,7 @@ void main(void)
 
 	slave_vdev_event_handler_register(i2_vdev_0, &vdev_handler);
 	start_slave_vdev_handler_task(i2_vdev_0);
-	while (1)
-	{
+	while (1) {
 		k_msleep(2000);
 	}
 }
