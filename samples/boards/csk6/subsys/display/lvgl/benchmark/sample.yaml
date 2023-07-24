@@ -1,3 +1,6 @@
 sample:
-  description: LVGL8 sample benchmark
-  name: lvgl8
+  description: LVGL sample application
+  name: lvgl
+tests:
+  sample.display.lvgl.gui.benchmark:
+    build_only: true
