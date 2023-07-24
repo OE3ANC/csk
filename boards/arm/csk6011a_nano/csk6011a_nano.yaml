@@ -1,5 +1,5 @@
 identifier: csk6011a_nano
-name: CSK
+name: CSK 6011A Nano
 type: mcu
 arch: arm
 toolchain:
