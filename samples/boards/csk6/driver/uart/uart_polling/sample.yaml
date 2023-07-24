@@ -7,4 +7,4 @@ tests:
     harness_config:
       type: one_line
       regex:
-        - "devices UART_0 is ready"
+        - "devices uart@\\d+ is ready"
