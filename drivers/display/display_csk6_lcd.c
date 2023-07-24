@@ -243,9 +243,9 @@ void *display_csk6_lcd_init(const char *name, uint8_t dma_ch)
 
 	memset(&g_display_csk6_lcd_data, 0, sizeof(struct display_csk6_lcd_data));
 
-	if (strcmp(name, "SPI_0") == 0) {
+	if (strcmp(name, "spi@45400000") == 0) {
 		hal_spi = SPI0();
-	} else if (strcmp(name, "SPI_1") == 0) {
+	} else if (strcmp(name, "spi@45500000") == 0) {
 		hal_spi = SPI1();
 	} else {
 		LOG_ERR("Unknown SPI device %s", name);

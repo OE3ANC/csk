@@ -346,7 +346,7 @@ static int st7789v_init(const struct device *dev)
 	struct st7789v_data *data = dev->data;
 
 	LOG_INF("st7789v_init");
-	if (!spi_is_ready(&config->bus)) {
+	if (!device_is_ready(config->bus.bus)) {
 		LOG_ERR("SPI device not ready");
 		return -ENODEV;
 	} else {
