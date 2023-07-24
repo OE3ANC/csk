@@ -10,7 +10,7 @@
  */
 
 #include <zephyr/kernel.h>
-#include <ztest.h>
+#include <zephyr/ztest.h>
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/device.h>
 
@@ -33,7 +33,7 @@
 
 #define OVERFLOW_CANARY 0xDE
 
-static const char *disk_pdrv = DISK_NAME;
+static const char *disk_pdrv = CONFIG_SDMMC_VOLUME_NAME;
 static uint32_t disk_sector_count;
 static uint32_t disk_sector_size;
 
