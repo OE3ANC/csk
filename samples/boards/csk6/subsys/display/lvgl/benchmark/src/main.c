@@ -19,7 +19,7 @@ void main(void)
 {
 	const struct device *display_dev;
 
-	display_dev = device_get_binding(CONFIG_LV_Z_DISPLAY_DEV_NAME);
+	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (display_dev == NULL) {
 		LOG_ERR("Device not ready, aborting test");
 		return;

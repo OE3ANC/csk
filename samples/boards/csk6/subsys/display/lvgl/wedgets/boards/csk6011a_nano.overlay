@@ -35,7 +35,6 @@
 
 	st7789v:st7789v@0 {
 		compatible = "sitronix,st7789v";
-		label = "ST7789V";
 		status = "okay";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
@@ -82,10 +81,9 @@
 	status = "okay";
 	pinctrl-0 = <&pinctrl_i2c0_scl_default &pinctrl_i2c0_sda_default>;
 	pinctrl-names = "default";
-	ft5336@0 {
+	ft5336:ft5336@0 {
 		compatible = "focaltech,ft5336";
 		reg = <56>;
-		label = "FT5336";
 		status = "okay";
 		int-gpios = <&gpiob 11 0>;
 	};
@@ -95,5 +93,6 @@
 / {
 	chosen {
 		zephyr,display=&st7789v;
+		zephyr,keyboard_scan=&ft5336;
 	};
 };
