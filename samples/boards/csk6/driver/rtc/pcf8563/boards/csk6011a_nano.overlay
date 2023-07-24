@@ -4,6 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/{
+	aliases {
+		rtc = &pcf8563;
+	};
+};
+
 &pinctrl {
 	pinctrl_i2c0_scl_default: i2c0_scl_default{
 		pinctrls = <I2C0_SCL_GPIOB_10>;
@@ -19,12 +25,11 @@
 	pinctrl-0 = <&pinctrl_i2c0_scl_default &pinctrl_i2c0_sda_default>;
 	pinctrl-names = "default";
 
-	rtc: pcf8563@51 {
+	pcf8563: pcf8563@51 {
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
 		alarms-count = <1>;
 		battery-switch-over = "standard";
-		label = "RTC_PCF8563";
 		/*
 		* Interrupt connection must be manually established using a jumper wire between
 		* pins "SQ" and "Digital I/O 7".

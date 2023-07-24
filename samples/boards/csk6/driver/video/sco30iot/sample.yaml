@@ -1,5 +1,5 @@
 tests:
-  sample.board.csk6.driver.video.gc032a:
+  sample.board.csk6.driver.video.sco30iot:
     platform_allow: csk6011a_nano
     tags: csk6
     build_only: true

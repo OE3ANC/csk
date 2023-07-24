@@ -19,10 +19,9 @@
 	status = "okay";
 	pinctrl-0 = <&pinctrl_i2c0_scl_default &pinctrl_i2c0_sda_default>;
 	pinctrl-names = "default";
-	bl6xxx@0 {
+	bl6xxx:bl6xxx@0 {
 			compatible = "betterlife,bl6xxx";
 			reg = <0>;
-			label = "BL6XXX";
 			status = "okay";
 			int-gpios = <&gpioa 14 0>;
 			reset-gpios = <&gpioa 15 0>;

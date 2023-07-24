@@ -1,5 +1,5 @@
 identifier: csk6012_c3_nano
-name: CSK
+name: CSK 6012 C3 Nano
 type: mcu
 arch: arm
 toolchain:

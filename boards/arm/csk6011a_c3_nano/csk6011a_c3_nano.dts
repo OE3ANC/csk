@@ -2,8 +2,8 @@
 
 /dts-v1/;
 #include <csk/csk6011a.dtsi>
-#include <dt-bindings/pwm/pwm.h>
-#include <dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
 #include "csk6011a_c3_nano_pinctrl.dtsi"
 
 / {
@@ -33,7 +33,6 @@
                 compatible = "gpio-leds";
                 green_led: led1 {
                         gpios = <&gpiob 6 GPIO_ACTIVE_LOW>;
-                        label = "User LED1";
                 };
         };
 
@@ -42,7 +41,6 @@
                 green_pwm_led: green_pwm_led {
                         /* PWM LED will conflict with User LED1 since using the same gpio pin */
                         pwms = <&gptchannel2 2 PWM_MSEC(20) PWM_POLARITY_NORMAL>;
-                        label = "User BOARD_LED_2 - PWM0";
                 };
 
         };
@@ -50,7 +48,6 @@
         gpio_keys {
                 compatible = "gpio-keys";
                 user_button_0: button_0 {
-                        label = "User SW0";
                         gpios = <&gpiob 5 0>;
                 };
         };
@@ -109,7 +106,6 @@
         status = "okay";
 	wifi_module: esp32c3@0 {
                 compatible = "espressif,esp-hosted";
-                label = "WiFi module";
 		spi-max-frequency = <25000000>;
 		reg = <0>;
                 dataready-gpios = <&gpioa 11 0>;
@@ -155,19 +151,16 @@
 
                 /* wifi driver private storage: 8Kb */
                 wifi_driver_storage: partition@6ee000 {
-                        label = "wifi_driver_storage";
                         reg = <0x6ee000 0x2000>;
                 };
 
                 /* wifi_nvs_storage: 20Kb */
                 wifi_nvs_storage: partition@6F0000 {
-                        label = "wifi_nvs_storage";
                         reg = <0x6F0000 0x10000>;
                 };
 
                 /* storage: 6.625MB for storage */
                 storage_partition: partition@700000 {
-                        label = "storage";
                         reg = <0x700000 0x100000>;
                 };
 

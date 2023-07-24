@@ -7,11 +7,11 @@
 #include <errno.h>
 #include <string.h>
 
-#include <device.h>
-#include <drivers/counter.h>
-#include <kernel.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/counter.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
 
 #define RTC_STACK_SIZE 4096
 struct k_thread rtc_thread_data;

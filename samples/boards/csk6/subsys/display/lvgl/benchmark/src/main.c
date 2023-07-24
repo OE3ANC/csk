@@ -6,20 +6,20 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <device.h>
-#include <drivers/display.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/display.h>
 #include <lvgl.h>
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(app);
 
 void main(void)
 {
 	const struct device *display_dev;
 
-	display_dev = device_get_binding(CONFIG_LV_Z_DISPLAY_DEV_NAME);
+	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (display_dev == NULL) {
 		LOG_ERR("Device not ready, aborting test");
 		return;

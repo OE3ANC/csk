@@ -5,10 +5,10 @@
  */
 #include <stdint.h>
 
-#include <drivers/kscan.h>
-#include <drivers/i2c.h>
-#include <drivers/gpio.h>
-#include <logging/log.h>
+#include <zephyr/drivers/kscan.h>
+#include <zephyr/drivers/i2c.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
 
 #define DT_DRV_COMPAT betterlife_bl6xxx
 
@@ -52,20 +52,14 @@ typedef struct bl6xxx_chip_data {
     uint8_t touch_id;
 } bl6xxx_chip_data_t;
 
-typedef struct gpio_info {
-    const char *port;
-    gpio_pin_t pin;
-    gpio_dt_flags_t flag;
-} gpio_info_t;
-
 typedef struct bl6xxx_dev_data {
     struct k_work work;
     kscan_callback_t cb;
     const struct device *dev;
     const struct device *i2c_dev;
     struct gpio_callback int_gpio_cb;
-    gpio_info_t int_gpio;
-    gpio_info_t reset_gpio;
+    struct gpio_dt_spec int_gpio;
+	struct gpio_dt_spec reset_gpio;
 } bl6xxx_dev_data_t;
 
 static int32_t bl6xxx_chip_sleep(const struct device *i2c_dev)
@@ -216,7 +210,7 @@ static int ksacn_driv_enable(const struct device *dev)
 {
     bl6xxx_dev_data_t *data = (bl6xxx_dev_data_t *)dev->data;
 
-    gpio_add_callback(device_get_binding(data->int_gpio.port), &data->int_gpio_cb);
+    gpio_add_callback(data->int_gpio.port, &data->int_gpio_cb);
 
     return 0;
 }
@@ -225,7 +219,7 @@ static int kscan_driv_disable(const struct device *dev)
 {
     bl6xxx_dev_data_t *data = (bl6xxx_dev_data_t *)dev->data;
 
-    gpio_remove_callback(device_get_binding(data->int_gpio.port), &data->int_gpio_cb);
+    gpio_remove_callback(data->int_gpio.port, &data->int_gpio_cb);
 
     return 0;
 }
@@ -241,29 +235,30 @@ static int bl6xxx_dev_init(const struct device *dev)
     int32_t r;
     bl6xxx_dev_data_t *data = (bl6xxx_dev_data_t *)(dev->data);
     const struct device *i2c_dev = data->i2c_dev;
-    const struct device *gpio = device_get_binding(data->int_gpio.port);
 
     if (!device_is_ready(i2c_dev)) {
         LOG_ERR("[BL6XXX]i2c device is not ready.\n");
         return -1;
     }
-    r = i2c_configure(i2c_dev, I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_MASTER);
+    r = i2c_configure(i2c_dev, I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER);
     if (r < 0) {
         LOG_ERR("[BL6XXX] i2c config failed\n");
         return -1;
     }
 
-    if (gpio == NULL) {
-        LOG_ERR("[BL6XXX]interrupt gpio is not binding.\n");
-        return -EIO;
-    }
-    r = gpio_pin_configure(gpio, data->int_gpio.pin, GPIO_INPUT | GPIO_PULL_UP);
+    if (!device_is_ready(data->int_gpio.port)) {
+		LOG_ERR("Interrupt GPIO controller device not ready");
+		return -ENODEV;
+	}
+
+    r = gpio_pin_configure_dt(&data->int_gpio, GPIO_INPUT | GPIO_PULL_UP);
     if (r < 0) {
         LOG_ERR("[BL6XXX]Could not configure interrupt GPIO pin");
         return r;
     }
-    r = gpio_pin_interrupt_configure(gpio, data->int_gpio.pin,
-            GPIO_INT_EDGE_TO_INACTIVE);
+
+    r = gpio_pin_interrupt_configure_dt(&data->int_gpio,
+					    GPIO_INT_EDGE_TO_ACTIVE);
 	if (r < 0) {
         LOG_ERR("[BL6XXX]Could not configure interrupt GPIO interrupt.");
         return r;
@@ -279,23 +274,17 @@ static int bl6xxx_dev_init(const struct device *dev)
 
     gpio_init_callback(&data->int_gpio_cb, bl6xxx_dev_isr_handler,
         BIT(data->int_gpio.pin));
-    gpio_add_callback(gpio, &data->int_gpio_cb);
+    gpio_add_callback(data->int_gpio.port, &data->int_gpio_cb);
 
     return 0;
 }
 
-#define BL6XXX_DEFINE_GPIO(index, gpio_pha)                                 \
-    {                                                                       \
-		.port = DT_INST_GPIO_LABEL(index, gpio_pha),			            \
-		.pin = DT_INST_GPIO_PIN(index, gpio_pha),			                \
-		.flag = DT_INST_GPIO_FLAGS(index, gpio_pha),			            \
-    }
 
 #define BL6XXX_DEFINE_DATA(index)                                           \
     static struct bl6xxx_dev_data bl6xxx_dev_data_##index = {               \
         .i2c_dev = DEVICE_DT_GET(DT_INST_BUS(index)),                       \
-        .int_gpio = BL6XXX_DEFINE_GPIO(index, int_gpios),                   \
-        .reset_gpio = BL6XXX_DEFINE_GPIO(index, reset_gpios),               \
+        .int_gpio = GPIO_DT_SPEC_INST_GET(index, int_gpios),                   \
+        .reset_gpio = GPIO_DT_SPEC_INST_GET(index, reset_gpios),               \
     }
     
 #define BL6XXX_INIT(index)                                                  \

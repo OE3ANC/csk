@@ -105,7 +105,6 @@
 	sco30iot: sco30iot@68 {
 		compatible = "smartsens,sco30iot";
 		status = "okay";
-		label = "SCO30IOT";
 		reg = <0x68>;
 		reset-gpios = <&gpioa 6 0>;
 

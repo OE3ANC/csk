@@ -7,7 +7,7 @@
 #include "Driver_DUAL_TIMER.h"
 #include "dual_timer.h"
 
-#include <drivers/counter.h>
+#include <zephyr/drivers/counter.h>
 #define DEV_CFG(dev)  ((struct counter_csk_config *)(dev)->config)
 #define DEV_DATA(dev) ((struct counter_csk_data *)(dev)->data)
 #define MAX_FREQ 32000

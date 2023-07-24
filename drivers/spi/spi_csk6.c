@@ -5,13 +5,13 @@
 #define DT_DRV_COMPAT listenai_csk_spi
 
 #include <assert.h>
-#include <kernel.h>
+#include <zephyr/kernel.h>
 #include <errno.h>
-#include <drivers/spi.h>
-#include <drivers/clock_control.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/pinctrl.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_spi, CONFIG_SPI_LOG_LEVEL);
 
 #include "spi_context.h"
@@ -25,7 +25,6 @@ LOG_MODULE_REGISTER(csk6_spi, CONFIG_SPI_LOG_LEVEL);
 
 #define DEV_CFG(dev) ((const struct csk_spi_config *const)(dev)->config)
 #define DEV_DATA(dev) ((struct csk_spi_data *const)(dev)->data)
-#define DEV_LABEL(dev) ((char *)(DEV_CFG(dev))->label)
 
 typedef void *spi_driver_ctx_t;
 
@@ -36,26 +35,27 @@ struct csk_spi_data {
 };
 
 struct csk_spi_config {
-	char *label;
 	void (*irq_config_func)(const struct device *dev);
 	/* SPI alternate configuration */
 	const struct pinctrl_dev_config *pcfg;
+	uint32_t reg;
 };
 
 static void *spi_csk_get_ctx(const struct device *dev)
 {
-	const char *label = DEV_LABEL(dev);
+	const struct csk_spi_config *config = dev->config;
 
+	LOG_INF("SPI REG ADDR:0x%x", config->reg);
 #ifdef CONFIG_SOC_CSK6
-	if(!strcmp(label, SPI0_LABEL)){
+	if(config->reg == SPI0_BASE){
 		return SPI0();
 	}
 #endif
-	if (!strcmp(label, SPI1_LABEL)) {
+	if (config->reg == SPI1_BASE) {
 		return SPI1();
 	}
 
-	LOG_ERR("ERR SPI LABEL:%s \n", label);
+	LOG_ERR("ERR SPI REG ADDR:0x%x\n", config->reg);
 
 	return NULL;
 }
@@ -129,7 +129,7 @@ static int32_t csk_spi_hal_transceive(const struct device *dev)
 
 	if (chunk_len == 0) {
         spi_context_cs_control(&data->ctx, false);
-		spi_context_complete(ctx, 0);
+		spi_context_complete(ctx, dev, 0);
 		return 0;
 	}
 
@@ -166,11 +166,11 @@ static int32_t csk_spi_hal_transceive(const struct device *dev)
 }
 
 static int transceive(const struct device *dev,
-		      const struct spi_config *spi_cfg,
-		      const struct spi_buf_set *tx_bufs,
-		      const struct spi_buf_set *rx_bufs,
-		      bool asynchronous,
-		      struct k_poll_signal *signal)
+				    const struct spi_config *spi_cfg,
+				    const struct spi_buf_set *tx_bufs,
+				    const struct spi_buf_set *rx_bufs,
+				    spi_callback_t cb,
+				    void *userdata)
 {
 	struct csk_spi_data *data = dev->data;
 	uint8_t dw = SPI_WORD_SIZE_GET(spi_cfg->operation);
@@ -229,7 +229,7 @@ static int transceive(const struct device *dev,
 	}
 #endif
 
-	spi_context_lock(&data->ctx, asynchronous, signal, spi_cfg);
+	spi_context_lock(&data->ctx, (cb != NULL), cb, userdata, spi_cfg);
 	int ret = csk_spi_configure(dev, spi_cfg);
 	if (ret) {
 		goto out;
@@ -359,9 +359,9 @@ static int spi_csk_init(const struct device *dev)
 	PINCTRL_DT_INST_DEFINE(n);                                              \
 									               								\
 	static const struct csk_spi_config csk_spi_config_##n = {      			\
-		.label = DT_INST_LABEL(n),											\
 		.irq_config_func = spi_csk_config_func_##n,                             \
         .pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(n),                              \
+		.reg = DT_REG_ADDR(DT_DRV_INST(n)),										\
 	};                                                                     		\
 																				\
 	static struct csk_spi_data csk_spi_data_##n = {	     					\

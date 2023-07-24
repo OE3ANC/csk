@@ -17,15 +17,15 @@
 
 LOG_MODULE_REGISTER(slave_vdev, LOG_LEVEL_INF);
 
-typedef struct _i2c_slave_vdev_data_t {
-	struct i2c_slave_config config;
+typedef struct _i2c_target_vdev_data_t {
+	struct i2c_target_config config;
 	uint32_t buffer_size;
 	uint8_t *buffer;
 	uint32_t buffer_idx;
 	bool first_write;
 } vdev_data_t;
 
-typedef struct _i2c_slave_vdev_config {
+typedef struct _i2c_target_vdev_config {
 	struct i2c_dt_spec bus;
 	uint32_t buffer_size;
 	uint8_t *buffer;
@@ -129,7 +129,7 @@ int start_slave_vdev_handler_task(const struct device *dev)
 }
 
 /* -------------------------------------------------------------------------- */
-static int slave_vdev_write_requested(struct i2c_slave_config *config)
+static int slave_vdev_write_requested(struct i2c_target_config *config)
 {
 	vdev_data_t *data = CONTAINER_OF(config, vdev_data_t, config);
 	LOG_DBG("slave_vdev: write req");
@@ -141,7 +141,7 @@ static int slave_vdev_write_requested(struct i2c_slave_config *config)
 	return 0;
 }
 
-static int slave_vdev_read_requested(struct i2c_slave_config *config, uint8_t *val)
+static int slave_vdev_read_requested(struct i2c_target_config *config, uint8_t *val)
 {
 	vdev_data_t *data = CONTAINER_OF(config, vdev_data_t, config);
 	LOG_DBG("slave_vdev: read req, val=0x%x", *val);
@@ -154,7 +154,7 @@ static int slave_vdev_read_requested(struct i2c_slave_config *config, uint8_t *v
 	return 0;
 }
 
-static int slave_vdev_write_received(struct i2c_slave_config *config, uint8_t val)
+static int slave_vdev_write_received(struct i2c_target_config *config, uint8_t val)
 {
 	vdev_data_t *data = CONTAINER_OF(config, vdev_data_t, config);
 
@@ -185,7 +185,7 @@ static int slave_vdev_write_received(struct i2c_slave_config *config, uint8_t va
 	return 0;
 }
 
-static int slave_vdev_read_processed(struct i2c_slave_config *config, uint8_t *val)
+static int slave_vdev_read_processed(struct i2c_target_config *config, uint8_t *val)
 {
 	/**
 	 * @note: Since the Hal library does not support I2C Slave multi-byte
@@ -216,7 +216,7 @@ static int slave_vdev_read_processed(struct i2c_slave_config *config, uint8_t *v
 	return 0;
 }
 
-static int slave_vdev_stop(struct i2c_slave_config *config)
+static int slave_vdev_stop(struct i2c_target_config *config)
 {
 	vdev_data_t *data = CONTAINER_OF(config, vdev_data_t, config);
 	LOG_DBG("slave_vdev: stop");
@@ -234,7 +234,7 @@ static int slave_vdev_register(const struct device *dev)
 	const vdev_config_t *cfg = dev->config;
 	vdev_data_t *data = dev->data;
 
-	return i2c_slave_register(cfg->bus.bus, &data->config);
+	return i2c_target_register(cfg->bus.bus, &data->config);
 }
 
 static int slave_vdev_unregister(const struct device *dev)
@@ -242,15 +242,15 @@ static int slave_vdev_unregister(const struct device *dev)
 	const vdev_config_t *cfg = dev->config;
 	vdev_data_t *data = dev->data;
 
-	return i2c_slave_unregister(cfg->bus.bus, &data->config);
+	return i2c_target_unregister(cfg->bus.bus, &data->config);
 }
 
-static const struct i2c_slave_driver_api api_funcs = {
+static const struct i2c_target_driver_api api_funcs = {
 	.driver_register = slave_vdev_register,
 	.driver_unregister = slave_vdev_unregister,
 };
 
-static const struct i2c_slave_callbacks slave_vdev_callbacks = {
+static const struct i2c_target_callbacks slave_vdev_callbacks = {
 	.write_requested = slave_vdev_write_requested,
 	.read_requested = slave_vdev_read_requested,
 	.write_received = slave_vdev_write_received,
@@ -258,7 +258,7 @@ static const struct i2c_slave_callbacks slave_vdev_callbacks = {
 	.stop = slave_vdev_stop,
 };
 
-static int i2c_slave_vdev_init(const struct device *dev)
+static int i2c_target_vdev_init(const struct device *dev)
 {
 	const vdev_config_t *cfg = dev->config;
 	vdev_data_t *data = dev->data;
@@ -277,17 +277,17 @@ static int i2c_slave_vdev_init(const struct device *dev)
 }
 
 #define I2C_SLAVEDEV_INIT(inst)                                                                    \
-	static vdev_data_t i2c_slave_vdev_##inst##_dev_data;                                       \
+	static vdev_data_t i2c_target_vdev_##inst##_dev_data;                                       \
                                                                                                    \
-	static uint8_t i2c_slave_vdev_##inst##_buffer[(DT_INST_PROP(inst, size))];                 \
+	static uint8_t i2c_target_vdev_##inst##_buffer[(DT_INST_PROP(inst, size))];                 \
                                                                                                    \
-	static vdev_config_t i2c_slave_vdev_##inst##_cfg = {                                       \
+	static vdev_config_t i2c_target_vdev_##inst##_cfg = {                                       \
 		.bus = I2C_DT_SPEC_INST_GET(inst),                                                 \
 		.buffer_size = DT_INST_PROP(inst, size),                                           \
-		.buffer = i2c_slave_vdev_##inst##_buffer};                                         \
+		.buffer = i2c_target_vdev_##inst##_buffer};                                         \
                                                                                                    \
-	DEVICE_DT_INST_DEFINE(inst, &i2c_slave_vdev_init, NULL, &i2c_slave_vdev_##inst##_dev_data, \
-			      &i2c_slave_vdev_##inst##_cfg, POST_KERNEL,                           \
+	DEVICE_DT_INST_DEFINE(inst, &i2c_target_vdev_init, NULL, &i2c_target_vdev_##inst##_dev_data, \
+			      &i2c_target_vdev_##inst##_cfg, POST_KERNEL,                           \
 			      CONFIG_I2C_SLAVE_INIT_PRIORITY, &api_funcs);
 
 DT_INST_FOREACH_STATUS_OKAY(I2C_SLAVEDEV_INIT)

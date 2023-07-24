@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <zephyr.h>
+#include <zephyr/kernel.h>
 #include <ztest.h>
 
 #include "kernel.h"

@@ -5,10 +5,10 @@ zephyr_sources(
   soc.c
   )
 
+# make sure csk6_boot_tag.ld at the end of vectors
+zephyr_linker_sources(ROM_START SORT_KEY 0x0vectors0boottag csk6_boot_tag.ld)
 zephyr_sources_ifdef(CONFIG_CPU_HAS_CUSTOM_FIXED_SOC_MPU_REGIONS mpu_regions.c)
-zephyr_sources_ifdef(CONFIG_CACHE_MANAGEMENT cache.c)
 zephyr_sources_ifdef(CONFIG_EXTRA_EXCEPTION_INFO fatal.c)
-zephyr_linker_sources(SECTIONS csk6_private.ld)
 zephyr_linker_sources(SECTIONS csk6_psram.ld)
 
 if(NOT CONFIG_BOOTLOADER_MCUBOOT)

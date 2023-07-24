@@ -11,7 +11,7 @@
 #include <string.h>
 #include <zephyr/init.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_hwinfo);
 
 EFUSE_RegDef *efuse = (EFUSE_RegDef *)AON_EFUSECTRL_BASE;
@@ -67,7 +67,7 @@ ssize_t z_impl_hwinfo_get_device_id(uint8_t *buffer, size_t length)
     return length;
 }
 
-static int hwinfo_csk6_init(const struct device *arg)
+static int hwinfo_csk6_init(void)
 {
 //  enable ldo25
 	ana_aon_regs->REG_0X038.bit.LDO25_EN = 1;

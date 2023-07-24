@@ -13,13 +13,13 @@
 #define FLASH_BASE_ADDRESS DT_REG_ADDR_BY_IDX(SOC_NV_FLASH_NODE, 0)
 
 #include <string.h>
-#include <kernel.h>
-#include <cache.h>
-#include <drivers/flash.h>
+#include <zephyr/kernel.h>
+#include <zephyr/cache.h>
+#include <zephyr/drivers/flash.h>
 #include <venus_ap.h>
 #include <spiflash.h>
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(flash_csk6, CONFIG_FLASH_LOG_LEVEL);
 
 
@@ -123,7 +123,8 @@ static int flash_csk6_read(const struct device *dev, off_t address, void *buffer
 	if (buffer == NULL || address > FLASH_CHIP_SZ || address + length > FLASH_CHIP_SZ) {
 		return -EINVAL;
 	}
-	sys_cache_data_range((void*)(FLASH_BASE_ADDRESS+address), length, K_CACHE_INVD);
+	
+	sys_cache_data_invd_range((void*)(FLASH_BASE_ADDRESS+address), length);
 	memcpy(buffer,(void*)(FLASH_BASE_ADDRESS+address),length);
 	return 0;
 }

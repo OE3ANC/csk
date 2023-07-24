@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <dt-bindings/display/ili9xxx.h>
+#include <zephyr/dt-bindings/display/ili9xxx.h>
 
 &pinctrl {
 	pinctrl_spi0_sclk_default: spi0_sclk_default {
@@ -30,7 +30,6 @@
 		height = <480>;
 		width = <320>;
 		compatible = "ilitek,ili9488";
-		label = "DISPLAY";
 		spi-max-frequency = <10000000>;
 		reg = <0>;
 		cmd-data-gpios = <&gpioa 8 1>;

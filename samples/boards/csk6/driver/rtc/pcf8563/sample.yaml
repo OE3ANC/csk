@@ -1,11 +1,12 @@
 tests:
-  sample.board.csk6.driver.i2c.master_slave:
+  sample.board.csk6.driver.rtc.pcf8563:
     platform_allow: csk6011a_nano
     tags: csk6
     timeout: 10
     harness: console
     harness_config:
+      fixture: rtc_pcf8563
       type: one_line
       ordered: true
       regex:
-        - "I2C Thread creaeted"
+        - "RTC Time:"

@@ -104,7 +104,6 @@
 	gc032a: gc032a@21 {
 		compatible = "galaxyc,gc032a";
 		status = "okay";
-		label = "GC032A";
 		reg = <0x21>;
 		reset-gpios = <&gpioa 6 0>;
 

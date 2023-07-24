@@ -6,7 +6,7 @@
 
 #include "csk6/priv/csk_wifi_priv.h"
 
-#include <logging/log.h>
+#include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(csk_wifi, CONFIG_WIFI_LOG_LEVEL);
 
 #define WIFI_MAX_SCAN_NUM       CONFIG_MAX_SCAN_APS_NUM

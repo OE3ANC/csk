@@ -7,11 +7,11 @@
 #include <errno.h>
 #include <string.h>
 
-#include <device.h>
-#include <drivers/spi.h>
-#include <kernel.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/spi.h>
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
 
 #define UINT8_MAX_NUM (0xff)
 

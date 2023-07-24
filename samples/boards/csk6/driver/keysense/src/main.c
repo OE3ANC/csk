@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <drivers/gpio.h>
-#include <drivers/kscan.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/kscan.h>
 #include <soc.h>
-#include <sys/printk.h>
-#include <zephyr.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/kernel.h>
 
 #define KSCAN_DEVICE DT_LABEL(DT_ALIAS(analogkey))
 
@@ -23,7 +23,7 @@ static void kb_callback(const struct device *dev, uint32_t row, uint32_t col, bo
 
 void main(void)
 {
-	const struct device *kscan_dev = device_get_binding(KSCAN_DEVICE);
+	const struct device *kscan_dev = DEVICE_DT_GET(DT_NODELABEL(keysense));
 	int ret = 0;
 
 	if (!device_is_ready(kscan_dev)) {
