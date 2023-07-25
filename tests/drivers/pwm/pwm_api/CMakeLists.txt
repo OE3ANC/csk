@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.20.0)
-find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(pwm_api)
 
-FILE(GLOB app_sources src/*.c)
-target_sources(app PRIVATE ${app_sources})
+set(CONF_FILE $ENV{ZEPHYR_BASE}/tests/drivers/pwm/pwm_api/prj.conf)
+
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+project(csk_pwm_api)
+
+
+add_subdirectory($ENV{ZEPHYR_BASE}/tests/drivers/pwm/pwm_api pwm_api)
