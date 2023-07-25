@@ -987,7 +987,7 @@ static int csk_uart_config_get(const struct device *dev, struct uart_config *cfg
 	const struct csk_uart_data *data = DEV_DATA(dev);
 
 	if (cfg != NULL) {
-		memcpy(cfg, &data->config, sizeof(struct csk_uart_config));
+		memcpy(cfg, &data->config, sizeof(struct uart_config));
 		return 0;
 	}
 
