@@ -10,16 +10,40 @@ manifest:
       url-base: https://cloud.listenai.com/listenai/lsf-dev
     - name: scanpen_capabilities
       url-base: https://cloud.listenai.com/scanpen/capability
+    - name: listenai_zephyr_mirrors
+      url-base: https://cloud.listenai.com/zephyr-mirror
+
   projects:
+    # The following projects are copied from zephyr_base/west.yml
+    # The zephyr origin projects start
     - name: zephyr
       repo-path: zephyr_downstream
       revision: v3.4-csk-branch
-      import:
-        name-allowlist:
-          - cmsis
-          - mbedtls
-          - tinycrypt
-          - littlefs
+    - name: cmsis
+      remote: listenai_zephyr_mirrors
+      revision: 74981bf893e8b10931464b9945e2143d99a3f0a3
+      path: modules/hal/cmsis
+      groups:
+        - hal
+    - name: mbedtls
+      remote: listenai_zephyr_mirrors
+      revision: 6e7841e5a08eb5da3c82dbc8b6b6d82ae4b7d2a0
+      path: modules/crypto/mbedtls
+      groups:
+        - crypto
+    - name: tinycrypt
+      remote: listenai_zephyr_mirrors
+      revision: 3e9a49d2672ec01435ffbf0d788db6d95ef28de0
+      path: modules/crypto/tinycrypt
+      groups:
+        - crypto
+    - name: littlefs
+      remote: listenai_zephyr_mirrors
+      revision: ca583fd297ceb48bced3c2548600dc615d67af24
+      path: modules/fs/littlefs
+      groups:
+        - fs
+    # The zephyr origin projects end
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
       revision: 47de6647a1b1ed5373f1e4b17ed9c638ef81e4fe
