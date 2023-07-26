@@ -443,8 +443,6 @@ int csk_uart_async_rx_enable(const struct device *dev, uint8_t *buf, size_t len,
 
 	k_work_cancel_delayable(&async_data->dma_rx.dwork);
 
-	async_data->rx_timeout = timeout;
-
 	block_config.source_address = (uint32_t)&uart_reg->REG_RBR.all;
 	block_config.dest_address = (uint32_t)buf;
 	block_config.dest_addr_adj = DMA_ADDR_ADJ_INCREMENT;
@@ -461,6 +459,11 @@ int csk_uart_async_rx_enable(const struct device *dev, uint8_t *buf, size_t len,
 
 	async_data->dma_rx.xfer_info.buf = buf;
 	async_data->dma_rx.xfer_info.expe_len = len;
+
+	async_data->rx_next_buf = 0;
+	async_data->rx_next_len = 0;
+	async_data->rx_next_recv_len = 0;
+	async_data->rx_timeout = timeout;
 
 	uart_reg->REG_IER.bit.ECHT = 0x0;
 
