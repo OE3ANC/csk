@@ -6,7 +6,6 @@ tests:
     platform_allow: csk6011a_nano
     tags: csk6
     harness: console
-    timeout: 10
     harness_config:
       fixture: display_st7789_ft5336
       type: one_line

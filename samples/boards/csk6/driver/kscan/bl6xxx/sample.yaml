@@ -2,7 +2,6 @@ tests:
   samples.boards.csk6.driver.kscan.bl6xxx:
     platform_allow: csk6011a_nano csk6012_nano
     tags: csk6
-    timeout: 10
     build_only: true
     harness: console
     harness_config:

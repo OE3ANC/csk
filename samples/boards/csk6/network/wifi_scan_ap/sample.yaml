@@ -3,7 +3,6 @@ tests:
     platform_allow: csk6011a_c3_nano
     tags: csk6
     harness: console
-    timeout: 30
     harness_config:
       type: one_line
       regex:
