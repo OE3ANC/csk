@@ -161,7 +161,7 @@ static int pwm_csk_init(const struct device *dev)
 	DEVICE_DT_INST_DEFINE(index, &pwm_csk_init, NULL,                    		\
 			    NULL,                           								\
 			    &pwm_csk_config_##index, POST_KERNEL,            				\
-			    CONFIG_KERNEL_INIT_PRIORITY_DEVICE,                				\
+			    CONFIG_PWM_CSK6_INIT_PRIORITY,                				\
 			    &pwm_csk_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(PWM_DEVICE_INIT)
