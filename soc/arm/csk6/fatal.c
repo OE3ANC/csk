@@ -4,6 +4,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_fatal);
 
+#if CONFIG_CSK6_FATAL_BACKTRACE
 #define CODE_SPACE_START_ADDR   (DT_REG_ADDR(DT_CHOSEN(zephyr_flash)))
 #define CODE_SPACE_SIZE         (DT_REG_SIZE(DT_CHOSEN(zephyr_flash)))
 
@@ -115,10 +116,77 @@ static void _print_call_stack(const z_arch_esf_t *esf)
     }
 }
 
+#endif
+
+#if CONFIG_CSK6_FATAL_UNHANDLE_INTERRUPT
+const static uint8_t *interrupt_names[] = {
+    "dma",
+    "usbc",
+    "sdio",
+    "crypto",
+    "qspi",
+    "efuse",
+    "timer",
+    "wdt",
+    "uart0",
+    "uart1",
+    "uart2",
+    "ir",
+    "spi0",
+    "spi1",
+    "iic0",
+    "iic1",
+    "gpt",
+    "gpio0",
+    "gpio1",
+    "gpadc",
+    "trng",
+    "cmn-mailbox",
+    "cmn-uart",
+    "aon-keysense",
+    "aon-cbutton",
+    "aon-rtc",
+    "aon-iwdt",
+    "aon-timer",
+    "aon-wakeup",
+    "aon-pmuc",
+    "aon-cp0",
+    "aon-cp1",
+    "aon-cp2",
+};
+
+void csk6_fatal_unhandle_interrupt_print(void)
+{
+    uint8_t irq_num = ((SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) >> SCB_ICSR_VECTACTIVE_Pos);
+    const char* irq_name = "unknown";
+
+    if (irq_num >= 16) {
+        /* interrupt num */
+        irq_num  = irq_num - 16;
+        if (irq_num < sizeof(interrupt_names) / sizeof(uint8_t *)) {
+            irq_name = interrupt_names[irq_num];
+        }
+    } else {
+        /* exception num */
+    }
+
+    LOG_ERR("unhandle_interrupt, num:%d, name:%s", irq_num, irq_name);
+}
+#endif
+
 void k_sys_fatal_error_handler(unsigned int reason,
 				      const z_arch_esf_t *esf)
 {
-	_print_call_stack(esf);
+    LOG_ERR("*** CSK FATAL ***");
+#if CONFIG_CSK6_FATAL_UNHANDLE_INTERRUPT
+    if (reason == K_ERR_SPURIOUS_IRQ) {
+        csk6_fatal_unhandle_interrupt_print();
+    }
+#endif
+
+#if CONFIG_CSK6_FATAL_BACKTRACE
+    _print_call_stack(esf);
+#endif
 
 	LOG_PANIC();
 	LOG_ERR("Halting system");
