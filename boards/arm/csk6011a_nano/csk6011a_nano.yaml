@@ -12,6 +12,7 @@ supported:
   - uart
   - ipm
   - usb_device
+  - kscan
   - pwm
   - counter
   - dma

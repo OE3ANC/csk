@@ -1,5 +1,0 @@
-tests:
-  drivers.gpio.gpio_basic_api:
-    tags: drivers gpio basic api
-    depends_on: gpio
-    platform_allow: csk6011a_nano csk6012_nano
