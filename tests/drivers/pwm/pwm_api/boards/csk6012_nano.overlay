@@ -1,6 +1,0 @@
-/ {
-    aliases {
-            pwm-0 = &gptchannel2;
-    };
-};
-
