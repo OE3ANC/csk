@@ -255,7 +255,7 @@ static int csk_spi_transceive(const struct device *dev,
 			       const struct spi_buf_set *tx_bufs,
 			       const struct spi_buf_set *rx_bufs)
 {
-	return transceive(dev, spi_cfg, tx_bufs, rx_bufs, false, NULL);
+	return transceive(dev, spi_cfg, tx_bufs, rx_bufs, NULL, NULL);
 }
 
 #ifdef CONFIG_SPI_ASYNC
@@ -263,9 +263,10 @@ static int csk_spi_transceive_async(const struct device *dev,
 				     const struct spi_config *spi_cfg,
 				     const struct spi_buf_set *tx_bufs,
 				     const struct spi_buf_set *rx_bufs,
-				     struct k_poll_signal *async)
+				     spi_callback_t cb,
+					 void *userdata)
 {
-	return transceive(dev, spi_cfg, tx_bufs, rx_bufs, true, async);
+	return transceive(dev, spi_cfg, tx_bufs, rx_bufs, cb, userdata);
 }
 #endif /* CONFIG_SPI_ASYNC */
 
