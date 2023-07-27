@@ -2,7 +2,6 @@ tests:
   sample.board.csk6.network.wifi_sta:
     platform_allow: csk6011a_c3_nano
     tags: csk6
-    timeout: 30
     harness: console
     harness_config:
       type: one_line
