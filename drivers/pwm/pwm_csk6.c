@@ -131,6 +131,28 @@ static const struct pwm_driver_api pwm_csk_driver_api = {
 	.get_cycles_per_sec = pwm_csk_get_cycles_per_sec,
 };
 
+static void csk_pwm_isr(void)
+{
+	extern void gpt0_irq_handler();
+
+	gpt0_irq_handler();
+}
+
+static int csk_gpt_init(const struct device *dev)
+{
+	IRQ_CONNECT(DT_IRQN(DT_INST(0, listenai_csk_gpt)),
+		    DT_IRQ(DT_INST(0, listenai_csk_gpt), priority), csk_pwm_isr,
+		    DEVICE_DT_GET(DT_INST(0, listenai_csk_gpt)), 0);
+
+	irq_enable(DT_IRQN(DT_INST(0, listenai_csk_gpt)));
+	HAL_GPT_PWMInitialize(GPT0_PWM(), NULL);
+	HAL_GPT_PWMPowerControl(GPT0_PWM(), CSK_POWER_FULL);
+
+	return 0;
+}
+
+DEVICE_DT_DEFINE(DT_INST(0, listenai_csk_gpt), csk_gpt_init, NULL, NULL, NULL, POST_KERNEL,
+		 CONFIG_KERNEL_INIT_PRIORITY_DEVICE, NULL);
 
 static int pwm_csk_init(const struct device *dev)
 {
@@ -138,8 +160,6 @@ static int pwm_csk_init(const struct device *dev)
 	if(config->channel_mode != MODE_PWM){
 		return -EPERM;
 	}
-	HAL_GPT_PWMInitialize(GPT0_PWM(), NULL);
-	HAL_GPT_PWMPowerControl(GPT0_PWM(), CSK_POWER_FULL);
 
 	pinctrl_apply_state(config->pcfg, PINCTRL_STATE_DEFAULT);
 
