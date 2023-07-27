@@ -209,7 +209,7 @@
 			
 			gptchannel5:gptchannel5 {
 				compatible = "listenai,csk-gptchannel";
-				channel-id = <6>;
+				channel-id = <5>;
 				channel_mode = <0>;  /* 0: timer; 1:pwm */
 
 				status = "disabled";
