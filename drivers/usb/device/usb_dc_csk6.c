@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "kernel.h"
+#include <zephyr/kernel.h>
 #include <stdint.h>
 #define DT_DRV_COMPAT listenai_csk_usbd
 
