@@ -43,4 +43,22 @@ if SOC_CSK6
 		help
 			Enable CSK6 PSRAM
 
+config CSK6_FATAL
+	bool "Enable csk6 fatal"
+	default y
+	help
+		Enable csk6 fatal
+
+config CSK6_FATAL_BACKTRACE
+	bool "Enable csk6 backtrace print after fatal"
+	default n
+	help
+		Enable csk6 fatal
+
+config CSK6_FATAL_UNHANDLE_INTERRUPT
+	bool "Enable csk6 unhandle interrupt print"
+	default y
+	help
+		Enable csk6 unhandle interrupt print
+
 endif # SOC_CSK6
