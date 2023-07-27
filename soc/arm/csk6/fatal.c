@@ -118,6 +118,12 @@ static void _print_call_stack(const z_arch_esf_t *esf)
 void k_sys_fatal_error_handler(unsigned int reason,
 				      const z_arch_esf_t *esf)
 {
+    printk("*** CSK FATAL ERROR INFO ***");
+    if (reason == K_ERR_SPURIOUS_IRQ) {
+	    uint8_t irq = ((SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) >> SCB_ICSR_VECTACTIVE_Pos);
+        printk("Unhandled interrupt:%d\n", irq);
+    }
+
 	_print_call_stack(esf);
 
 	LOG_PANIC();

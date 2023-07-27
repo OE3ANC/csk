@@ -19,6 +19,7 @@ config SOC_CSK6
 	select PINCTRL
 	select CPU_HAS_DCACHE
 	select CPU_HAS_ICACHE
+	select EXTRA_EXCEPTION_INFO
 
 config HAS_CSK6
 	bool
