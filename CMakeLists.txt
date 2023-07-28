@@ -2,6 +2,9 @@ set(CSK_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE PATH "CSK root directory")
 
 add_subdirectory(drivers)
 add_subdirectory(modules)
+add_subdirectory(misc)
+
+include(cmake/version.cmake)
 
 zephyr_include_directories(
         include
