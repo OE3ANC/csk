@@ -225,7 +225,7 @@ static const struct counter_driver_api counter_api = {
 	DEVICE_DT_INST_DEFINE(n,						     \
 			      counter_csk_init,				         \
 			      NULL, &counter_data_##n,				 \
-			      &counter_config_##n, PRE_KERNEL_1,		 \
+			      &counter_config_##n, POST_KERNEL,		 \
 			      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &counter_api);
 
 DT_INST_FOREACH_STATUS_OKAY(CSK_COUNTER_INIT)
