@@ -94,6 +94,7 @@ static void rtc_csk_isr(const struct device *dev)
 
 static void rtc_csk_irq_config(void)
 {
+	printk("f: %s, l: %d\n", __FUNCTION__, __LINE__);
 	IRQ_CONNECT(IRQ_AON_RTC_VECTOR,
 		    2,
 		    rtc_csk_isr, 
@@ -114,14 +115,14 @@ static int counter_csk_init(const struct device *dev)
 	data->handle = rtc_csk_get_ctx(dev);
 	void *RTC_Handler = data->handle;
 
-    RTC_Initialize(RTC_Handler, NULL, NULL);
+	RTC_Initialize(RTC_Handler, NULL, NULL);
 	RTC_PowerControl(RTC_Handler, CSK_POWER_OFF);
-	RTC_PowerControl(RTC_Handler, CSK_POWER_FULL);
-	RTC_SetTime(RTC_Handler, &stime);
-    RTC_Control(RTC_Handler, CSK_RTC_CTRL_EN, 0);
-
 	// Setting irq
 	cfg->irq_config();
+	RTC_PowerControl(RTC_Handler, CSK_POWER_FULL);
+	RTC_SetTime(RTC_Handler, &stime);
+	RTC_Control(RTC_Handler, CSK_RTC_CTRL_EN, 0);
+
 	return 0;
 }
 
@@ -225,7 +226,7 @@ static const struct counter_driver_api counter_api = {
 	DEVICE_DT_INST_DEFINE(n,						     \
 			      counter_csk_init,				         \
 			      NULL, &counter_data_##n,				 \
-			      &counter_config_##n, PRE_KERNEL_1,		 \
+			      &counter_config_##n, POST_KERNEL,		 \
 			      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &counter_api);
 
 DT_INST_FOREACH_STATUS_OKAY(CSK_COUNTER_INIT)
