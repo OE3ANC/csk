@@ -94,6 +94,7 @@ static void rtc_csk_isr(const struct device *dev)
 
 static void rtc_csk_irq_config(void)
 {
+	printk("f: %s, l: %d\n", __FUNCTION__, __LINE__);
 	IRQ_CONNECT(IRQ_AON_RTC_VECTOR,
 		    2,
 		    rtc_csk_isr, 
