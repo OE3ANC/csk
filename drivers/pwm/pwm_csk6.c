@@ -135,33 +135,52 @@ static const struct pwm_driver_api pwm_csk_driver_api = {
 static int pwm_csk_init(const struct device *dev)
 {
 	const struct pwm_csk_config *config = dev->config;
-	if(config->channel_mode != MODE_PWM){
+	if (config->channel_mode != MODE_PWM) {
 		return -EPERM;
 	}
 	HAL_GPT_PWMInitialize(GPT0_PWM(), NULL);
 	HAL_GPT_PWMPowerControl(GPT0_PWM(), CSK_POWER_FULL);
 
 	pinctrl_apply_state(config->pcfg, PINCTRL_STATE_DEFAULT);
-
 	return 0;
 }
 
-#define PWM_DEVICE_INIT(index)                                                 	\
-																				\
-    PINCTRL_DT_INST_DEFINE(index);                                              \
-									               								\
-	static const struct pwm_csk_config pwm_csk_config_##index = {      			\
-		.clock_source = DT_INST_PROP(index, clock_source),                		\
-		.clock_prescaler = DT_INST_PROP(index, clock_prescaler),           		\
-		.mode = DT_INST_PROP(index, mode),           							\
-		.channel_mode = DT_INST_PROP(index, channel_mode),						\
-        .pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(index),                          \
-	};                                                                     		\
-																				\
-	DEVICE_DT_INST_DEFINE(index, &pwm_csk_init, NULL,                    		\
-			    NULL,                           								\
-			    &pwm_csk_config_##index, POST_KERNEL,            				\
-			    CONFIG_PWM_CSK6_INIT_PRIORITY,                				\
-			    &pwm_csk_driver_api);
+#if !defined(CONFIG_COUNTER_CSK6_GPTCHANNEL)
+static void csk_pwm_isr(void)
+{
+	extern void gpt0_irq_handler();
+
+	gpt0_irq_handler();
+}
+
+static int csk_gpt_init(const struct device *dev)
+{
+	IRQ_CONNECT(DT_IRQN(DT_INST(0, listenai_csk_gpt)),
+		    DT_IRQ(DT_INST(0, listenai_csk_gpt), priority), csk_pwm_isr,
+		    DEVICE_DT_GET(DT_INST(0, listenai_csk_gpt)), 0);
+
+	irq_enable(DT_IRQN(DT_INST(0, listenai_csk_gpt)));
+
+	return 0;
+}
+#endif
+
+DEVICE_DT_DEFINE(DT_INST(0, listenai_csk_gpt), csk_gpt_init, NULL, NULL, NULL, PRE_KERNEL_1,
+		 CONFIG_KERNEL_INIT_PRIORITY_DEVICE, NULL);
+
+#define PWM_DEVICE_INIT(index)                                                                     \
+                                                                                                   \
+	PINCTRL_DT_INST_DEFINE(index);                                                             \
+                                                                                                   \
+	static const struct pwm_csk_config pwm_csk_config_##index = {                              \
+		.clock_source = DT_INST_PROP(index, clock_source),                                 \
+		.clock_prescaler = DT_INST_PROP(index, clock_prescaler),                           \
+		.mode = DT_INST_PROP(index, mode),                                                 \
+		.channel_mode = DT_INST_PROP(index, channel_mode),                                 \
+		.pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(index),                                     \
+	};                                                                                         \
+                                                                                                   \
+	DEVICE_DT_INST_DEFINE(index, &pwm_csk_init, NULL, NULL, &pwm_csk_config_##index,           \
+			      POST_KERNEL, CONFIG_PWM_CSK6_INIT_PRIORITY, &pwm_csk_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(PWM_DEVICE_INIT)
