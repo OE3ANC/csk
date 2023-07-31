@@ -14,7 +14,6 @@
 			mount-point = "/lfs1";
 			partition = <&storage_partition>;
 			automount ;
-			no-format;
 			read-size = <16>;
 			prog-size = <16>;
 			cache-size = <64>;
