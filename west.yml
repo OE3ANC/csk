@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
-      revision: v3.4-csk-branch
+      revision: d0697704fa02aa190dcb4c6d29187404161ede54
       import:
         name-allowlist:
           - cmsis
