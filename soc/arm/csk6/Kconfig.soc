@@ -51,7 +51,8 @@ config CSK6_FATAL
 
 config CSK6_FATAL_BACKTRACE
 	bool "Enable csk6 backtrace print after fatal"
-	default n
+	default y
+	select EXTRA_EXCEPTION_INFO
 	help
 		Enable csk6 fatal
 
