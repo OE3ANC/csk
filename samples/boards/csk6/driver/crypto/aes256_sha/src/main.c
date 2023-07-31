@@ -112,26 +112,10 @@ uint8_t sha256_results[7][32] = {
 	  0x74, 0x5e, 0x04, 0x88, 0xe6, 0x2c, 0x2a, 0xea, 0x26, 0x05 },
 	{ 0x41, 0x09, 0xcd, 0xbe, 0xc3, 0x24, 0x0a, 0xd7, 0x4c, 0xc6, 0xc3,
 	  0x7f, 0x39, 0x30, 0x0f, 0x70, 0xfe, 0xde, 0x16, 0xe2, 0x1e, 0xfc,
-	  0x77, 0xf7, 0x86, 0x59, 0x98, 0x71, 0x4a, 0xad, 0x0b, 0x5e }
+	  0x77, 0xf7, 0x86, 0x59, 0x98, 0x71, 0x4a, 0xad, 0x0b, 0x51 }
 };
 
-static void printf_buffer(uint8_t *wanted_result, size_t length)
-{
-	int i, j;
 
-	printk("buffer is: \n");
-
-	for (i = 0, j = 1; i < length; i++, j++) {
-		printk("0x%02x ", wanted_result[i]);
-
-		if (j == 10) {
-			printk("\n");
-			j = 0;
-		}
-	}
-
-	printk("\n");
-}
 static void* Hash256_LightPadding(char* m, uint64_t len, uint64_t* nopadding_len, uint8_t* padding_len){
 
     if (len % 64){
@@ -254,11 +238,10 @@ void hash_mode(const struct device *dev)
 	if (memcmp(crypto_sha_result_data_8w, sha256_results[6], 32)) {
 		LOG_ERR("SHA mode DECRYPT - Mismatch between plaintext and "
 			"decrypted cipher text");
-		print_buffer_comparison(sha256_results[6], crypto_sha_result_data_8w, 32);
+		print_buffer_comparison(sha256_results[6], (uint8_t *)crypto_sha_result_data_8w, 32);
 		// goto out;
 	}else{
-		LOG_INF("SHA mode DECRYPT - Match between plaintext and "
-			"decrypted cipher text");
+		LOG_INF("SHA mode DECRYPT is OK");
 	}
 	hash_free_session(dev, &ctx);
 }

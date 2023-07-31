@@ -9,4 +9,4 @@ tests:
       ordered: true
       regex:
         - "AES128 HASH Cipher Sample"
-        - "SHA mode DECRYPT - Match between plaintext and decrypted cipher text"
+        - "SHA mode DECRYPT is OK"
