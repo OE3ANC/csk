@@ -66,10 +66,10 @@ void main(void)
 	int ret;
 
 	LOG_INF("Entered %s", __func__);
-	hs_dev = device_get_binding("HEADSET");
+	hs_dev = DEVICE_DT_GET_ONE(usb_audio_hs);
 
 	if (!hs_dev) {
-		LOG_ERR("Can not get USB Headset Device");
+		LOG_ERR("Device USB Headset is not ready");
 		return;
 	}
 
