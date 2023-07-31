@@ -22,7 +22,7 @@ manifest:
           - littlefs
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
-      revision: c4a4e52bd2d9a33b1d2223eb89504e5bd4c0859b
+      revision: e7c1c019cf2fd7e3a19e770b6f2d84ef59886372
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
