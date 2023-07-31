@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
-      revision: v3.4-csk-branch
+      revision: d0697704fa02aa190dcb4c6d29187404161ede54
       import:
         name-allowlist:
           - cmsis
@@ -22,7 +22,7 @@ manifest:
           - littlefs
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
-      revision: 47de6647a1b1ed5373f1e4b17ed9c638ef81e4fe
+      revision: c4a4e52bd2d9a33b1d2223eb89504e5bd4c0859b
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
