@@ -18,7 +18,7 @@ manifest:
     # The zephyr origin projects start
     - name: zephyr
       repo-path: zephyr_downstream
-      revision: v3.4-csk-branch
+      revision: d0697704fa02aa190dcb4c6d29187404161ede54
     - name: cmsis
       remote: listenai_zephyr_mirrors
       revision: 74981bf893e8b10931464b9945e2143d99a3f0a3
@@ -46,7 +46,7 @@ manifest:
     # The zephyr origin projects end
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
-      revision: 47de6647a1b1ed5373f1e4b17ed9c638ef81e4fe
+      revision: 82257133c4f597fe738e5d7d63eca6103582f31f
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
