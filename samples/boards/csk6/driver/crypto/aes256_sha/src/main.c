@@ -116,43 +116,6 @@ uint8_t sha256_results[7][32] = {
 };
 
 
-static void* Hash256_LightPadding(char* m, uint64_t len, uint64_t* nopadding_len, uint8_t* padding_len){
-
-    if (len % 64){
-        *padding_len = 64;
-
-        if ((len * 8 + 1) % 512 > 448)
-        {
-            *padding_len += 64;
-        }
-
-        *nopadding_len = (len/64)*64; // Floor
-
-    } else {
-        *nopadding_len = len;
-        *padding_len = 64;
-    }
-
-    unsigned char *s = (unsigned char *)k_malloc(*padding_len);
-
-    memset(s, 0, *padding_len);
-
-    uint8_t i;
-
-    for (i = 0; i < len - *nopadding_len; i++)
-    {
-        s[i] = m[*nopadding_len + i];
-    }
-
-    s[i] = 0x80;
-
-    for (i = 0; i < 8; i++)
-    {
-        s[*padding_len - 1 - i] = (unsigned char)(((uint64_t)(len*8) & (uint64_t)(0xff << i * 8)) >> 8 * i);
-    }
-
-    return s;
-}
 static void print_buffer_comparison(uint8_t *wanted_result, uint8_t *result, size_t length)
 {
 	int i, j;
@@ -187,53 +150,16 @@ __attribute__((aligned(32))) static uint32_t crypto_sha_result_data_8w[8] = { 0 
 void hash_mode(const struct device *dev)
 {
 	int ret;
-	int i;
 	struct hash_ctx ctx;
 	struct hash_pkt pkt;
-	volatile uint32_t *source_addr = (volatile uint32_t *)test7;
-	volatile uint32_t *padding_source_addr;
 	volatile uint32_t *dst_addr = crypto_sha_result_data_8w;
-	uint64_t nopadding_len;
-	uint8_t padding_len;
 
-	padding_source_addr = (volatile uint32_t *)Hash256_LightPadding(
-		(char *)source_addr, sizeof(test7), &nopadding_len, &padding_len);
 	ret = hash_begin_session(dev, &ctx, CRYPTO_HASH_ALGO_SHA256);
 	ctx.flags = CAP_SYNC_OPS | CAP_SEPARATE_IO_BUFS;
-
-	if (nopadding_len != 0) {
-		pkt.in_buf = (uint8_t *)source_addr;
-		pkt.in_len = 64;
-		pkt.out_buf = (uint8_t *)dst_addr;
-		ret = hash_update(&ctx, &pkt);
-		source_addr += 0x10; // word
-		nopadding_len -= 64;
-
-	} else { // == 0
-		pkt.in_buf = (uint8_t *)padding_source_addr;
-		pkt.in_len = 64;
-		pkt.out_buf = (uint8_t *)dst_addr;
-		ret = hash_update(&ctx, &pkt);
-		padding_len -= 64;
-		padding_source_addr += 0x10; // word
-	}
-
-	for (i = 0; i < nopadding_len / 64; i++) {
-		pkt.in_buf = (uint8_t *)source_addr;
-		pkt.in_len = 64;
-		pkt.out_buf = (uint8_t *)dst_addr;
-		ret = hash_compute(&ctx, &pkt);
-		source_addr += 0x10;
-	}
-
-	for (i = 0; i < padding_len / 64; i++) {
-		pkt.in_buf = (uint8_t *)padding_source_addr;
-		pkt.in_len = 64;
-		pkt.out_buf = (uint8_t *)dst_addr;
-		ret = hash_compute(&ctx, &pkt);
-
-		padding_source_addr += 0x10; // word
-	}
+	pkt.in_buf = (uint8_t *)test7;
+	pkt.in_len = sizeof(test7);
+	pkt.out_buf = (uint8_t *)dst_addr;
+	ret = hash_compute(&ctx, &pkt);
 
 	if (memcmp(crypto_sha_result_data_8w, sha256_results[6], 32)) {
 		LOG_ERR("SHA mode DECRYPT - Mismatch between plaintext and "
