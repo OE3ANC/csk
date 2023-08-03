@@ -47,7 +47,7 @@ static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32
 	}
 }
 
-void main(void)
+int main(void)
 {
 	int ret;
 	csk_wifi_init();
@@ -55,7 +55,7 @@ void main(void)
 	ret = csk_wifi_get_mac(CSK_WIFI_MODE_STA, mac_addr);
 	if (ret != 0) {
 		printk("wifi get mac failed, ret: %d\n", ret);
-		return;
+		return 0;
 	}
 	printk("wifi station mac addr: %x:%x:%x:%x:%x:%x\n", mac_addr[0], mac_addr[1], mac_addr[2],
 	       mac_addr[3], mac_addr[4], mac_addr[5]);
@@ -81,7 +81,7 @@ void main(void)
 				printk("retry to connecting wifi ... %d\n", retry_count);
 			} else {
 				printk("AP not found or invalid password\n");
-				return;
+				return 0;
 			}
 		}
 	} while (retry_count < 10);
@@ -94,7 +94,7 @@ void main(void)
 	struct net_if *iface = net_if_get_default();
 	if (!iface) {
 		printk("wifi interface not available");
-		return;
+		return 0;
 	}
 	net_dhcpv4_start(iface);
 }
