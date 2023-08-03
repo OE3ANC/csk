@@ -5,7 +5,7 @@
  */
 
 #include "test_csk_wifi.h"
-#include "logging/log.h"
+#include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(test_csk6_wifi, CONFIG_LOG_DEFAULT_LEVEL);
 
