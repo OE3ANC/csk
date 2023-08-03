@@ -62,7 +62,7 @@ static void scandone_cb(wifi_mgr_scan_info_t *aps_info, int ap_num, void *arg)
 	printk("WiFi scan done\n");
 }
 
-void main(void)
+int main(void)
 {
 	int ret = wifi_mgr_init();
 	if (ret != 0) {
@@ -143,7 +143,7 @@ __out:
 	struct net_if *iface = net_if_get_default();
 	if (!iface) {
 		printk("wifi interface not available\n");
-		return;
+		return 0;
 	}
 	net_dhcpv4_start(iface);
 
@@ -153,4 +153,5 @@ __out:
 		k_msleep(1000);
 	}
 	sys_reboot(SYS_REBOOT_WARM);
+	return 0;
 }
