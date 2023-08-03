@@ -18,7 +18,3 @@ properties:
     reset-gpios:
       type: phandle-array
       required: true
-
-    label:
-      required: true
-      type: string

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "kernel.h"
-#include "sys_clock.h"
-#include "ztest_assert.h"
-#include "ztest_test.h"
+#include <zephyr/sys_clock.h>
+// #include "ztest_assert.h"
+// #include "ztest_test.h"
 #include <zephyr/kernel.h>
-#include <ztest.h>
+#include <zephyr/ztest.h>
 #include "csk6/csk_wifi.h"
 
 
