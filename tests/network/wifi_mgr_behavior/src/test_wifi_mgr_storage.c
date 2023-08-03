@@ -1,13 +1,11 @@
 #include <zephyr/logging/log.h>
-#include <stdbool.h>
 #include <zephyr/kernel.h>
-#include <ztest.h>
+#include <zephyr/ztest.h>
+#include <zephyr/sys_clock.h>
+#include <zephyr/tc_util.h>
 
-#include "kernel.h"
-#include "sys_clock.h"
-#include "tc_util.h"
+#include <stdbool.h>
 #include "wifi_manager/wifi_manager.h"
-#include "ztest_assert.h"
 
 void test_wifi_mgr_storage_delete_all_ap(void)
 {
