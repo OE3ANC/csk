@@ -29,7 +29,7 @@ static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32
     }
 }
 
-void main(void)
+int main(void)
 {
     csk_wifi_init();
     wifi_event_cb.handler = &wifi_event_handler;
@@ -56,4 +56,5 @@ void main(void)
         abort();
     }
     printk("ssid: %s password: %s\n", ap_config.ssid, ap_config.pwd);
+    return 0;
 }
