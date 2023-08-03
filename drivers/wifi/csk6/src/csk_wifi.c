@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#define DT_DRV_COMPAT listenai_csk_wifi
+#define DT_DRV_COMPAT espressif_esp_hosted
 
 #include "csk6/priv/csk_wifi_priv.h"
 
