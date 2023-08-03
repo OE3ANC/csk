@@ -34,12 +34,12 @@ manifest:
         - hal
     - name: protobuf-c
       remote: listenai
-      revision: 033eb51d64cde459bcbd69c5ab5e09267975485e
+      revision: 7e890d56c85eae639a30acb54bb0c65b5d5ee272
       path: modules/lib/protobuf-c
-    # - name: esp-hosted
-    #   remote: listenai
-    #   revision: c3e711fb857026a3017efac4c2c0c51f1846c855
-    #   path: modules/lib/esp-hosted
+    - name: esp-hosted
+      remote: listenai
+      revision: 6eb46ab8d8c8462921ab0a2fde003d8ab5af2adc
+      path: modules/lib/esp-hosted
     - name: mcuboot
       remote: listenai
       revision: 800a13229206735951848c69de25094d23725471
