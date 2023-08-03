@@ -1,14 +1,11 @@
-#include <zephyr/logging/log.h>
-#include <stdbool.h>
 #include <zephyr/kernel.h>
-#include <ztest.h>
+#include <zephyr/ztest.h>
+#include <zephyr/sys_clock.h>
+#include <zephyr/logging/log.h>
 
-#include "kernel.h"
-#include "sys_clock.h"
-#include "tc_util.h"
+#include <zephyr/tc_util.h>
 #include "wifi_manager/wifi_manager.h"
-#include "ztest_assert.h"
-#include "ztest_test.h"
+
 LOG_MODULE_REGISTER(lib_wif_mgr_test, LOG_LEVEL_DBG);
 
 extern void test_lib_wifi_mgr_enable_connect_cb(void);
@@ -59,7 +56,7 @@ K_QUEUE_DEFINE(scan_memory_leak);
 
 extern struct heap_t _system_heap;
 
-static struct sys_heap_runtime_stats last_stat = { 0 };
+static struct sys_memory_stats last_stat = { 0 };
 static int memory_leak_count = 0;
 static int memory_leaked_sum = 0;
 
@@ -87,7 +84,7 @@ static bool check_memory_leak(void)
 		sys_heap_runtime_stats_get((struct sys_heap *)(&_system_heap), &last_stat);
 		ret = false;
 	} else {
-		struct sys_heap_runtime_stats stat;
+		struct sys_memory_stats stat;
 		sys_heap_runtime_stats_get((struct sys_heap *)(&_system_heap), &stat);
 		if (stat.free_bytes < last_stat.free_bytes) {
 			ret = true;
