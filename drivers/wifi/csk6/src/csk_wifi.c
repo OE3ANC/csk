@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#define DT_DRV_COMPAT listenai_csk_wifi
+#define DT_DRV_COMPAT espressif_esp_hosted
 
 #include "csk6/priv/csk_wifi_priv.h"
 
@@ -737,7 +737,7 @@ const struct csk_wifi_config csk_wifi_ap_config = {
     .mode = CSK_WIFI_MODE_AP
 };
 
-NET_DEVICE_DT_INST_DEFINE(1,
+NET_DEVICE_DT_INST_DEFINE(0,
                         csk_eth_dev_init,
                         NULL,
                         &csk_wifi_ap_data,
