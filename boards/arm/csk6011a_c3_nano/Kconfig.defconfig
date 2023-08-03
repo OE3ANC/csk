@@ -25,12 +25,12 @@ endchoice
 
 endif # WIFI
 
-if BT
+# if BT
 
-choice BT_HCI_BUS_TYPE
-	default CSK_BLE_ESP32C3
-endchoice
+# choice BT_HCI_BUS_TYPE
+# 	default CSK_BLE_ESP32C3
+# endchoice
 
-endif # BT
+# endif # BT
 
 endif # BOARD_CSK6011A_C3_NANO
