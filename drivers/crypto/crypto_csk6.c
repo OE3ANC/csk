@@ -62,17 +62,64 @@ static void CRYPTO_EventCallback(uint32_t event, void* workspace)
 
 	data->event |= event;
 }
+
+static void* Hash256_Padding(char* m, uint32_t len, int *r_len){
+    int blocks = 0;
+
+    if (len % 64){
+        blocks = (len / 64) + 1;
+
+        if ((len * 8 + 1) % 512 > 448)
+        {
+            blocks += 1;
+        }
+
+    } else {
+        blocks = (len / 64) + 1;
+    }
+	*r_len = blocks * 64*sizeof(unsigned char);
+
+    unsigned char *s = (unsigned char *)k_malloc(*r_len); // Internal storage for the message with padding.
+	if(s == NULL){
+		return NULL;
+	}
+    memset(s, 0, *r_len);
+
+    for (int i = 0; i < len; i++)
+    {
+        s[i] = m[i]; // m is the message passed to the function, that has to be hashed.
+    }
+
+    s[len] = 0x80;
+
+    for (int i = 0; i < 8; i++)
+    {
+        s[blocks * 64 - 1 - i] = (unsigned char)(((uint64_t)(len*8) & (uint64_t)(0xff << i * 8)) >> 8 * i);
+    }
+
+    return s;
+}
+
+
 static int csk6_hash_do_decrypt(struct hash_ctx *ctx, uint8_t *in_buf, int in_len, uint8_t *out_buf,
 				bool finish)
 {
+	if(finish == 0){
+		return -EINVAL;
+	}
 	const struct device *dev = ctx->device;
 	struct crypto_csk6_data *data = DEV_DATA(dev);
+	volatile uint32_t* source_addr = (uint32_t*)Hash256_Padding((char*)in_buf, in_len, &in_len);
 
-	CRYPTO_Hash(DEV_HANDLER(dev), (uint32_t *)in_buf, in_len, (uint32_t *)out_buf, finish);
+	if(source_addr == NULL){
+		LOG_ERR("Failed to malloc memory \n");
+		return -ENOMEM;
+	}
+	CRYPTO_Hash(DEV_HANDLER(dev), (uint32_t *)source_addr, in_len, (uint32_t *)out_buf, 0);
 
 	while (!(data->event & CSK_CRYPTO_EVENT_DONE));
 	data->event = 0;
-
+	k_free((void*)source_addr);
 	return 0;
 }
 
