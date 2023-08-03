@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <zephyr/kernel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
