@@ -26,6 +26,7 @@
                 zephyr,flash = &flash0;
                 zephyr,flash_controller = &flash;
                 zephyr,entropy = &trng;
+                zephyr,code-partition = &slot0_partition;
                 /* other chosen settings  for your hardware */
         };
 
