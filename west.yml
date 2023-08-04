@@ -41,10 +41,6 @@ manifest:
       remote: listenai
       revision: 6eb46ab8d8c8462921ab0a2fde003d8ab5af2adc
       path: modules/lib/esp-hosted
-    - name: mcuboot
-      remote: listenai
-      revision: 800a13229206735951848c69de25094d23725471
-      path: bootloader/mcuboot
     - name: licak
       remote: listenai
       revision: v1.2.1
