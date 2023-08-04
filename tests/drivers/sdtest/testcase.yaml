@@ -1,5 +1,5 @@
 tests:
-  drivers.baords.csk6.sdtest:
+  tests.drivers.sdtest:
     depends_on: sdmmc
     tags: drivers sdmmc
     platform_allow: csk6011a_nano 
