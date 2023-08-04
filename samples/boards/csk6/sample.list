@@ -1,4 +1,0 @@
-# This file is used by LISA tools. if you want to change this file's name or list format,please call LISA development team #
-# This list lists examples that CSK supports #
-
-samples/boards/csk6/*
