@@ -1,0 +1,8 @@
+sample:
+  description: fault sample application
+  name: fault
+tests:
+  samples.subsys.fault:
+    build_only: true
+    platform_allow: csk6011a_nano
+
