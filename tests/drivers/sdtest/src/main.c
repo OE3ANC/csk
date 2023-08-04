@@ -3,7 +3,7 @@
  */
 
 #include <zephyr/kernel.h>
-#include <ztest.h>
+#include <zephyr/ztest.h>
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/device.h>
 #include <zephyr/logging/log.h>
