@@ -1,0 +1,5 @@
+sample:
+  description: fault sample, the simplest Zephyr
+    application
+  name: fault
+
