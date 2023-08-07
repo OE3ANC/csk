@@ -184,6 +184,8 @@ static void adc_context_start_sampling(struct adc_context *ctx)
 
 	LOG_DBG("start_sampling channel_mask: 0x%x", channel_mask);
 
+	data->repeat_buffer = data->buffer;
+
 	HAL_GPADC_Control(DEV_HANDLER(dev), CSK_GPADC_SAMPLETIME_8 | CSK_GPADC_CLKFREQ_12M |	\
 	 					CSK_ADC_MASK_CHANNEL_SEL(channel_mask) | \
 					  	CSK_GPADC_INPUT_MODE_Single | CSK_GPADC_VREF_SEL_1_25V | CSK_GPADC_DMA_DISABLE);
