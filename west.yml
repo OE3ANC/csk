@@ -78,6 +78,12 @@ manifest:
       path: modules/fs/fatfs
       groups:
         - fs
+    - name: logger_proxy
+      remote: listenai
+      revision: 00316e7d4a41b1d4c0b492c94659b08b4fd63e9f
+      path: modules/debug/logger_proxy
+      groups:
+        - debug
 
   self:
     path: csk
