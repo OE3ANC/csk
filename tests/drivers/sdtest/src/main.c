@@ -6,6 +6,7 @@
 #include <zephyr/ztest.h>
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/device.h>
+#include <zephyr/timing/timing.h>
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_DBG);
 
@@ -18,56 +19,74 @@ static const char *disk_pdrv = CONFIG_SDMMC_VOLUME_NAME;
 static uint32_t disk_sector_count;
 static uint32_t disk_sector_size;
 
-uint32_t bytes_per_tests[4] = {1024, 1024 *5, 1024 * 50, 1024 * 200};
+static uint8_t test_buf[200 * 1024] __aligned(32);
+
+uint32_t bytes_per_tests[5] = {1024, 1024 *5, 1024 * 25, 1024 * 50, 1024 * 200};
+
+
+int calculate_access_rate_KPS(uint32_t us, uint32_t bytes, uint32_t iterations_cnt)
+{
+	int rate = 0;
+	rate = bytes * iterations_cnt * 1000 / us;
+	return rate;
+}
 
 int disk_sdmmc_tests(uint32_t bytes)
 {
 	int ret = 0;
-	uint32_t write_time = 0;
-	uint32_t read_time = 0;
-	uint8_t *buf = 0;
+	timing_t start_time, end_time;
+	uint64_t cycles;
+	uint64_t write_time_ns,read_time_ns;
 	uint32_t num_sector = bytes/disk_sector_size;
 
-	buf = (uint8_t *)k_malloc(num_sector * disk_sector_size);
-	if(buf == NULL) {
-		LOG_ERR(" buf malloc failed\n");
-		ret = -ENOMEM;
-		goto error;
-		
-	}
-
 	for (uint32_t i = 0; i < num_sector * disk_sector_size; i++) {
-		buf[i] = i % num_sector;
+		test_buf[i] = i % num_sector;
 	}
 
-	write_time = k_uptime_get_32();
+	/* Start the timing system */
+	timing_init();
+	timing_start();
+
+	start_time = timing_counter_get();
 	for(uint32_t j = 0; j < TEST_CNT; j++){
-		ret = disk_access_write(disk_pdrv, buf, 10, num_sector);
+		ret = disk_access_write(disk_pdrv, test_buf, 10, num_sector);
 		if (ret) {
 			LOG_ERR("disk_access_write failed (%d)\n", ret);
 			ret = -EIO;
 			goto error;
 		}
 	}
-	write_time = k_uptime_get_32() - write_time;
+	end_time = timing_counter_get();
+	cycles = timing_cycles_get(&start_time, &end_time);
+	write_time_ns = timing_cycles_to_ns(cycles);
+	timing_stop();
 
 
-	read_time = k_uptime_get_32();
+	/* Start the timing system */
+	timing_init();
+	timing_start();
+
+	start_time = timing_counter_get();
 	for(uint32_t j = 0; j < TEST_CNT; j++){
-		ret = disk_access_read(disk_pdrv, buf, 10, num_sector);
+		ret = disk_access_read(disk_pdrv, test_buf, 10, num_sector);
 		if (ret) {
 			LOG_ERR("disk_access_write failed (%d)\n", ret);
 			ret = -EIO;
 			goto error;
 		}
 	}
-	read_time = k_uptime_get_32() - read_time;
+	end_time = timing_counter_get();
+	cycles = timing_cycles_get(&start_time, &end_time);
+	read_time_ns = timing_cycles_to_ns(cycles);
+	timing_stop();
 
-	k_free(buf);
-	LOG_DBG(" %d bytes --- %d us | %d us\n", bytes, write_time * 1000 / TEST_CNT, read_time * 1000 / TEST_CNT);
+
+	LOG_DBG(" %d bytes --- %llu us | %llu us\n", bytes, write_time_ns / (TEST_CNT * NSEC_PER_USEC), read_time_ns / (TEST_CNT * NSEC_PER_USEC));
+	LOG_DBG(" %d bytes --- %d K/s | %d K/s\n", bytes, calculate_access_rate_KPS(write_time_ns / NSEC_PER_USEC, bytes, TEST_CNT), 
+		calculate_access_rate_KPS(read_time_ns / NSEC_PER_USEC, bytes, TEST_CNT));
 	return ret;
 error:
-	k_free(buf);
+
 	return ret;
 }
 
