@@ -1,0 +1,19 @@
+- connected: true
+  id: 00000002006700474b00000c4e543631a5a5a5a597969908
+  fixtures:
+    - gpio_loopback
+  platform: csk6011a_nano
+  # platform: csk6012_nano
+  product: DAPLink CMSIS-DAP
+  runner: pyocd
+  serial: /dev/ttyACM0
+
+- connected: false
+  id: 0000000200240038540000084e534751a5a5a5a597969908
+  # fixtures:
+    # - gpio_loopback
+  platform: csk6012_nano
+  product: DAPLink CMSIS-DAP
+  runner: pyocd
+  serial: /dev/ttyACM1
+
