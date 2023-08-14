@@ -106,7 +106,7 @@
 
 &dvp {
 	status = "okay";
-	sensor-label = "OV9655";
+	sensor = <&ov9655>;
 	clock-prescaler = <5>;
 	data-align-type = "high_align";
 	pclk-polarity = "post_edge_sampling";
