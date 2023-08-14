@@ -126,7 +126,7 @@
 
 &dvp {
 	status = "okay";
-	sensor-label = "GC032A";
+	sensor = <&gc032a>;
 	clock-prescaler = <6>;
 	data-align-type = "high_align";
 	pclk-polarity = "post_edge_sampling";

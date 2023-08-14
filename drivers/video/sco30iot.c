@@ -82,6 +82,7 @@ LOG_MODULE_REGISTER(sco30iot, CONFIG_LOG_DEFAULT_LEVEL);
 
 #define PAGE_BANK_REG_EXPOSURE_GLOBAL_GAIN			0x0072	// Exposure global gain
 #define REG_EXPOSURE_GLOBAL_GAIN_AGC_EN				0x80	// 0x0072,bit[7] Global gain and digital gain control 1: independent; 0: non independent
+#define REG_AUTO_EXPOSURE_TARGET_VALUE				0x7F	// 0x0072,bit[6:0] 自动曝光的目标值
 
 // 数字增益
 #define PAGE_BANK_REG_DIG_GAIN					0x009E	// Digital gain
@@ -445,23 +446,38 @@ static int sco30iot_read_page_reg_16bit(const struct device *dev, uint16_t reg_a
 	return 0;
 }
 
+static int sc030iot_set_fmt_windows(const struct device *dev, int offset_x, int offset_y, int w, int h)
+{
+	//sc:H_start={0x0172[1:0],0x0170},H_end={0x0172[5:4],0x0171},
+	sco30iot_write_page_reg_16bit(dev, 0x0170, offset_x & 0xff);
+	sco30iot_write_page_reg_16bit(dev, 0x0171, (offset_x+w) & 0xff);
+	sco30iot_write_page_reg_16bit(dev, 0x0172, ((offset_x>>8) & 0x03) | (((offset_x+w)>>4)&0x30));
+
+	//sc:V_start={0x0175[1:0],0x0173},H_end={0x0175[5:4],0x0174},
+	sco30iot_write_page_reg_16bit(dev, 0x0173, offset_y & 0xff);
+	sco30iot_write_page_reg_16bit(dev, 0x0174, (offset_y+h) & 0xff);
+	sco30iot_write_page_reg_16bit(dev, 0x0175, ((offset_y>>8) & 0x03) | (((offset_y+h)>>4)&0x30));
+
+	return 0;
+}
+
 static int sco30iot_set_fmt(const struct device *dev, enum video_endpoint_id ep,
 			    struct video_format *fmt)
 {
 	int ret = 0;
-
-	if (fmt->pixelformat == VIDEO_PIX_FMT_VYUY && fmt->height == 480 && fmt->width == 640) {
-		ret = sco30iot_write_all(dev, sco30iot_init_reg_tb,
-					 ARRAY_SIZE(sco30iot_init_reg_tb));
-		if (ret) {
-			LOG_ERR("Unable to write sco30iot config");
-			return ret;
+	if (fmt->pixelformat == VIDEO_PIX_FMT_VYUY) {
+		if ((fmt->width > 640) || (fmt->height > 480)) {
+			LOG_ERR("video format unsupported \n");
+			return -ENOTSUP;
 		}
-
-		return 0;
+		uint16_t offset_x = (640-fmt->width) /2;
+		uint16_t offset_y = (480-fmt->height) /2;
+		ret = sc030iot_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
+	} else {
+		LOG_ERR("video format unsupported \n");
+		return -ENOTSUP;
 	}
-	LOG_ERR("video format unsupported \n");
-	return -ENOTSUP;
+	return ret;
 }
 
 static int sco30iot_get_fmt(const struct device *dev, enum video_endpoint_id ep,
@@ -536,7 +552,14 @@ static int sco30iot_ctrl_init(const struct device *dev)
 	LOG_INF("Sensor id: 0x%X", sensor_id);
 	/* Configure Sensor */
 
-	return 0;
+	ret = sco30iot_write_all(dev, sco30iot_init_reg_tb,
+					ARRAY_SIZE(sco30iot_init_reg_tb));
+	if (ret) {
+		LOG_ERR("Unable to write sco30iot config");
+		return ret;
+	}
+
+	return ret;
 }
 
 static int sco30iot_set_gain_ctrl(const struct device *dev, int enable)
@@ -599,54 +622,16 @@ static int sco30iot_set_vertical_flip(const struct device *dev, int enable)
 	return ret;
 }
 
-static const struct sco30iot_reg sco30iot_manual_gain[] = {
-	{0x53, 0x00},
-	{0x70, 0x4c},
-	{0x72, 0xc0},
-	{0xb0, 0xc0},
-	{0xc8, 0x10},
-	{0xc9, 0x10},
-	// {0x00f5, 0xff},
-};
-
 static int sco30iot_set_gain(const struct device *dev, int value)
 {
 	int ret = 0;
 	uint8_t reg_value = 0;
 
-#if 1
-	// 配置开启手动增益,之后必须重新写入初始化序列
-	ret |= sco30iot_write_all(dev, sco30iot_manual_gain,
-		ARRAY_SIZE(sco30iot_manual_gain));
-	ret |= sco30iot_write_page_reg_16bit(dev, 0x00f5, 0xff);
-
-	ret = sco30iot_write_all(dev, sco30iot_init_reg_tb,
-					ARRAY_SIZE(sco30iot_init_reg_tb));
-	if (ret) {
-		LOG_WRN("Unable to config sco30iot manual gain ret=%d", ret);
-		return ret;
-	}
-#endif
-
-	// disable auto exposure, disable auto gain
-	sco30iot_set_gain_ctrl(dev, 0);
-
-	// global gain and digital gain control: independent
-	reg_value |= REG_EXPOSURE_GLOBAL_GAIN_AGC_EN;
-	ret |= sco30iot_write_page_reg_16bit(dev, PAGE_BANK_REG_EXPOSURE_GLOBAL_GAIN, reg_value);
+	reg_value = (value & REG_AUTO_EXPOSURE_TARGET_VALUE);
+	ret = sco30iot_write_page_reg_16bit(dev, PAGE_BANK_REG_EXPOSURE_GLOBAL_GAIN, reg_value);
 	
 	if (ret) {
 		LOG_WRN("Unable to config sco30iot gain ret=%d", ret);
-		return ret;
-	}
-
-	if (value < PAGE_BANK_REG_DIG_GAIN_VALUE_MIN || value > PAGE_BANK_REG_DIG_GAIN_VALUE_MAX) {
-		LOG_WRN("sco30iot Digital gain value out of range");
-	}
-	ret |= sco30iot_write_page_reg_16bit(dev, PAGE_BANK_REG_DIG_GAIN, value);
-
-	if (ret) {
-		LOG_WRN("Unable to config sco30iot Digital gain ret=%d", ret);
 		return ret;
 	}
 
@@ -716,7 +701,7 @@ static int sco30iot_set_ctrl(const struct device *dev, unsigned int cid, void *v
 			该sensor只有在mclk有输入时钟的情况下，i2c才能正常通信，所以并不能在内核设备初始化流程中进行sensor初始化。
 			目前是通过set_ctrl来提供sensor初始化的api.
 		*/
-		k_sleep(K_MSEC(5));// wait for mclk stable, otherwise i2c can't work, and sensor can't be initialized. (>=4ms)
+		k_sleep(K_MSEC(10));// wait for mclk stable, otherwise i2c can't work, and sensor can't be initialized. (>=4ms)
 		ret = sco30iot_ctrl_init(dev);
 		break;
 	case VIDEO_CID_CAMERA_GAIN:

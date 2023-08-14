@@ -14,11 +14,10 @@ properties:
     interrupts:
       required: true
 
-    sensor-label:
+    sensor:
       required: true
-      type: string
-      description: |
-        label of connected sensor device
+      type: phandle
+      description: phandle of connected sensor device
 
     clock-prescaler:
       type: int
