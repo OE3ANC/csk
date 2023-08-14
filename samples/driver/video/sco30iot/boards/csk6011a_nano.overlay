@@ -126,7 +126,7 @@
 
 &dvp {
 	status = "okay";
-	sensor-label = "SCO30IOT";
+	sensor = <&sco30iot>;
 	clock-prescaler = <7>;
 	data-align-type = "high_align";
 	pclk-polarity = "post_edge_sampling";
