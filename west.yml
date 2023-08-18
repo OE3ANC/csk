@@ -39,7 +39,7 @@ manifest:
       path: modules/lib/protobuf-c
     - name: esp-hosted
       remote: listenai
-      revision: 6eb46ab8d8c8462921ab0a2fde003d8ab5af2adc
+      revision: bab153641573a8b2b0c14da781d1764b6480ba25
       path: modules/lib/esp-hosted
     - name: licak
       remote: listenai

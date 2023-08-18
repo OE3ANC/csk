@@ -1,1 +1,2 @@
 rsource "mbedtls/Kconfig"
+rsource "esp_hosted_glue/Kconfig"
