@@ -223,6 +223,18 @@ SECTIONS
 	*(.igot)
 	}
 
+#if defined(CONFIG_CSK_WIFI_NET_ALLOC_PSRAM)
+	.wifi_net.bss (NOLOAD):
+	{
+		. = ALIGN(4);
+		*libdrivers__wifi.a:(.noinit .noinit.*)
+		*libsubsys__net__l2__ethernet.a:(.noinit .noinit.*)
+		*libsubsys__net__lib__config.a:(.noinit .noinit.*)
+		*libsubsys__net__ip.a:(.noinit .noinit.*)
+		*libsubsys__net.a:(.noinit .noinit.*)
+	} GROUP_LINK_IN(PSRAMAP)
+#endif
+
     GROUP_START(RAMABLE_REGION)
 
 	. = RAM_ADDR;
