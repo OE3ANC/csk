@@ -10,6 +10,8 @@ manifest:
       url-base: https://cloud.listenai.com/listenai/lsf-dev
     - name: scanpen_capabilities
       url-base: https://cloud.listenai.com/scanpen/capability
+    - name: upstream
+      url-base: https://cloud.listenai.com/zephyr-mirror
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
@@ -21,6 +23,11 @@ manifest:
           - tinycrypt
           - littlefs
           - mcuboot
+          - libmetal
+    - name: open-amp
+      remote: upstream
+      revision: 8d53544871e1f300c478224faca6be8384ab0d04
+      path: modules/lib/open-amp
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
       revision: e7c1c019cf2fd7e3a19e770b6f2d84ef59886372
@@ -29,7 +36,7 @@ manifest:
         - hal
     - name: libmetal
       remote: listenai
-      revision: 05bdf74c271cceba33385cb8b6793448b25ab4ec
+      revision: 5ce7ac35c4ed3e5fa769c15d24ccbb12939f45af
       path: modules/hal/libmetal
       groups:
         - hal
