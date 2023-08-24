@@ -321,6 +321,14 @@
 			status = "disabled";
 		};
 
+		ap_wdt: ap_wdt@44200000 {
+			compatible = "listenai,ap-watchdog";
+			reg = <0x44200000 0x100000>;
+			interrupts = <7 0>;
+			label = "AP_WDT";
+			status = "okay";
+		};
+
 	};
 };
 
