@@ -211,3 +211,6 @@ zephyr_udc0: &usbotg {
         num-out-endpoints = <6>;
 };
 
+&ap_wdt {
+        status = "okay";
+};
