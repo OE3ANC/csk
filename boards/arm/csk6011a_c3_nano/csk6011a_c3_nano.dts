@@ -229,3 +229,6 @@ zephyr_udc0: &usbotg {
         >;
         pinctrl-names = "default";
 };
+&ap_wdt {
+        status = "okay";
+};

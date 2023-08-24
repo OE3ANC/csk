@@ -1,0 +1,13 @@
+# Copyright (c) 2022 listenai
+# SPDX-License-Identifier: Apache-2.0
+
+description: listenai ap watchdog
+
+compatible: "listenai,ap-watchdog"
+
+include: base.yaml
+
+properties:
+    reg:
+      required: true
+
