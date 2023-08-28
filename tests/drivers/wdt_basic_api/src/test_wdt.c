@@ -68,28 +68,29 @@
  */
 #if CONFIG_AP_WDT_CSK
 #define WDT_NODE DT_NODELABEL(ap_wdt)
-#elif CONFIG_AP_WDT_CSK
+
+#elif CONFIG_WDT_CSK6
 #define WDT_NODE DT_NODELABEL(wdt)
+
 #endif
 
-#define WDT_TEST_STATE_IDLE        0
+#define WDT_TEST_STATE_IDLE	   0
 #define WDT_TEST_STATE_CHECK_RESET 1
 
-#define WDT_TEST_CB0_TEST_VALUE    0x0CB0
-#define WDT_TEST_CB1_TEST_VALUE    0x0CB1
+#define WDT_TEST_CB0_TEST_VALUE 0x0CB0
+#define WDT_TEST_CB1_TEST_VALUE 0x0CB1
 
 #ifndef WDT_TEST_MAX_WINDOW
-#define WDT_TEST_MAX_WINDOW                2000U
+#define WDT_TEST_MAX_WINDOW 2000U
 #endif
 
 #ifndef TIMEOUTS
-#define TIMEOUTS                   1
+#define TIMEOUTS 1
 #endif
 
-#define TEST_WDT_CALLBACK_1        (TIMEOUTS > 0)
+#define TEST_WDT_CALLBACK_1 (TIMEOUTS > 0)
 
 static struct wdt_timeout_cfg m_cfg_wdt0;
-
 
 #define DATATYPE uint32_t
 
@@ -116,11 +117,48 @@ static void wdt_int_cb0(const struct device *wdt_dev, int channel_id)
 	ARG_UNUSED(wdt_dev);
 	ARG_UNUSED(channel_id);
 	m_testvalue[1023] += WDT_TEST_CB0_TEST_VALUE;
-
 }
 #endif
 
+static int test_wdt_no_callback(void)
+{
+	int err;
+	const struct device *const wdt = DEVICE_DT_GET(WDT_NODE);
 
+	if (!device_is_ready(wdt)) {
+		TC_PRINT("WDT device is not ready\n");
+		return TC_FAIL;
+	}
+
+	TC_PRINT("Testcase: %s\n", __func__);
+
+	if (m_state[1023] == WDT_TEST_STATE_CHECK_RESET) {
+		m_state[1023] = WDT_TEST_STATE_IDLE;
+		m_testcase_index = 1U;
+		TC_PRINT("Testcase passed\n");
+		return TC_PASS;
+	}
+
+	m_cfg_wdt0.callback = NULL;
+	m_cfg_wdt0.flags = WDT_FLAG_RESET_SOC;
+	m_cfg_wdt0.window.max = WDT_TEST_MAX_WINDOW;
+	err = wdt_install_timeout(wdt, &m_cfg_wdt0);
+	if (err < 0) {
+		TC_PRINT("Watchdog install error\n");
+	}
+
+	err = wdt_setup(wdt, WDT_OPT_PAUSE_HALTED_BY_DBG);
+	if (err < 0) {
+		TC_PRINT("Watchdog setup error\n");
+	}
+
+	TC_PRINT("Waiting to restart MCU\n");
+	m_testvalue[1023] = 0U;
+	m_state[1023] = WDT_TEST_STATE_CHECK_RESET;
+	while (1) {
+		k_yield();
+	}
+}
 
 #if TEST_WDT_CALLBACK_1
 static int test_wdt_callback_1(void)
@@ -156,7 +194,6 @@ static int test_wdt_callback_1(void)
 			TC_PRINT("CB1 not supported on platform\n");
 			m_testcase_index++;
 			return TC_PASS;
-
 		}
 		TC_PRINT("Watchdog install error\n");
 		return TC_FAIL;
@@ -178,10 +215,13 @@ static int test_wdt_callback_1(void)
 }
 #endif
 
-
 ZTEST(wdt_basic_test_suite, test_wdt)
 {
 	if ((m_testcase_index != 1U) && (m_testcase_index != 2U)) {
+		zassert_true(test_wdt_no_callback() == TC_PASS);
+	}
+	if (m_testcase_index == 1U) {
+
 		zassert_true(test_wdt_callback_1() == TC_PASS);
 	}
 }
