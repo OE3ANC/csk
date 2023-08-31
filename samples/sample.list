@@ -1,0 +1,7 @@
+# This file is utilized by LISA tools. If you wish to modify the file's name or its listing format, kindly get in touch with the LISA development team. #
+# This list provides examples supported by the LISA. #
+
+samples/bluetooth
+samples/driver
+samples/network
+samples/subsys
