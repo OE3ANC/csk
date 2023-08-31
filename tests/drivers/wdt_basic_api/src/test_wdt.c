@@ -1,10 +1,4 @@
 /*
- * Copyright (c) 2018 Nordic Semiconductor.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/*
  * @addtogroup t_wdt_basic
  * @{
  * @defgroup t_wdt_timeout test_wdt_timeout_capabilities
