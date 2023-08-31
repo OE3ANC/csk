@@ -1,5 +1,4 @@
 if WATCHDOG
 
 rsource "Kconfig.csk6"
-
 endif
