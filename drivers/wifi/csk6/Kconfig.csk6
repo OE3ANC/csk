@@ -42,6 +42,13 @@ config WIFI_CTRL_PRIORITY
 	int "Control Task Priority"
 	default 4
 
+config CSK_WIFI_NET_ALLOC_PSRAM
+	bool "Allocate memory of WiFi and NET in PSRAM"
+	depends on CSK6_PSRAM
+	help
+	  Allocate memory of WiFi and NET stack in SPIRAM, increasing available RAM memory space
+	  for application stack.
+
 if XR819S
 
 config MAX_SCAN_APS_NUM
