@@ -1,5 +1,6 @@
 # For lisa zep create-app command
 # This file lists all the sample projects from Zephyr Repo which are runnable for csk chip
-
+# version: 2
 
 ${ZEPHYR_BASE}/samples/hello_world
+-samples/bluetooth/mesh
