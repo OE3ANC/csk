@@ -1,0 +1,5 @@
+# For lisa zep create-app command
+# This file lists all the sample projects from Zephyr Repo which are runnable for csk chip
+
+
+${ZEPHYR_BASE}/samples/hello_world
