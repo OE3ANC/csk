@@ -4,12 +4,8 @@ manifest:
   remotes:
     - name: listenai
       url-base: https://cloud.listenai.com/zephyr
-    - name: scanpen_csk6_samples
-      url-base: https://cloud.listenai.com/scanpen/csk6/samples/
     - name: lsf
       url-base: https://cloud.listenai.com/listenai/lsf-dev
-    - name: scanpen_capabilities
-      url-base: https://cloud.listenai.com/scanpen/capability
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
