@@ -27,12 +27,6 @@ manifest:
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
-    - name: libmetal
-      remote: listenai
-      revision: 05bdf74c271cceba33385cb8b6793448b25ab4ec
-      path: modules/hal/libmetal
-      groups:
-        - hal
     - name: protobuf-c
       remote: listenai
       revision: 7e890d56c85eae639a30acb54bb0c65b5d5ee272
@@ -41,23 +35,6 @@ manifest:
       remote: listenai
       revision: 77c953eecdcd023c10fae2fdf98a0350d070766a
       path: modules/lib/esp-hosted
-    - name: licak
-      remote: listenai
-      revision: v1.2.1
-      path: modules/lib/licak
-      clone-depth: 1
-    - name: lisa_player
-      remote: listenai
-      revision: 0c05072250e56642a2354561fbc520ae3db479a6
-      path: modules/lib/listenai/lisa_player
-    - name: zport_sal
-      remote: listenai
-      revision: 746484202173ac51ce45d3017f9ea7e08e271727
-      path: modules/lib/listenai/zport_sal
-    - name: zport_esp
-      remote: listenai
-      revision: 60e258e642acb303c1f210c0e8ab6e52845e0383
-      path: modules/lib/listenai/zport_esp
     - name: wifi_manager
       remote: listenai
       revision: 7ae37d4ea352dc5b806c1b24d5f9e00f9ae1b0f3
