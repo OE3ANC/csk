@@ -47,6 +47,15 @@ GROUP_START(PSRAMAP)
 
 	__psramfunc_section_size = __psramfunc_section_end - __psramfunc_section_start;
 	__psramfunc_section_load_start = LOADADDR(.psramfunc_section);
+
+#ifdef CONFIG_CSK_NET_POOL_PSRAM
+SECTION_PROLOGUE(csk_psram_net_pool,(NOLOAD),)
+{
+    *(.csk_psram_net_pool)
+    *(".csk_psram_net_pool.*")
+} GROUP_LINK_IN(PSRAMAP)
+#endif
+
 GROUP_END(PSRAMAP)
 #endif
 
