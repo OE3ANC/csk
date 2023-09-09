@@ -1,0 +1,9 @@
+# gc0328
+
+# SPDX-License-Identifier: Apache-2.0
+
+config VIDEO_GC0328
+	bool "GC0328 CMOS digital image sensor"
+    depends on HAS_CSK6
+	help
+	  Enable driver for GC0328 CMOS digital image sensor devices
