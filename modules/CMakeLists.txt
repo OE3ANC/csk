@@ -1,2 +1,2 @@
-add_subdirectory_ifdef(CONFIG_MBEDTLS_mbedtls)
+add_subdirectory_ifdef(CONFIG_MBEDTLS mbedtls)
 add_subdirectory_ifdef(CONFIG_ESP_HOSTED esp_hosted_glue)
