@@ -926,52 +926,11 @@ static int gc0328_set_vertical_flip(const struct device *dev, int enable)
 	return ret;
 }
 
-static int gc0328_set_ctrl(const struct device *dev, unsigned int cid, void *value)
+static int gc0328_reg_init(const struct device *dev)
 {
-	LOG_INF("gc0328 set ctrl %d", cid);
-	int ret = 0;
-
-	switch (cid) {
-	case VIDEO_CID_HFLIP:
-		ret = gc0328_set_horizontal_mirror(dev, *(int *)value);
-		break;
-	case VIDEO_CID_VFLIP:
-		ret = gc0328_set_vertical_flip(dev, *(int *)value);
-		break;
-	/*
-		该sensor只有在mclk有输入时钟的情况下，i2c才能正常通信，所以并不能在内核设备初始化流程中进行sensor初始化。
-		目前是通过set_ctrl来提供sensor初始化的api.
-	*/
-	case VIDEO_CID_INIT:
-		// ret = gc0328_init(dev);
-		break;
-	default:
-		return -ENOTSUP;
-	}
-
-	return ret;
-}
-
-static int gc0328_init(const struct device *dev)
-{
-	printk("gc0328 init\r\n");
 	struct gc0328_data *drv_data = dev->data;
 	int ret = 0;
 	uint8_t pid;
-
-	if (drv_data->pwdn_gpios.port) {
-		gpio_pin_configure_dt(&drv_data->pwdn_gpios, GPIO_OUTPUT_ACTIVE);
-		gpio_pin_set_dt(&drv_data->pwdn_gpios, 0);
-	}
-
-	if (drv_data->reset_gpios.port) {
-		gpio_pin_configure_dt(&drv_data->reset_gpios, GPIO_OUTPUT_ACTIVE);
-		gpio_pin_set_dt(&drv_data->reset_gpios, 0);
-		k_sleep(K_MSEC(3));
-		gpio_pin_set_dt(&drv_data->reset_gpios, 1);
-		k_sleep(K_MSEC(1));
-	}
-
 	if (i2c_configure(drv_data->i2c_bus.bus,
 			  I2C_SPEED_SET(I2C_SPEED_STANDARD) | I2C_MODE_CONTROLLER)) {
 		LOG_ERR("I2C config failed!");
@@ -999,6 +958,54 @@ static int gc0328_init(const struct device *dev)
 		LOG_ERR("Unable to write sco30iot config");
 		return ret;
 	}
+	return ret;
+}
+
+static int gc0328_set_ctrl(const struct device *dev, unsigned int cid, void *value)
+{
+	LOG_INF("gc0328 set ctrl %d", cid);
+	int ret = 0;
+
+	switch (cid) {
+	case VIDEO_CID_HFLIP:
+		ret = gc0328_set_horizontal_mirror(dev, *(int *)value);
+		break;
+	case VIDEO_CID_VFLIP:
+		ret = gc0328_set_vertical_flip(dev, *(int *)value);
+		break;
+	/*
+		该sensor只有在mclk有输入时钟的情况下，i2c才能正常通信，所以并不能在内核设备初始化流程中进行sensor初始化。
+		目前是通过set_ctrl来提供sensor初始化的api.
+	*/
+	case VIDEO_CID_INIT:
+		ret = gc0328_reg_init(dev);
+		break;
+	default:
+		return -ENOTSUP;
+	}
+
+	return ret;
+}
+
+static int gc0328_init(const struct device *dev)
+{
+	printk("gc0328 init\r\n");
+	struct gc0328_data *drv_data = dev->data;
+	int ret = 0;
+
+	if (drv_data->pwdn_gpios.port) {
+		gpio_pin_configure_dt(&drv_data->pwdn_gpios, GPIO_OUTPUT_ACTIVE);
+		gpio_pin_set_dt(&drv_data->pwdn_gpios, 0);
+	}
+
+	if (drv_data->reset_gpios.port) {
+		gpio_pin_configure_dt(&drv_data->reset_gpios, GPIO_OUTPUT_ACTIVE);
+		gpio_pin_set_dt(&drv_data->reset_gpios, 0);
+		k_sleep(K_MSEC(3));
+		gpio_pin_set_dt(&drv_data->reset_gpios, 1);
+		k_sleep(K_MSEC(1));
+	}
+
 	return ret;
 }
 

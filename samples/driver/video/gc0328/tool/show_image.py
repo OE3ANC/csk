@@ -16,7 +16,7 @@ from PIL import Image
 import matplotlib.pyplot as pyplot
 
 import logging
-
+import time
 
 class ShowImage():
 
@@ -92,6 +92,17 @@ class ShowImage():
 
         return RGBMatrix
 
+
+    def save_yuv_with_timestamp(self, yuv_data):
+        timestamp = int(time.time())
+        filename = f"{timestamp}.yuv"
+        print(type(yuv_data))
+        print(type(yuv_data[0]))
+        yuv_bytes = bytes(yuv_data)
+        with open(filename, "wb") as f:
+            f.write(yuv_bytes)
+        print(f"Saved YUV data to {filename}")
+        
     def show_image(self, img_data, width, height, mode):
         if img_data == []:
             self.logger.warning('no valid img_data')
@@ -103,6 +114,7 @@ class ShowImage():
                     'img_data length error: '+str(len(img_data)))
                 return
             # img_data.reshape(img_data, 1)
+            # self.save_yuv_with_timestamp(img_data)
             img_np = self.YUVtoRGB(img_data, width, height)
 
             cv2.namedWindow('YUV', cv2.WINDOW_NORMAL)
