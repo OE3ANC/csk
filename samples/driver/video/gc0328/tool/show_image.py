@@ -114,7 +114,7 @@ class ShowImage():
                     'img_data length error: '+str(len(img_data)))
                 return
             # img_data.reshape(img_data, 1)
-            # self.save_yuv_with_timestamp(img_data)
+            self.save_yuv_with_timestamp(img_data)
             img_np = self.YUVtoRGB(img_data, width, height)
 
             cv2.namedWindow('YUV', cv2.WINDOW_NORMAL)
