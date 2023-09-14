@@ -365,11 +365,6 @@ void main(void)
 {
 	const struct device *dma = DEVICE_DT_GET(DT_NODELABEL(dma0));
 
-	if (src_buffer == NULL || dst_buffer == NULL) {
-		printk("no memory");
-		return;
-	}
-
 	for (int i = 0; i < BUFFER_SIZE; i++) {
 		src_buffer[i] = i % UINT8_MAX;
 	}
