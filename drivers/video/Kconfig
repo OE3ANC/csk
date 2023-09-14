@@ -45,6 +45,8 @@ rsource "Kconfig.ov9655"
 
 rsource "Kconfig.gc032a"
 
+rsource "Kconfig.gc0328"
+
 rsource "Kconfig.sco30iot"
 
 endif # VIDEO
