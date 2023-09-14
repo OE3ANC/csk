@@ -11,4 +11,4 @@ include(${ZEPHYR_BASE}/boards/common/jlink.board.cmake)
 include(${ZEPHYR_BASE}/boards/common/pyocd.board.cmake)
 
 get_filename_component(PARENT_DIR "${CMAKE_CURRENT_LIST_DIR}" DIRECTORY)
-include(${PARENT_DIR}/../common/csk.board.cmake)
+include(${ZEPHYR_CSK_MODULE_DIR}/boards/common/csk.board.cmake)
