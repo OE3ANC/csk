@@ -1,0 +1,11 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+#include <csk/csk6_pinctrl.dtsi>
+
+#define csk6011a_public_pinctrl pinctrl \
+        __PINCTRL_DEPRECATED__("This node has been deprecated," \
+                "please use 'pinctrl' instead of 'csk6011a_c3_nano_pinctrl")
+
+&pinctrl {
+    
+};

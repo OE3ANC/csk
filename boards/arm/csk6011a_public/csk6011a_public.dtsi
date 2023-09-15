@@ -1,0 +1,276 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+#include <csk/csk6.dtsi>
+#include <dt-bindings/pwm/pwm.h>
+#include "csk6011a_public_pinctrl.dtsi"
+
+
+&csk6011a_public_pinctrl {
+        pinctrl_pwm1_default: pwm1_default{
+        };
+
+        pinctrl_pwm2_default: pwm2_default{
+        };
+
+        pinctrl_uart2_tx_default: uart2_tx_default{
+                pinctrls = <UART2_TXD_GPIOA_18>;
+        };
+        pinctrl_uart2_rx_default: uart2_rx_default{
+                pinctrls = <UART2_RXD_GPIOA_15>;
+        };
+
+        pinctrl_uart0_tx_default: uart0_tx_default{
+                pinctrls = <&pinmuxa 3 2>;
+        };
+
+        pinctrl_uart0_rx_default: uart0_rx_default{
+                pinctrls = <&pinmuxa 2 2>;
+        };
+
+        pinctrl_uart1_tx_default: uart1_tx_default{
+                pinctrls = <&pinmuxa 4 3>;
+        };
+
+        pinctrl_uart1_rx_default: uart1_rx_default{
+                pinctrls = <&pinmuxa 5 3>;
+        };
+        pinctrl_i2c1_scl_default: i2c1_scl_default{
+        };
+
+        pinctrl_i2c1_sda_default: i2c1_sda_default{
+        };
+
+        pinctrl_spi1_sclk_default: spi1_sclk_default {
+                pinctrls = <&pinmuxa 8 7>;
+        };
+
+        pinctrl_spi1_mosi_default: spi1_mosi_default {
+                pinctrls = <&pinmuxa 7 7>;
+        };
+
+        pinctrl_spi1_miso_default: spi1_miso_default {
+        };
+
+        pinctrl_spi1_cs_default: spi1_cs_default {
+                pinctrls = <&pinmuxa 9 7>;
+        };
+
+        pinctrl_spi0_sclk_default: spi0_sclk_default {
+                pinctrls = <&pinmuxb 9 6>;
+        };
+
+        pinctrl_spi0_mosi_default: spi0_mosi_default {
+                pinctrls = <&pinmuxb 6 6>;
+        };
+
+        pinctrl_spi0_miso_default: spi0_miso_default {
+                pinctrls = <&pinmuxb 7 6>;
+        };
+
+        pinctrl_spi0_cs_default: spi0_cs_default {
+                pinctrls = <&pinmuxb 8 6>;
+        };
+
+};
+
+/ {
+        model = "csk6011a public board";
+        compatible = "csk,csk6011a_public";
+        aliases {
+                // led0 = &board_led_2;
+                i2c-0 = &i2c0;
+                i2c-1 = &i2c1;
+                c-led = &camleds1;
+                mic-led = &micled0;
+                sensor-power = &sensor_pwr;
+        };
+
+        chosen {
+                zephyr,console = &uart0;
+                zephyr,uart-mcumgr = &uart0;
+                zephyr,shell-uart = &uart0;
+                zephyr,sram = &sram0;
+                zephyr,itcm = &itcm0;
+                zephyr,dtcm = &dtcm0;
+                zephyr,ipc = &mailbox0;
+                zephyr,psramap = &psram_ap;
+                zephyr,psramcp = &psram_cp;
+                zephyr,psram = &psram0;
+                zephyr,flash = &flash0;
+                zephyr,flash_controller = &flash;
+                zephyr,entropy = &trng;
+                /* other chosen settings  for your hardware */
+        };
+
+
+        leds {
+                compatible = "gpio-leds";
+                camleds1: cam_led_en  {
+                        gpios = <&gpioa 10 0>;
+                        label = "cam_led_en";
+                };
+                micled0: mic_led0 {
+                        gpios = <&gpioa 0x11 0x0>;
+                        label = "mic led";
+                };
+
+        };
+
+        vbatt {
+                compatible = "voltage-divider";
+                io-channels = <&adc0 5>, <&adc0 6>;
+                output-ohms = <0>;
+        };
+
+        gpio,user {
+                compatible = "listenai,csk-gpio-user";
+                pwrlock: powerlock {
+                        gpios = <&gpiob 4 1>;
+                        label = "power_lock";
+                };
+                scankey: SCANKEY {
+                        gpios = <&gpiob 4 0>;
+                        label = "scan_key";
+                };
+                sensor_pwr: sensor_pwr {
+                        gpios = <&gpioa 14 0>;
+                        label = "sensor power";
+                };
+                pamute: PAMUTE {
+                        gpios = <&gpiob 5 1>;
+                        label = "PA_MUTE";
+                };
+        };
+};
+
+&gpt0 {
+        status = "disabled";
+        pwmlcd: pwm1 {
+                pinctrl-0 = <&pinctrl_pwm1_default>;
+                pinctrl-names = "default";
+                clock-prescaler = <1>;
+                status = "disabled";
+        };
+        pwm2: pwm2 {
+                clock-prescaler = <1>;
+                status = "disabled";
+                pinctrl-0 = <&pinctrl_pwm2_default>;
+                pinctrl-names = "default";
+        };
+};
+
+
+&spi0 {
+        status = "okay";
+        spi-max-frequency = <50000000>;
+        pinctrl-0 = <&pinctrl_spi0_sclk_default &pinctrl_spi0_mosi_default &pinctrl_spi0_miso_default &pinctrl_spi0_cs_default>;
+        pinctrl-names = "default";
+};
+
+&spi1 {
+        status = "disabled";
+};
+
+&i2c0 {
+        status = "disabled";
+};
+
+&i2c1 {
+        status = "disabled";
+};
+&gpioa {
+        status = "okay";
+};
+
+&gpiob {
+        status = "okay";
+};
+
+
+// AP
+&uart0 {
+        pinctrl-0 = <&pinctrl_uart0_rx_default &pinctrl_uart0_tx_default>;
+        pinctrl-names = "default";
+        current-speed = <921600>;
+        status = "okay";
+};
+
+
+// cp
+&uart1 {
+        pinctrl-0 = <&pinctrl_uart1_rx_default &pinctrl_uart1_tx_default>;
+        pinctrl-names = "default";
+        current-speed = <921600>;
+        status = "disabled";
+};
+
+// 上位机
+&uart2 {
+        pinctrl-0 = <&pinctrl_uart2_rx_default &pinctrl_uart2_tx_default>;
+        pinctrl-names = "default";
+        current-speed = <1500000>;
+        status = "okay";
+};
+
+
+&mailbox0 {
+        status = "okay";
+};
+&dma0 {
+        dma-channels = <6>;
+        status = "okay";
+};
+
+&rtc1 {
+        status = "okay";
+};
+&adc0 {
+        status = "okay";
+};
+
+&flash0 {
+        /*
+         * For more information, see:
+         * http: //docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
+         */
+        reg = <0x18000000 DT_SIZE_M(16)>;
+        write-block-size = <4>;
+        partitions {
+                compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
+
+
+                /* application image slot: 1MB */
+                slot0_partition: partition@0 {
+                        reg = <0x0 0x800000>;
+                };
+        };
+};
+&sram0 {
+        compatible = "mmio-sram";
+        reg = <0x80000 0x40000>;
+};
+
+&psram0 {
+        compatible = "listenai,csk6-psram";
+        reg = <0x30000000 0x800000>;
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        psram_cp: psram_cp@30000000 {
+                compatible = "listenai,csk6-psram-partition";
+                reg = <0x30000000 0x780000>;
+                status = "okay";
+        };
+        psram_ap: psram_ap@30780000 {
+                compatible = "zephyr,memory-region",
+                             "listenai,csk6-psram-partition";
+                reg = <0x30780000 0x80000>;
+                status = "okay";
+                zephyr,memory-region = "PSRAMAP";
+        };
+};
+
+&sdmmc {
+        status = "disabled";
+};

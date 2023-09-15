@@ -1,0 +1,8 @@
+if BOARD_CSK6011A_PUBLIC
+
+config BOARD
+   default "csk6011a_public"
+
+
+
+endif # BOARD_CSK6011A_PUBLIC
