@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+if BOARD_CSK6011A_PUBLIC
+
+config DRIVER_NON_BLOCK_INIT
+    bool "Driver Non-Block Init"
+
+endif #BOARD_CSK6011A_PUBLIC

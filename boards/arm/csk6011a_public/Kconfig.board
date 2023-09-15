@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_CSK6011A_PUBLIC
+   bool "csk6011a public Board"
+   depends on SOC_CSK6
+   select FLASH_HAS_DRIVER_ENABLED

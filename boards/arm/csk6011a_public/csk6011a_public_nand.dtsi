@@ -1,0 +1,22 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+#include <mem.h>
+#include <arm/armv8-m.dtsi>
+
+/ {
+    chosen {
+        zephyr,nand_flash = &flash1;
+    };
+	soc {
+
+		flash: flash-controller@46400000 {
+
+			flash1: flash@58000000 {
+				compatible = "listenai,csk-nv-flash","soc-nv-flash";
+				reg = <0x58000000 DT_SIZE_M(128)>;
+				write-block-size = <1>;
+				erase-block-size = <4096>;
+			};
+		};
+    };
+};
