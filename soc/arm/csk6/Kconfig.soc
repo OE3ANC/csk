@@ -62,4 +62,26 @@ config CSK6_FATAL_UNHANDLE_INTERRUPT
 	help
 		Enable csk6 unhandle interrupt print
 
+config CSK6_BOOT_CP_CORE_ON_SYSINIT_APPLICATION
+	bool "Enable csk6 boot cp core"
+	default y
+
+config CSK6_BOOT_CP_CORE_ON_SYSINIT_APPLICATION_PRIO
+	int "cp core init prio"
+	range 0 99
+	default 0
+	depends on CSK6_BOOT_CP_CORE_ON_SYSINIT_APPLICATION
+
+config CSK6_BOOT_CP_CORE_IMAGE_RUN_ADDRESS
+	hex "cp core image run address"
+	default 0
+
+config CSK6_BOOT_CP_CORE_IMAGE_LOAD_ADDRESS
+	hex "cp core image load address"
+	default CSK6_BOOT_CP_CORE_IMAGE_RUN_ADDRESS
+
+config CSK6_BOOT_CP_CORE_IMAGE_SIZE
+	int "cp core image size"
+	default 0
+
 endif # SOC_CSK6

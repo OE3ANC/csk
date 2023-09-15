@@ -3,6 +3,7 @@
 zephyr_sources(
   firmware_verification_table.S
   soc.c
+  boot_cp.c
   )
 
 # make sure csk6_boot_tag.ld at the end of vectors
@@ -10,6 +11,7 @@ zephyr_linker_sources(ROM_START SORT_KEY 0x0vectors0boottag csk6_boot_tag.ld)
 zephyr_sources_ifdef(CONFIG_CPU_HAS_CUSTOM_FIXED_SOC_MPU_REGIONS mpu_regions.c)
 zephyr_sources_ifdef(CONFIG_CSK6_FATAL fatal.c)
 zephyr_linker_sources(SECTIONS csk6_psram.ld)
+zephyr_include_directories(./)
 
 if(NOT CONFIG_BOOTLOADER_MCUBOOT)
   if(CONFIG_BUILD_OUTPUT_HEX)
