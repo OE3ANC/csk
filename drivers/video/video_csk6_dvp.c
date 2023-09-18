@@ -376,10 +376,41 @@ static void video_csk6_dvp_isr(void)
 	DVP_IRQ_Handler();
 }
 
+extern void HAL_CP_Interrupt_Handler();
+static void csk_cp2ap_isr(const struct device *dev)
+{
+	ARG_UNUSED(dev);
+	HAL_CP_Interrupt_Handler();
+}
+static const struct video_driver_api video_csk6_dvp_driver_api = {
+	.set_format = video_csk6_dvp_set_fmt,
+	.get_format = video_csk6_dvp_get_fmt,
+	.stream_start = video_csk6_dvp_stream_start,
+	.stream_stop = video_csk6_dvp_stream_stop,
+	.flush = video_csk6_dvp_flush,
+	.enqueue = video_csk6_dvp_enqueue,
+	.dequeue = video_csk6_dvp_dequeue,
+	.set_ctrl = video_csk6_dvp_set_ctrl,
+	.get_ctrl = video_csk6_dvp_get_ctrl,
+	.get_caps = video_csk6_dvp_get_caps,
+};
+
 static int video_csk6_dvp_init(const struct device *dev)
 {
-	const struct video_csk6_dvp_config *config = dev->config;
 	struct video_csk6_dvp_data *data = dev->data;
+	const struct video_csk6_dvp_config *config = dev->config;
+
+	HAL_CP_Interrupt_RegisterISR(IRQ_CP_VIC_VECTOR, video_csk6_dvp_isr, NULL);
+	HAL_CP_Interrupt_Enable(IRQ_CP_VIC_VECTOR);
+	IRQ_CONNECT(DT_INST_IRQN(0), DT_INST_IRQ(0, priority), csk_cp2ap_isr, NULL, 0);
+
+	irq_enable(DT_INST_IRQN(0));
+
+	data->dev = dev;
+	data->handle = DVP_Instance();
+
+	pinctrl_apply_state(config->pcfg, PINCTRL_STATE_DEFAULT);
+
 	DVP_HandleTypeDef *dvp_dev = data->handle;
 	int ret = 0;
 
@@ -400,65 +431,25 @@ static int video_csk6_dvp_init(const struct device *dev)
 	if (config->sensor_dev) {
 		ret = video_set_ctrl(config->sensor_dev, VIDEO_CID_INIT, (void *)1);
 	}
-
-	return 0;
+	return ret;
 }
 
-extern void HAL_CP_Interrupt_Handler();
-static void csk_cp2ap_isr(const struct device *dev)
-{
-	ARG_UNUSED(dev);
-	HAL_CP_Interrupt_Handler();
-}
-static const struct video_driver_api video_csk6_dvp_driver_api = {
-	.set_format = video_csk6_dvp_set_fmt,
-	.get_format = video_csk6_dvp_get_fmt,
-	.stream_start = video_csk6_dvp_stream_start,
-	.stream_stop = video_csk6_dvp_stream_stop,
-	.flush = video_csk6_dvp_flush,
-	.enqueue = video_csk6_dvp_enqueue,
-	.dequeue = video_csk6_dvp_dequeue,
-	.set_ctrl = video_csk6_dvp_set_ctrl,
-	.get_ctrl = video_csk6_dvp_get_ctrl,
-	.get_caps = video_csk6_dvp_get_caps,
-};
+#define VIDEO_DVP_DEVICE_INIT_CSK(index)						\
+	static struct video_csk6_dvp_data video_csk6_dvp_data_##index;			\
+	PINCTRL_DT_INST_DEFINE(index);							\
+	static const struct video_csk6_dvp_config video_csk6_dvp_config_##index = {	\
+		.sensor_dev = DEVICE_DT_GET(DT_INST_PHANDLE(index, sensor)),		\
+		.data_align = DT_ENUM_IDX(DT_DRV_INST(index), data_align_type),		\
+		.pclk_polarity = DT_ENUM_IDX(DT_DRV_INST(index), pclk_polarity),	\
+		.hsync_polarity = DT_ENUM_IDX(DT_DRV_INST(index), hsync_polarity),	\
+		.vsync_polarity = DT_ENUM_IDX(DT_DRV_INST(index), vsync_polarity),	\
+		.clock_prescaler = DT_INST_PROP(index, clock_prescaler),		\
+		.pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(index),				\
+	};										\
+	DEVICE_DT_INST_DEFINE(index, &video_csk6_dvp_init, NULL, 			\
+				&video_csk6_dvp_data_##index,				\
+				&video_csk6_dvp_config_##index, 			\
+				POST_KERNEL, CONFIG_VIDEO_INIT_PRIORITY,		\
+				&video_csk6_dvp_driver_api);
 
-static int video_csk6_dvp_init_0(const struct device *dev)
-{
-	struct video_csk6_dvp_data *data = dev->data;
-	const struct video_csk6_dvp_config *config = dev->config;
-
-	HAL_CP_Interrupt_RegisterISR(IRQ_CP_VIC_VECTOR, video_csk6_dvp_isr, NULL);
-	HAL_CP_Interrupt_Enable(IRQ_CP_VIC_VECTOR);
-	IRQ_CONNECT(DT_INST_IRQN(0), DT_INST_IRQ(0, priority), csk_cp2ap_isr, NULL, 0);
-
-	irq_enable(DT_INST_IRQN(0));
-
-	data->dev = dev;
-	data->handle = DVP_Instance();
-
-	pinctrl_apply_state(config->pcfg, PINCTRL_STATE_DEFAULT);
-
-	return video_csk6_dvp_init(dev);
-}
-
-PINCTRL_DT_INST_DEFINE(0);
-
-static const struct video_csk6_dvp_config video_csk6_dvp_config_0 = {
-	.sensor_dev = DEVICE_DT_GET(DT_INST_PHANDLE(0, sensor)),
-	.data_align = DT_ENUM_IDX(DT_DRV_INST(0), data_align_type),
-	.pclk_polarity = DT_ENUM_IDX(DT_DRV_INST(0), pclk_polarity),
-	.hsync_polarity = DT_ENUM_IDX(DT_DRV_INST(0), hsync_polarity),
-	.vsync_polarity = DT_ENUM_IDX(DT_DRV_INST(0), vsync_polarity),
-
-#if DT_NODE_HAS_PROP(DT_DRV_INST(0), clock_prescaler)
-	.clock_prescaler = DT_INST_PROP(0, clock_prescaler),
-#endif
-	.pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(0),
-};
-
-static struct video_csk6_dvp_data video_csk6_dvp_data_0;
-
-DEVICE_DT_INST_DEFINE(0, &video_csk6_dvp_init_0, NULL, &video_csk6_dvp_data_0,
-		      &video_csk6_dvp_config_0, POST_KERNEL, CONFIG_VIDEO_INIT_PRIORITY,
-		      &video_csk6_dvp_driver_api);
+DT_INST_FOREACH_STATUS_OKAY(VIDEO_DVP_DEVICE_INIT_CSK)
