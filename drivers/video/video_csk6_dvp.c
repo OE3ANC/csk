@@ -395,7 +395,7 @@ static int video_csk6_dvp_init(const struct device *dev)
 		LOG_ERR("Failed to get  video ctrl device\r\n");
 		return -ENODEV;
 	}
-	printk("sensor dev %s\r\n", config->sensor_dev->name);
+	LOG_INF("sensor dev %s", config->sensor_dev->name);
 	// some SENSOR can communicate with I2C only when DVP interface outputs PCLK first
 	if (config->sensor_dev) {
 		ret = video_set_ctrl(config->sensor_dev, VIDEO_CID_INIT, (void *)1);
@@ -442,23 +442,22 @@ static int video_csk6_dvp_init_0(const struct device *dev)
 	return video_csk6_dvp_init(dev);
 }
 
-PINCTRL_DT_INST_DEFINE(0);
+#define VIDEO_DVP_DEVICE_INIT_CSK(index)						\
+	static struct video_csk6_dvp_data video_csk6_dvp_data_##index;			\
+	PINCTRL_DT_INST_DEFINE(index);							\
+	static const struct video_csk6_dvp_config video_csk6_dvp_config_##index = {	\
+		.sensor_dev = DEVICE_DT_GET(DT_INST_PHANDLE(index, sensor)),		\
+		.data_align = DT_ENUM_IDX(DT_DRV_INST(index), data_align_type),		\
+		.pclk_polarity = DT_ENUM_IDX(DT_DRV_INST(index), pclk_polarity),	\
+		.hsync_polarity = DT_ENUM_IDX(DT_DRV_INST(index), hsync_polarity),	\
+		.vsync_polarity = DT_ENUM_IDX(DT_DRV_INST(index), vsync_polarity),	\
+		.clock_prescaler = DT_INST_PROP(index, clock_prescaler),		\
+		.pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(index),				\
+	};										\
+	DEVICE_DT_INST_DEFINE(index, &video_csk6_dvp_init_0, NULL, 			\
+				&video_csk6_dvp_data_##index,				\
+				&video_csk6_dvp_config_##index, 			\
+				POST_KERNEL, CONFIG_VIDEO_INIT_PRIORITY,		\
+				&video_csk6_dvp_driver_api);
 
-static const struct video_csk6_dvp_config video_csk6_dvp_config_0 = {
-	.sensor_dev = DEVICE_DT_GET(DT_INST_PHANDLE(0, sensor)),
-	.data_align = DT_ENUM_IDX(DT_DRV_INST(0), data_align_type),
-	.pclk_polarity = DT_ENUM_IDX(DT_DRV_INST(0), pclk_polarity),
-	.hsync_polarity = DT_ENUM_IDX(DT_DRV_INST(0), hsync_polarity),
-	.vsync_polarity = DT_ENUM_IDX(DT_DRV_INST(0), vsync_polarity),
-
-#if DT_NODE_HAS_PROP(DT_DRV_INST(0), clock_prescaler)
-	.clock_prescaler = DT_INST_PROP(0, clock_prescaler),
-#endif
-	.pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(0),
-};
-
-static struct video_csk6_dvp_data video_csk6_dvp_data_0;
-
-DEVICE_DT_INST_DEFINE(0, &video_csk6_dvp_init_0, NULL, &video_csk6_dvp_data_0,
-		      &video_csk6_dvp_config_0, POST_KERNEL, CONFIG_VIDEO_INIT_PRIORITY,
-		      &video_csk6_dvp_driver_api);
+DT_INST_FOREACH_STATUS_OKAY(VIDEO_DVP_DEVICE_INIT_CSK)
