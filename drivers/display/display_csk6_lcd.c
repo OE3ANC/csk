@@ -163,7 +163,7 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_cmd_datas_send(void *handler, uint8_t
 	ctrl |= CSK_SPI_MODE_MASTER;
 	ctrl |= CSK_SPI_CPOL0_CPHA0;
 	ctrl |= CSK_SPI_MSB_LSB;
-	ctrl |= CSK_SPI_TXIO_DMA;
+	ctrl |= CSK_SPI_TXIO_PIO;
 	ctrl |= CSK_SPI_DATA_BITS(8);
 
 	k_mutex_lock(&lcd_data->lock, K_FOREVER);
