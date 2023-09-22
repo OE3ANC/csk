@@ -30,6 +30,141 @@ LOG_MODULE_REGISTER(display_csk6_lcd);
 
 struct display_csk6_lcd_data g_display_csk6_lcd_data = {0};
 
+/* Copy from hal v3.1.0 */
+static int32_t _SPI_Send(void *spi_dev, const void *data, uint32_t num)
+{
+    SPI_DEV *spi = (spi_dev);
+    if (spi == NULL) {
+        LOG_ERR("%s: invalid SPI device %p!", __func__, spi_dev);
+        return CSK_DRIVER_ERROR_PARAMETER;
+    }
+
+    int32_t stat;
+
+    if ((data == NULL) || (num == 0U) || (num > MAX_TRANCNT))
+        return CSK_DRIVER_ERROR_PARAMETER;
+
+    if (!(spi->info->flags & SPI_FLAG_CONFIGURED))
+        return CSK_DRIVER_ERROR;
+
+    if (spi->info->status.bit.busy)
+        return CSK_DRIVER_ERROR_BUSY;
+
+    // set busy flag
+    spi->info->status.bit.busy = 1U;
+    spi->info->status.bit.data_unf = 0;
+    spi->info->status.bit.tx_mode = NO_IO;
+
+    spi->info->xfer.tx_buf = data;
+    spi->info->xfer.tx_cnt = 0U;
+    spi->info->xfer.req_tx_cnt = num;
+    spi->info->xfer.cur_op = SPI_SEND;
+
+    // wait prior transfer finish
+    // spi_polling_spiactive(spi);
+	while ((spi->reg->STATUS) & 0x1);
+
+    // set transfer mode to write only and transfer count for write data
+    //spi->reg->TRANSCTRL = (SPI_TRANSMODE_WRONLY | WR_TRANCNT(num));
+    spi->reg->TRANSCTRL = (SPI_TRANSMODE_WRONLY | WR_TRANCNT(num) |
+                (spi->reg->TRANSCTRL & SPI_TRANSMODE_CMD_EN));
+
+    // DMA mode
+    bool xfer_started = false;
+    while ( TX_DMA(spi->info->txrx_mode) ) { // DMA TX
+        bool dma_only = TX_DMA_ONLY(spi->info->txrx_mode);
+
+        // initial the dma done flag
+        spi->info->xfer.dma_tx_done = 0;
+
+        // enable TX DMA
+        //spi->reg->CTRL |= TXDMAEN;
+
+        // select some free DMA channel
+        spi->info->tx_dyn_dma_ch = spi->dma_tx.channel;
+        spi->info->tx_dyn_dma_ch = dma_channel_select(
+                                        &spi->info->tx_dyn_dma_ch,
+                                        spi->dma_tx.cb_event,
+                                        spi->dma_tx.usr_param,
+                                        DMA_CACHE_SYNC_SRC); //DMA_CACHE_SYNC_SRC
+        if (spi->info->tx_dyn_dma_ch == DMA_CHANNEL_ANY) {
+            LOG_ERR("%s: NO free DMA channel!!\r\n", __func__);
+            if (dma_only)   return CSK_DRIVER_ERROR;
+            break; // quit DMA TX
+        }
+
+        uint32_t control, config_low, config_high;
+        control = DMA_CH_CTLL_DST_WIDTH(spi->info->dma_width_shift) | DMA_CH_CTLL_SRC_WIDTH(spi->info->dma_width_shift) |
+                DMA_CH_CTLL_DST_BSIZE(spi->info->tx_bsize_shift) | DMA_CH_CTLL_SRC_BSIZE(spi->info->tx_bsize_shift) |
+                DMA_CH_CTLL_DST_FIX | DMA_CH_CTLL_SRC_INC | DMA_CH_CTLL_TTFC_M2P |
+                DMA_CH_CTLL_DMS(0) | DMA_CH_CTLL_SMS(0) | DMA_CH_CTLL_INT_EN;
+        config_low = DMA_CH_CFGL_CH_PRIOR(1); // channel priority is higher than 0
+        config_high = DMA_CH_CFGH_DST_PER(spi->dma_tx.reqsel); // DMA_CH_CFGH_FIFO_MODE |
+        //config_high = DMA_CH_CFGH_DST_PER(spi->dma_tx.reqsel);
+
+        // configure DMA channel
+        stat = dma_channel_configure (spi->info->tx_dyn_dma_ch,
+                            (uint32_t) spi->info->xfer.tx_buf,
+                            (uint32_t) (&(spi->reg->DATA)),
+                            num, control, config_low, config_high, 0, 0);
+        if (stat == -1) {
+            LOG_ERR("%s: Failed to call dma_channel_configure!!\r\n", __func__);
+            dma_channel_disable(spi->info->tx_dyn_dma_ch, false);
+            spi->info->tx_dyn_dma_ch = DMA_CHANNEL_ANY;
+            if (dma_only)   return CSK_DRIVER_ERROR;
+            break; // quit DMA TX
+        }
+
+        // enable TX DMA
+        spi->reg->CTRL |= TXDMAEN;
+
+        // enable interrupts
+        spi->reg->INTREN = SPI_ENDINT;
+
+        spi->info->status.bit.tx_mode = DMA_IO;
+        xfer_started = true;
+        break;
+    } // end while
+
+    if (!xfer_started && TX_PIO(spi->info->txrx_mode)) { // PIO TX (interrupt mode)
+        // enable interrupts
+        spi->reg->INTREN = (SPI_TXFIFOINT | SPI_ENDINT);
+
+        spi->info->status.bit.tx_mode = PIO_IO;
+        xfer_started = true;
+    }
+
+    // neither DMA nor PIO transfer is started
+    if (!xfer_started) {
+        LOG_ERR("%s: Neither DMA nor PIO is started!!\r\n", __func__);
+        return CSK_DRIVER_ERROR;
+    }
+
+    // enable TX FIFO underrun interrupt when slave mode
+    // set the Ready bit in the SPI Slave Status Register
+    if((spi->info->txrx_mode & CSK_SPI_MODE_Msk) == CSK_SPI_MODE_SLAVE) {
+        CLR_SLV_WRCNT(spi); // clear WCnt on updated IP
+        spi->reg->INTREN |= SPI_TXFIFOURINT;
+        spi->reg->SLVST |= SLVST_READY;
+    }
+
+    // fill the TX FIFO if PIO mode
+    if (TX_PIO(spi->info->txrx_mode)) {
+        // spi_fill_tx_fifo(spi, spi->txfifo_depth/4);
+		LOG_ERR("Unsupport tx pio mode");
+	}
+
+    // trigger transfer when SPI master mode
+    if ((spi->info->txrx_mode & CSK_SPI_MODE_Msk) == CSK_SPI_MODE_MASTER) {
+        // wait until there's at least 1 data in the TX FIFO??
+        //while(SPI_TXFIFO_ENTRIES(spi) == 0);
+        while(SPI_TXFIFO_EMPTY(spi)) ;
+        spi->reg->CMD = 0;
+    }
+
+    return CSK_DRIVER_OK;
+}
+
 static LCD_SPI_FAST_CODE int32_t display_csk6_lcd_send_datas_with_dma(void *spi_dev, uint8_t dma_ch,
 								      const uint8_t *data, uint32_t num,
 								      int32_t interval)
@@ -175,7 +310,7 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_cmd_datas_send(void *handler, uint8_t
 	}
 	k_sem_reset(&lcd_data->spi_done_sem);
 	lcd_data->cmd = 0;
-	r = SPI_Send(lcd_data->spi, datas, len);
+	r = _SPI_Send(lcd_data->spi, datas, len);
 	if (r != 0) {
 		LOG_ERR("SPI_Send failed, error code:%d", r);
 		k_mutex_unlock(&lcd_data->lock);
