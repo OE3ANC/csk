@@ -1,0 +1,4 @@
+name: gc032a
+append:
+  EXTRA_CONF_FILE: gc032a.conf
+  EXTRA_DTC_OVERLAY_FILE: gc032a.overlay

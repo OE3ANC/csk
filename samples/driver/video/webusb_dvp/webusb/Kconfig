@@ -1,0 +1,93 @@
+menu "WEBUSB Config"
+
+	config WEBUSB 
+		bool "Decide to enable webusb"
+		default n
+		select USB_DEVICE_STACK
+		select USB_DEVICE_BOS
+		help 
+			This option enable the webusb library.
+
+	if WEBUSB
+
+		config WEBUSB_IN_EP_IDX
+			int "Webusb in endpoint index"
+			default 0
+			range 0 6
+
+		config WEBUSB_OUT_EP_IDX
+			int "Webusb out endpoint index"
+			default 1
+			range 0 6
+
+		config WEBUSB_LOG_LEVEL_DBG
+			bool "Enable webusb print log"
+			default n
+
+		config USB_DEVICE_PID
+			hex
+			default 0x000A
+
+		config USB_DEVICE_PRODUCT
+			string "Webusb usb device product"
+			default "CSK View Finder"
+
+		choice WEBUSB_URL_TYPE
+			prompt "Webusb url"
+			default WEBUSB_URL_LISTENAI
+			help
+				This option decide the webusb url.
+
+			config WEBUSB_URL_CUSTOM
+				bool "Custom"
+				select WEBUSB_URL_CUSTOM_STRING
+
+			config WEBUSB_URL_LISTENAI
+				bool "Listenai(tool.listenai.com/csk-view-finder-spd)"
+
+			config WEBUSB_URL_LOCALHOST
+				bool "Localhost(localhost:8080)"
+
+			config WEBUSB_URL_LOCALHOST_LOOPBACK_TEST
+				bool "Localhost loopback test(localhost:8080)"
+			
+		endchoice
+
+		if WEBUSB_URL_CUSTOM
+
+			config WEBUSB_URL
+				string "Webusb url"
+				default "" if WEBUSB_URL_CUSTOM
+				default "tool.listenai.com/csk-view-finder-spd" if WEBUSB_URL_LISTENAI
+				default "localhost:8080" if WEBUSB_URL_LOCALHOST
+				default "localhost:8080" if WEBUSB_URL_LOCALHOST_LOOPBACK_TEST
+
+		endif
+
+		config WEBUSB_URL
+			default "tool.listenai.com/csk-view-finder-spd" if WEBUSB_URL_LISTENAI
+			default "localhost:8080" if WEBUSB_URL_LOCALHOST
+			default "localhost:8080" if WEBUSB_URL_LOCALHOST_LOOPBACK_TEST
+
+		choice WEBUSB_URL_SCHEME
+			prompt "Webusb url scheme type"
+			default WEBUSB_URL_SCHEME_HTTPS
+			help
+				This option decide the webusb url scheme.
+
+			config WEBUSB_URL_SCHEME_HTTP
+				bool "http://"
+
+			config WEBUSB_URL_SCHEME_HTTPS
+				bool "https://"
+
+		endchoice
+
+		config WEBUSB_URL_SCHEME_TYPE
+			hex 
+			default 0x00 if WEBUSB_URL_SCHEME_HTTP
+			default 0x01 if WEBUSB_URL_SCHEME_HTTPS
+
+
+	endif
+endmenu
