@@ -20,6 +20,15 @@ Building and Running
    - csk6012_nano
    - csk6012_c3_nano
 
+.. note:: The project only support camera:
+
+   lisa zep build -b csk601a_nano -S gc032a
+
+   - gc0328 (default)
+   - gc032a
+   - ov9655
+   - sco30iot
+
 .. note:: Preview camera images using a PC Tools:
    toos/show_image.py
 
