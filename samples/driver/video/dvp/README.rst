@@ -10,7 +10,7 @@ Building and Running
 
 .. code-block:: console
 
-   lisa zep build -b csk6012_nano
+   lisa zep build -b csk6011a_nano
    lisa zep flash -r jlink
 
 .. note:: The project only support board:
