@@ -116,11 +116,14 @@ static LCD_SPI_FAST_CODE void display_csk6_lcd_spi_isr_callback(uint32_t event, 
 
 				data->ctx.curr_cnt++;
 			} else {
+				// LOG_INF("func: %s, line: %d", __FUNCTION__, __LINE__);
 				k_sem_give(&data->spi_done_sem);
 			}
 		} else {
 			k_sem_give(&data->spi_done_sem);
 		}
+	} else {
+		LOG_ERR("SPI event error, event:%d", event);
 	}
 }
 
@@ -157,7 +160,9 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_cmd_datas_send(void *handler, uint8_t
 							  uint32_t len)
 {
 	uint32_t ctrl = 0;
-	int r;
+	int r, ret;
+	LOG_INF("func: %s, line: %d,", __FUNCTION__, __LINE__);
+	LOG_HEXDUMP_INF(datas, len, "datas");
 	struct display_csk6_lcd_data *lcd_data = handler;
 
 	ctrl |= CSK_SPI_MODE_MASTER;
@@ -166,7 +171,11 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_cmd_datas_send(void *handler, uint8_t
 	ctrl |= CSK_SPI_TXIO_PIO;
 	ctrl |= CSK_SPI_DATA_BITS(8);
 
-	k_mutex_lock(&lcd_data->lock, K_FOREVER);
+	ret = k_mutex_lock(&lcd_data->lock, K_SECONDS(1));
+	if (ret) {
+		LOG_ERR("k_mutex_lock failed, ret:%d", ret);
+		return ret;
+	}
 	r = SPI_Control(lcd_data->spi, ctrl, 50 * 1000 * 1000);
 	if (r != 0) {
 		LOG_ERR("SPI_Control failed, error code:%d", r);
@@ -181,7 +190,15 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_cmd_datas_send(void *handler, uint8_t
 		k_mutex_unlock(&lcd_data->lock);
 		return r;
 	}
-	k_sem_take(&lcd_data->spi_done_sem, K_FOREVER);
+	ret = k_sem_take(&lcd_data->spi_done_sem, K_SECONDS(5));
+	if (ret) {
+		LOG_ERR("k_sem_take failed, pass 5 seconds, ret:%d, len: %d", ret, len);
+		SPI_DEV *hal_spi = SPI1();
+		LOG_ERR("hal_spi->reg->INTRST: 0x%X", hal_spi->reg->INTRST);
+		LOG_HEXDUMP_INF(datas, len, "datas");
+		k_mutex_unlock(&lcd_data->lock);
+		return ret;
+	}
 	k_mutex_unlock(&lcd_data->lock);
 
 	return 0;
@@ -192,7 +209,8 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_display_datas_send(void *handler, con
 							      uint8_t rotate)
 {
 	int r;
-
+	int ret;
+	// LOG_INF("func: %s, line: %d", __FUNCTION__, __LINE__);
 	if (handler == NULL) {
 		return -EINVAL;
 	}
@@ -207,7 +225,11 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_display_datas_send(void *handler, con
 	SCB_CleanDCache_by_Addr((void *)ctx->buffer, ctx->w * ctx->h * 2);
 	ctx->buffer += ctx->start_offset;
 
-	k_mutex_lock(&lcd_data->lock, K_FOREVER);
+	ret = k_mutex_lock(&lcd_data->lock, K_SECONDS(1));
+	if (ret) {
+		LOG_ERR("k_mutex_lock failed, ret:%d, line: %d", ret, __LINE__);
+		return ret;
+	}
 
 	const uint32_t ctrl = CSK_SPI_MODE_MASTER | CSK_SPI_CPOL0_CPHA0 | CSK_SPI_MSB_LSB |
 			      CSK_SPI_TXIO_DMA | CSK_SPI_DATA_BITS(16);
@@ -230,7 +252,12 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_display_datas_send(void *handler, con
 		return r;
 	}
 
-	k_sem_take(&lcd_data->spi_done_sem, K_FOREVER);
+	ret = k_sem_take(&lcd_data->spi_done_sem, K_SECONDS(1));
+	if (ret) {
+		LOG_ERR("k_sem_take failed, ret:%d, line: %d", ret, __LINE__);
+		k_mutex_unlock(&lcd_data->lock);
+		return ret;
+	}
 	k_mutex_unlock(&lcd_data->lock);
 
 	return 0;
