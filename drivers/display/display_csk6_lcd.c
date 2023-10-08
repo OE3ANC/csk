@@ -197,6 +197,7 @@ int32_t LCD_SPI_FAST_CODE display_csk6_lcd_cmd_datas_send(void *handler, uint8_t
 		LOG_ERR("hal_spi->reg->INTRST: 0x%X", hal_spi->reg->INTRST);
 		LOG_HEXDUMP_INF(datas, len, "datas");
 		k_mutex_unlock(&lcd_data->lock);
+		k_panic();
 		return ret;
 	}
 	k_mutex_unlock(&lcd_data->lock);
