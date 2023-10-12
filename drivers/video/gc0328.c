@@ -44,6 +44,16 @@ struct gc0328_reg {
 #define REG_CID_FLIP_OFF_VALUE			0x00
 #define REG_CID_FLIP_ON_VALUE			0x02	// 0x17, bit[1],2'b00 flip off,2'b02 flip on
 
+// Color invert 模式
+#define PAGE_BANK_REG_COLOR_INVERT			0x43
+#define PAGE_BANK_REG_COLOR_INVERT_EN		0x01
+
+// Color bar 模式
+#define PAGE_BANK_REG_COLOR_BAR			0x4C	// color bar
+#define PAGE_BANK_REG_COLOR_BAR_EN		0x04	//
+
+#define PAGE_PIXEL_FORMAT_REG			0x44
+
 /* 25M CLK & VGA & YUV(UYVY) & 15fps */
 static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0xfe,0x80},
@@ -173,8 +183,9 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x40,0x7f,},
 	{0x41,0x26,},
 	{0x42,0xff},
+	// {0x43, 0x01},color invert
 	{0x45,0x00,},
-	{0x44,0x01,},//
+	{0x44,0x22,},
 	{0x46,0x02,},
 	{0x4b,0x01,},
 	{0x50,0x01,},
@@ -349,6 +360,9 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x4f,0x01,},
 	{0xf1,0x07,},
 	{0xf2,0x01,},
+
+	// {0xfe,0x00,},
+	// {0x4C,0x04,},// Color bar 模式
 };
 
 static int gc0328_write_reg(const struct device *dev, uint8_t reg_addr, uint8_t value)
@@ -433,22 +447,77 @@ static int gc0328_set_fmt_windows(const struct device *dev, int offset_x, int of
 	return 0;
 }
 
+static int gc0328_set_pixel_format(const struct device *dev, struct video_format *fmt)
+{
+	int ret = 0;
+	uint8_t fmt_value = 0;
+	gc0328_write_reg(dev, 0xfe, 0x00);
+	
+	// P0:0x44 Output_format
+	// 5’h00 Cb Y Cr Y, UYVY
+	// 5’h01 Cr Y Cb Y, VYUY
+	// 5’h02 Y Cb Y Cr, YUYV
+	// 5’h03 Y Cr Y Cb, YVYU
+	// 5’h06 RGB 565 
+	// 5’h07 RGB x555 
+	// 5’h08 RGB 555x 
+	// 5’h09 RGB x444 
+	// 5’h0a RGB 444x 
+	// 5’h0b BGRG 
+	// 5’h0c RGBG 
+	// 5’h0d GBGR 
+	// 5’h0e GRGB 
+	// 5’h0f bypass 10bits 
+	// 5’h11 only Y 
+	// 5’h12 only Cb 
+	// 5’h13 only Cr 
+	// 5’h14 only R 
+	// 5’h15 only G 
+	// 5’h16 only B
+	switch (fmt->pixelformat)
+	{
+	case VIDEO_PIX_FMT_UYVY:
+		fmt_value = 0x00;
+		break;
+	
+	case VIDEO_PIX_FMT_VYUY:
+		fmt_value = 0x01;
+		break;
+	
+	case VIDEO_PIX_FMT_YUYV:
+		fmt_value = 0x02;
+		break;
+	
+	case VIDEO_PIX_FMT_YVYU:
+		fmt_value = 0x03;
+		break;
+	case VIDEO_PIX_FMT_GRAY:
+		fmt_value = 0x11;
+		break;
+	default:
+		LOG_ERR("video format unsupported \n");
+		return -ENOTSUP;
+	}
+	ret = gc0328_write_reg(dev, PAGE_PIXEL_FORMAT_REG, fmt_value);
+	return ret;
+}
+
+
 static int gc0328_set_fmt(const struct device *dev, enum video_endpoint_id ep,
 			    struct video_format *fmt)
 {
 	int ret = 0;
-	if (fmt->pixelformat == VIDEO_PIX_FMT_VYUY) {
-		if ((fmt->width > 640) || (fmt->height > 480)) {
-			LOG_ERR("video format unsupported \n");
-			return -ENOTSUP;
-		}
-		uint16_t offset_x = (640-fmt->width) /2;
-		uint16_t offset_y = (480-fmt->height) /2;
-		ret = gc0328_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
-	} else {
+	if ((fmt->width > 640) || (fmt->height > 480)) {
 		LOG_ERR("video format unsupported \n");
 		return -ENOTSUP;
 	}
+	uint16_t offset_x = (640-fmt->width) /2;
+	uint16_t offset_y = (480-fmt->height) /2;
+	if (gc0328_set_pixel_format(dev, fmt)) {
+		LOG_ERR("Unable to set gc0328 pixel format");
+		return -ENOTSUP;
+	}
+	ret = gc0328_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
 	return ret;
 }
 
@@ -537,6 +606,48 @@ static int gc0328_set_vertical_flip(const struct device *dev, int enable)
 	return ret;
 }
 
+static int gc0328_set_colorbar(const struct device *dev, int enable)
+{
+	int ret = 0;
+	uint8_t reg_value = 0;
+	gc0328_write_reg(dev, 0xfe, 0x00);
+	gc0328_read_reg(dev, PAGE_BANK_REG_COLOR_BAR, &reg_value);
+	if (enable) {
+		reg_value |= PAGE_BANK_REG_COLOR_BAR_EN;
+	} else {
+		reg_value &= ~PAGE_BANK_REG_COLOR_BAR_EN;
+	}
+
+	ret = gc0328_write_reg(dev, PAGE_BANK_REG_COLOR_BAR, reg_value);
+
+	if (ret) {
+		LOG_WRN("Unable to set gc0328 colorbar ret=%d", ret);
+		return ret;
+	}
+	return ret;
+}
+
+static int gc0328_set_color_invert(const struct device *dev, int enable)
+{
+	int ret = 0;
+	uint8_t reg_value = 0;
+	gc0328_write_reg(dev, 0xfe, 0x00);
+	gc0328_read_reg(dev, PAGE_BANK_REG_COLOR_INVERT, &reg_value);
+	if (enable) {
+		reg_value |= PAGE_BANK_REG_COLOR_INVERT_EN;
+	} else {
+		reg_value &= ~PAGE_BANK_REG_COLOR_INVERT_EN;
+	}
+
+	ret = gc0328_write_reg(dev, PAGE_BANK_REG_COLOR_INVERT, reg_value);
+
+	if (ret) {
+		LOG_WRN("Unable to set gc0328 colorbar ret=%d", ret);
+		return ret;
+	}
+	return ret;
+}
+
 static int gc0328_reg_init(const struct device *dev)
 {
 	struct gc0328_data *drv_data = dev->data;
@@ -566,7 +677,7 @@ static int gc0328_reg_init(const struct device *dev)
 	ret = gc0328_write_all(dev, gc0328_init_reg_tb,
 					ARRAY_SIZE(gc0328_init_reg_tb));
 	if (ret) {
-		LOG_ERR("Unable to write sco30iot config");
+		LOG_ERR("Unable to write gc0328 config");
 		return ret;
 	}
 	return ret;
@@ -584,6 +695,12 @@ static int gc0328_set_ctrl(const struct device *dev, unsigned int cid, void *val
 	case VIDEO_CID_VFLIP:
 		ret = gc0328_set_vertical_flip(dev, *(int *)value);
 		break;
+	case VIDEO_CID_CAMERA_COLORBAR:
+		ret |= gc0328_set_colorbar(dev, *(int *)value);
+		break;
+	case VIDEO_CID_CAMERA_COLOR_INVERT:
+		ret |= gc0328_set_color_invert(dev, *(int *)value);
+		break;
 	/*
 		该sensor只有在mclk有输入时钟的情况下，i2c才能正常通信，所以并不能在内核设备初始化流程中进行sensor初始化。
 		目前是通过set_ctrl来提供sensor初始化的api.
@@ -591,6 +708,54 @@ static int gc0328_set_ctrl(const struct device *dev, unsigned int cid, void *val
 	case VIDEO_CID_INIT:
 		k_sleep(K_MSEC(10));
 		ret = gc0328_reg_init(dev);
+		break;
+	default:
+		return -ENOTSUP;
+	}
+
+	return ret;
+}
+
+static uint8_t gc0328_read_luma(const struct device *dev, uint8_t *luma)
+{
+	gc0328_write_reg(dev, 0xfe, 0x1);
+	return gc0328_read_reg(dev, 0x14, luma);
+}
+
+static int gc0328_read_exposure_time(const struct device *dev, uint16_t *exp)
+{
+	uint8_t exp11_8;
+	uint8_t exp7_0;
+	int ret = 0;
+
+	gc0328_write_reg(dev, 0xfe, 0x0);
+
+	ret |= gc0328_read_reg(dev, 0x03, &exp11_8);
+	ret |= gc0328_read_reg(dev, 0x04, &exp7_0);
+	*exp = (exp11_8<<8) | exp7_0;
+
+	return ret;
+}
+
+static int gc0328_get_ctrl(const struct device *dev, unsigned int cid, void *value)
+{
+	LOG_DBG("gc0328 get ctrl %d", cid);
+	int ret = 0;
+
+	switch (cid) {
+	case VIDEO_CID_CAMERA_LUMA:
+		ret = gc0328_read_luma(dev, value);
+		if (ret) {
+			LOG_ERR("Unable to read GC0328 luma, ret:%d", ret);
+			return -ENODEV;
+		}
+		break;
+	case VIDEO_CID_CAMERA_EXPOSURE_TIME:
+		ret = gc0328_read_exposure_time(dev, value);
+		if (ret) {
+			LOG_ERR("Unable to read GC0328 exposure time, ret:%d", ret);
+			return -ENODEV;
+		}
 		break;
 	default:
 		return -ENOTSUP;
@@ -629,6 +794,7 @@ static const struct video_driver_api gc0328_driver_api = {
 	.stream_start = gc0328_stream_start,
 	.stream_stop = gc0328_stream_stop,
 	.set_ctrl = gc0328_set_ctrl,
+	.get_ctrl = gc0328_get_ctrl,
 };
 
 #define GC0328_DEVICE_INIT_CSK(index)						\

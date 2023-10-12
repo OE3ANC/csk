@@ -20,12 +20,15 @@ extern "C" {
 #define VIDEO_PIX_FMT_YVYU video_fourcc('Y', 'V', 'Y', 'U') /* 16  YVYU */
 #define VIDEO_PIX_FMT_VYUY video_fourcc('V', 'Y', 'U', 'Y') /* 16  VYUY */
 #define VIDEO_PIX_FMT_UYVY video_fourcc('U', 'Y', 'V', 'Y') /* 16  UYVY */
+#define VIDEO_PIX_FMT_GRAY video_fourcc('G', 'R', 'A', 'Y') /*  8  GRAY */
 
 #define VIDEO_CID_INIT (VIDEO_CTRL_CLASS_GENERIC + 2) /* Initialize the camera */
 
 #define VIDEO_CTRL_CLASS_PARAMETERS	 0x00040000 /* Parameters controls */
 #define VIDEO_CID_CAMERA_EXPOSURE_TIME	 (VIDEO_CTRL_CLASS_PARAMETERS | VIDEO_CID_CAMERA_EXPOSURE)
 #define VIDEO_CID_CAMERA_GAIN_PARAMETERS (VIDEO_CTRL_CLASS_PARAMETERS | VIDEO_CID_CAMERA_GAIN)
+#define VIDEO_CID_CAMERA_COLOR_INVERT	(VIDEO_CTRL_CLASS_CAMERA + 9)
+#define VIDEO_CID_CAMERA_LUMA		(VIDEO_CTRL_CLASS_CAMERA + 10)
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,4 @@
+name: ov9655
+append:
+  EXTRA_CONF_FILE: ov9655.conf
+  EXTRA_DTC_OVERLAY_FILE: ov9655.overlay
