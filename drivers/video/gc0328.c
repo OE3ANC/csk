@@ -44,6 +44,14 @@ struct gc0328_reg {
 #define REG_CID_FLIP_OFF_VALUE			0x00
 #define REG_CID_FLIP_ON_VALUE			0x02	// 0x17, bit[1],2'b00 flip off,2'b02 flip on
 
+// Color invert 模式
+#define PAGE_BANK_REG_COLOR_INVERT			0x43
+#define PAGE_BANK_REG_COLOR_INVERT_EN		0x01
+
+// Color bar 模式
+#define PAGE_BANK_REG_COLOR_BAR			0x4C	// color bar
+#define PAGE_BANK_REG_COLOR_BAR_EN		0x04	//
+
 /* 25M CLK & VGA & YUV(UYVY) & 15fps */
 static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0xfe,0x80},
@@ -173,6 +181,7 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x40,0x7f,},
 	{0x41,0x26,},
 	{0x42,0xff},
+	// {0x43, 0x01},color invert
 	{0x45,0x00,},
 	{0x44,0x01,},//
 	{0x46,0x02,},
@@ -349,6 +358,9 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x4f,0x01,},
 	{0xf1,0x07,},
 	{0xf2,0x01,},
+
+	// {0xfe,0x00,},
+	// {0x4C,0x04,},// Color bar 模式
 };
 
 static int gc0328_write_reg(const struct device *dev, uint8_t reg_addr, uint8_t value)
@@ -537,6 +549,48 @@ static int gc0328_set_vertical_flip(const struct device *dev, int enable)
 	return ret;
 }
 
+static int gc0328_set_colorbar(const struct device *dev, int enable)
+{
+	int ret = 0;
+	uint8_t reg_value = 0;
+	gc0328_write_reg(dev, 0xfe, 0x00);
+	gc0328_read_reg(dev, PAGE_BANK_REG_COLOR_BAR, &reg_value);
+	if (enable) {
+		reg_value |= PAGE_BANK_REG_COLOR_BAR_EN;
+	} else {
+		reg_value &= ~PAGE_BANK_REG_COLOR_BAR_EN;
+	}
+
+	ret = gc0328_write_reg(dev, PAGE_BANK_REG_COLOR_BAR, reg_value);
+
+	if (ret) {
+		LOG_WRN("Unable to set gc0328 colorbar ret=%d", ret);
+		return ret;
+	}
+	return ret;
+}
+
+static int gc0328_set_color_invert(const struct device *dev, int enable)
+{
+	int ret = 0;
+	uint8_t reg_value = 0;
+	gc0328_write_reg(dev, 0xfe, 0x00);
+	gc0328_read_reg(dev, PAGE_BANK_REG_COLOR_INVERT, &reg_value);
+	if (enable) {
+		reg_value |= PAGE_BANK_REG_COLOR_INVERT_EN;
+	} else {
+		reg_value &= ~PAGE_BANK_REG_COLOR_INVERT_EN;
+	}
+
+	ret = gc0328_write_reg(dev, PAGE_BANK_REG_COLOR_INVERT, reg_value);
+
+	if (ret) {
+		LOG_WRN("Unable to set gc0328 colorbar ret=%d", ret);
+		return ret;
+	}
+	return ret;
+}
+
 static int gc0328_reg_init(const struct device *dev)
 {
 	struct gc0328_data *drv_data = dev->data;
@@ -566,7 +620,7 @@ static int gc0328_reg_init(const struct device *dev)
 	ret = gc0328_write_all(dev, gc0328_init_reg_tb,
 					ARRAY_SIZE(gc0328_init_reg_tb));
 	if (ret) {
-		LOG_ERR("Unable to write sco30iot config");
+		LOG_ERR("Unable to write gc0328 config");
 		return ret;
 	}
 	return ret;
@@ -583,6 +637,12 @@ static int gc0328_set_ctrl(const struct device *dev, unsigned int cid, void *val
 		break;
 	case VIDEO_CID_VFLIP:
 		ret = gc0328_set_vertical_flip(dev, *(int *)value);
+		break;
+	case VIDEO_CID_CAMERA_COLORBAR:
+		ret |= gc0328_set_colorbar(dev, *(int *)value);
+		break;
+	case VIDEO_CID_CAMERA_COLOR_INVERT:
+		ret |= gc0328_set_color_invert(dev, *(int *)value);
 		break;
 	/*
 		该sensor只有在mclk有输入时钟的情况下，i2c才能正常通信，所以并不能在内核设备初始化流程中进行sensor初始化。

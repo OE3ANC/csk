@@ -14,7 +14,7 @@
 #include <zephyr/drivers/pinctrl.h>
 #include "venus_ap.h"
 
-#define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
+#define LOG_LEVEL CONFIG_LOG_DBG
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_dvp);
 
@@ -93,6 +93,7 @@ static void dvp_framedata_proc(void)
 
 static void dvp_callback(uint32_t event, uint32_t param)
 {
+	LOG_DBG("dvp event %d\r\n", event);
 	switch (event) {
 	case CSK_DVP_STATUS_FRM_CMPLT:
 		dvp_framedata_proc();
