@@ -15,8 +15,8 @@ LOG_MODULE_REGISTER(main);
 #define VBUF_NUM		2
 #define IMAGE_HEIGHT		480/2
 #define IMAGE_WIDTH		640/2
-#define PIXEL_BYTES_SIZE	2
-#define IMAGE_SIZE		(IMAGE_WIDTH * IMAGE_HEIGHT * PIXEL_BYTES_SIZE)
+#define PIXEL_BYTES_SIZE	1
+// #define IMAGE_SIZE		(IMAGE_WIDTH * IMAGE_HEIGHT * PIXEL_BYTES_SIZE)
 
 #define USE_SERIAL_PROTOCOL (1)
 
@@ -151,10 +151,10 @@ void main(void)
 		i++;
 	}
 
-	fmt.pixelformat = VIDEO_PIX_FMT_VYUY;
+	fmt.pixelformat = VIDEO_PIX_FMT_GRAY;
 	fmt.width = IMAGE_WIDTH;
 	fmt.height = IMAGE_HEIGHT;
-	fmt.pitch = fmt.width * PIXEL_BYTES_SIZE;
+	fmt.pitch = fmt.width * 1;
 	if (video_set_format(video, VIDEO_EP_OUT, &fmt)) {
 		LOG_ERR("Unable to set video format");
 		return;
@@ -182,9 +182,12 @@ void main(void)
 	}
 
 	/* Grab video frames */
+	video_set_ctrl(video, VIDEO_PIX_FMT_GRAY, (void *)1);
+	// video_set_ctrl(video, VIDEO_CID_CAMERA_COLORBAR, (void *)1);
 	while (1) {
 		int err;
 		err = video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_FOREVER);
+		LOG_HEXDUMP_INF(vbuf->buffer, bsize, "frame");
 		if (err) {
 			LOG_ERR("Unable to dequeue video buf");
 			return;
@@ -198,7 +201,7 @@ void main(void)
 				IMAGE_WIDTH, IMAGE_HEIGHT, WEBUSB_IMAGE_DOWNSAMPLING, 0);
 			frame_send(resample_img, dst_width, dst_height, 0);
 	#else
-			frame_send(vbuf->buffer, fmt.width, fmt.height, 0);
+			frame_send(vbuf->buffer, fmt.width, fmt.height, 2);
 	#endif
 #endif
 

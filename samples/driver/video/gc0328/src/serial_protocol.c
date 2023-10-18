@@ -54,7 +54,7 @@ int frame_send(uint8_t *frameBuf, uint16_t width, uint16_t height, uint8_t mode)
 {
 	int txLen;
 
-	txLen = width * height * 2;
+	txLen = width * height;// * 2;
 
 	int txPos = 0;
 	while (txLen > UART_TX_BLOCK) {

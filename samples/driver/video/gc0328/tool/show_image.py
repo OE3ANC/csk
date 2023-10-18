@@ -92,10 +92,26 @@ class ShowImage():
 
         return RGBMatrix
 
+    def OnlyYtoRGB(self, byteArray, width, height):
+        print(type(byteArray))
+        print(len(byteArray))
+        image = np.array(byteArray, dtype=np.uint8)
+        # image =  np.frombuffer(byteArray, dtype=np.uint16).reshape((height, width))
+        img_data = np.frombuffer(image, dtype=np.uint8).reshape((height, width))
 
-    def save_yuv_with_timestamp(self, yuv_data):
+        # RGBMatrix = image.reshape((height, width))
+        # RGBMatrix = cv2.convertScaleAbs(RGBMatrix)
+
+        # cv2.COLOR_BAYER_RG2RGB)#cv2.COLOR_BAYER_BG2BGR)
+        # RGBMatrix = cv2.cvtColor(RGBMatrix, cv2.COLOR_GRAY2RGB)
+        # RGBMatrix = cv2.cvtColor(RGBMatrix, cv2.COLOR_BAYER_BGR2RGB)
+
+        return img_data
+
+
+    def save_yuv_with_timestamp(self, yuv_data, file_ext='yuv'):
         timestamp = int(time.time())
-        filename = f"{timestamp}.yuv"
+        filename = f"{timestamp}.{file_ext}"
         print(type(yuv_data))
         print(type(yuv_data[0]))
         yuv_bytes = bytes(yuv_data)
@@ -114,7 +130,7 @@ class ShowImage():
                     'img_data length error: '+str(len(img_data)))
                 return
             # img_data.reshape(img_data, 1)
-            self.save_yuv_with_timestamp(img_data)
+            self.save_yuv_with_timestamp(img_data, 'yuv')
             img_np = self.YUVtoRGB(img_data, width, height)
 
             cv2.namedWindow('YUV', cv2.WINDOW_NORMAL)
@@ -130,6 +146,17 @@ class ShowImage():
 
             cv2.namedWindow('RawRGB', cv2.WINDOW_NORMAL)
             cv2.imshow('RawRGB', img_np)
+            cv2.waitKey(self.img_refresh)
+        elif mode == self.CAMERA_MODE_Y_ONLY:
+            if len(img_data) != width*height:
+                self.logger.warning(
+                    'img_data length error: '+str(len(img_data)))
+                return
+            # self.save_yuv_with_timestamp(img_data, 'y')
+            img_np = self.OnlyYtoRGB(img_data, width, height)
+
+            cv2.namedWindow('Only Y', cv2.WINDOW_NORMAL)
+            cv2.imshow('Only Y', img_np)
             cv2.waitKey(self.img_refresh)
 
         else:
