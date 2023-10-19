@@ -52,6 +52,8 @@ struct gc0328_reg {
 #define PAGE_BANK_REG_COLOR_BAR			0x4C	// color bar
 #define PAGE_BANK_REG_COLOR_BAR_EN		0x04	//
 
+#define PAGE_PIXEL_FORMAT_REG			0x44
+
 /* 25M CLK & VGA & YUV(UYVY) & 15fps */
 static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0xfe,0x80},
@@ -183,7 +185,7 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x42,0xff},
 	// {0x43, 0x01},color invert
 	{0x45,0x00,},
-	{0x44,0x01,},//
+	{0x44,0x22,},
 	{0x46,0x02,},
 	{0x4b,0x01,},
 	{0x50,0x01,},
@@ -445,22 +447,77 @@ static int gc0328_set_fmt_windows(const struct device *dev, int offset_x, int of
 	return 0;
 }
 
+static int gc0328_set_pixel_format(const struct device *dev, struct video_format *fmt)
+{
+	int ret = 0;
+	uint8_t fmt_value = 0;
+	gc0328_write_reg(dev, 0xfe, 0x00);
+	
+	// P0:0x44 Output_format
+	// 5’h00 Cb Y Cr Y, UYVY
+	// 5’h01 Cr Y Cb Y, VYUY
+	// 5’h02 Y Cb Y Cr, YUYV
+	// 5’h03 Y Cr Y Cb, YVYU
+	// 5’h06 RGB 565 
+	// 5’h07 RGB x555 
+	// 5’h08 RGB 555x 
+	// 5’h09 RGB x444 
+	// 5’h0a RGB 444x 
+	// 5’h0b BGRG 
+	// 5’h0c RGBG 
+	// 5’h0d GBGR 
+	// 5’h0e GRGB 
+	// 5’h0f bypass 10bits 
+	// 5’h11 only Y 
+	// 5’h12 only Cb 
+	// 5’h13 only Cr 
+	// 5’h14 only R 
+	// 5’h15 only G 
+	// 5’h16 only B
+	switch (fmt->pixelformat)
+	{
+	case VIDEO_PIX_FMT_UYVY:
+		fmt_value = 0x00;
+		break;
+	
+	case VIDEO_PIX_FMT_VYUY:
+		fmt_value = 0x01;
+		break;
+	
+	case VIDEO_PIX_FMT_YUYV:
+		fmt_value = 0x02;
+		break;
+	
+	case VIDEO_PIX_FMT_YVYU:
+		fmt_value = 0x03;
+		break;
+	case VIDEO_PIX_FMT_GRAY:
+		fmt_value = 0x11;
+		break;
+	default:
+		LOG_ERR("video format unsupported \n");
+		return -ENOTSUP;
+	}
+	ret = gc0328_write_reg(dev, PAGE_PIXEL_FORMAT_REG, fmt_value);
+	return ret;
+}
+
+
 static int gc0328_set_fmt(const struct device *dev, enum video_endpoint_id ep,
 			    struct video_format *fmt)
 {
 	int ret = 0;
-	if (fmt->pixelformat == VIDEO_PIX_FMT_VYUY) {
-		if ((fmt->width > 640) || (fmt->height > 480)) {
-			LOG_ERR("video format unsupported \n");
-			return -ENOTSUP;
-		}
-		uint16_t offset_x = (640-fmt->width) /2;
-		uint16_t offset_y = (480-fmt->height) /2;
-		ret = gc0328_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
-	} else {
+	if ((fmt->width > 640) || (fmt->height > 480)) {
 		LOG_ERR("video format unsupported \n");
 		return -ENOTSUP;
 	}
+	uint16_t offset_x = (640-fmt->width) /2;
+	uint16_t offset_y = (480-fmt->height) /2;
+	if (gc0328_set_pixel_format(dev, fmt)) {
+		LOG_ERR("Unable to set gc0328 pixel format");
+		return -ENOTSUP;
+	}
+	ret = gc0328_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
 	return ret;
 }
 
