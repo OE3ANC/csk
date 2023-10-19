@@ -659,6 +659,54 @@ static int gc0328_set_ctrl(const struct device *dev, unsigned int cid, void *val
 	return ret;
 }
 
+static uint8_t gc0328_read_luma(const struct device *dev, uint8_t *luma)
+{
+	gc0328_write_reg(dev, 0xfe, 0x1);
+	return gc0328_read_reg(dev, 0x14, luma);
+}
+
+static int gc0328_read_exposure_time(const struct device *dev, uint16_t *exp)
+{
+	uint8_t exp11_8;
+	uint8_t exp7_0;
+	int ret = 0;
+
+	gc0328_write_reg(dev, 0xfe, 0x0);
+
+	ret |= gc0328_read_reg(dev, 0x03, &exp11_8);
+	ret |= gc0328_read_reg(dev, 0x04, &exp7_0);
+	*exp = (exp11_8<<8) | exp7_0;
+
+	return ret;
+}
+
+static int gc0328_get_ctrl(const struct device *dev, unsigned int cid, void *value)
+{
+	LOG_DBG("gc0328 get ctrl %d", cid);
+	int ret = 0;
+
+	switch (cid) {
+	case VIDEO_CID_CAMERA_LUMA:
+		ret = gc0328_read_luma(dev, value);
+		if (ret) {
+			LOG_ERR("Unable to read GC0328 luma, ret:%d", ret);
+			return -ENODEV;
+		}
+		break;
+	case VIDEO_CID_EXPOSURE_TIME:
+		ret = gc0328_read_exposure_time(dev, value);
+		if (ret) {
+			LOG_ERR("Unable to read GC0328 exposure time, ret:%d", ret);
+			return -ENODEV;
+		}
+		break;
+	default:
+		return -ENOTSUP;
+	}
+
+	return ret;
+}
+
 static int gc0328_init(const struct device *dev)
 {
 	LOG_INF("Galaxyc GC0328 init");
@@ -689,6 +737,7 @@ static const struct video_driver_api gc0328_driver_api = {
 	.stream_start = gc0328_stream_start,
 	.stream_stop = gc0328_stream_stop,
 	.set_ctrl = gc0328_set_ctrl,
+	.get_ctrl = gc0328_get_ctrl,
 };
 
 #define GC0328_DEVICE_INIT_CSK(index)						\
