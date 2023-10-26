@@ -750,7 +750,7 @@ static int gc0328_get_ctrl(const struct device *dev, unsigned int cid, void *val
 			return -ENODEV;
 		}
 		break;
-	case VIDEO_CID_EXPOSURE_TIME:
+	case VIDEO_CID_CAMERA_EXPOSURE_TIME:
 		ret = gc0328_read_exposure_time(dev, value);
 		if (ret) {
 			LOG_ERR("Unable to read GC0328 exposure time, ret:%d", ret);
