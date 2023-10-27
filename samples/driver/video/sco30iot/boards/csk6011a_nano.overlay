@@ -24,19 +24,19 @@
 
 &csk6011a_nano_pinctrl {
 	pinctrl_uart1_tx_default: uart1_tx_default{
-		pinctrls = <UART1_TXD_GPIOA_10>;
+		// pinctrls = <UART1_TXD_GPIOA_10>;
 	};
 
-	pinctrl_i2c0_scl_default: i2c0_scl_default{
-		pinctrls = <I2C0_SCL_GPIOB_04>;
+	pinctrl_i2c1_scl_default: i2c1_scl_default{
+		pinctrls = <I2C1_SCL_GPIOB_09>;
 	};
 
-	pinctrl_i2c0_sda_default: i2c0_sda_default{
-		pinctrls = <I2C0_SDA_GPIOB_03>;
+	pinctrl_i2c1_sda_default: i2c1_sda_default{
+		pinctrls = <I2C1_SDA_GPIOB_08>;
 	};
 
 	pinctrl_dvp_clkout_default: dvp_clkout_default{
-		pinctrls = <CLKP_OUT_GPIOA_07>;
+		pinctrls = <CLKP_OUT_GPIOA_11>;
 	};
 
 	pinctrl_dvp_vsync_default: dvp_vsync_default{
@@ -64,17 +64,17 @@
 	};
 
 	pinctrl_dvp_d7_default: dvp_d7_default{
-		pinctrls = <I_PIXEL_DATA7_GPIOB_07>;
+		pinctrls = <I_PIXEL_DATA7_GPIOA_10>;
 	};
 
 
 	pinctrl_dvp_d8_default: dvp_d8_default{
-		pinctrls = <I_PIXEL_DATA8_GPIOB_08>;
+		pinctrls = <I_PIXEL_DATA8_GPIOA_19>;
 	};
 
 
 	pinctrl_dvp_d9_default: dvp_d9_default{
-		pinctrls = <I_PIXEL_DATA9_GPIOB_09>;
+		pinctrls = <I_PIXEL_DATA9_GPIOA_20>;
 	};
 
 
@@ -97,16 +97,16 @@
 };
 
 
-&i2c0 {
+&i2c1 {
 	status = "okay";
-	pinctrl-0 = <&pinctrl_i2c0_scl_default &pinctrl_i2c0_sda_default>;
+	pinctrl-0 = <&pinctrl_i2c1_scl_default &pinctrl_i2c1_sda_default>;
 	pinctrl-names = "default";
 
 	sco30iot: sco30iot@68 {
 		compatible = "smartsens,sco30iot";
 		status = "okay";
 		reg = <0x68>;
-		reset-gpios = <&gpioa 6 0>;
+		reset-gpios = <&gpioa 16 1>;
 
 		port {
 			sco30iot_ep_out: endpoint {
@@ -127,7 +127,7 @@
 &dvp {
 	status = "okay";
 	sensor = <&sco30iot>;
-	clock-prescaler = <7>;
+	clock-prescaler = <20>;
 	data-align-type = "high_align";
 	pclk-polarity = "post_edge_sampling";
 	hsync-polarity = "active_high";

@@ -747,7 +747,9 @@ static int sco30iot_init(const struct device *dev)
 		gpio_pin_set_dt(&drv_data->reset_gpios, 0);
 		k_sleep(K_MSEC(3));
 		gpio_pin_set_dt(&drv_data->reset_gpios, 1);
-		k_sleep(K_MSEC(1));
+		k_sleep(K_MSEC(3));
+		gpio_pin_set_dt(&drv_data->reset_gpios, 0);
+		k_sleep(K_MSEC(10));
 	}
 
 	return ret;
@@ -761,7 +763,7 @@ static int sco30iot_init(const struct device *dev)
 	};									\
 	DEVICE_DT_INST_DEFINE(index, &sco30iot_init, NULL, 			\
 				&sco30iot_data_##index, NULL,			\
-				POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,\
+				POST_KERNEL, CONFIG_VIDEO_SCO30IOT_INIT_PRIORITY,\
 				&sco30iot_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(SCO30IOT_DEVICE_INIT_CSK)

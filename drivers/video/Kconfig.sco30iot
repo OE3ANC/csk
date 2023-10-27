@@ -2,6 +2,7 @@
 
 config VIDEO_SCO30IOT
 	bool "Support for the SCO30IOT out of tree driver"
+	depends on VIDEO
 
 choice SCO30IOT_FPS
 	prompt "SCO30IOT working fps config"
@@ -14,3 +15,10 @@ choice SCO30IOT_FPS
 	config SCO30IOT_FPS_15
 		bool "SCO30IOT using 15 fps"
 endchoice
+
+config VIDEO_SCO30IOT_INIT_PRIORITY
+	int "SCO30IOT device inital priority"
+	default 89
+	help 
+		must less than VIDEO_INIT_PRIORITY
+

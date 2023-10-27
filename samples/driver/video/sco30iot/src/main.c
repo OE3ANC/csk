@@ -123,7 +123,7 @@ void main(void)
 	int i = 0;
 
 	video = DEVICE_DT_GET(DT_NODELABEL(dvp));
-
+	k_msleep(20);
 	if (video == NULL) {
 		LOG_ERR("Video device %s not found, "
 			"fallback to software generator.",

@@ -639,7 +639,7 @@ static const struct video_driver_api gc0328_driver_api = {
 	};									\
 	DEVICE_DT_INST_DEFINE(index, &gc0328_init, NULL, 			\
 				&gc0328_data_##index, NULL,			\
-				POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,\
+				POST_KERNEL, CONFIG_VIDEO_SCO30IOT_INIT_PRIORITY,\
 				&gc0328_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(GC0328_DEVICE_INIT_CSK)
