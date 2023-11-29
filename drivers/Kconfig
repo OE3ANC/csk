@@ -52,4 +52,6 @@ rsource "display/Kconfig"
 
 rsource "rtc/Kconfig"
 
+rsource "lte/Kconfig"
+
 endmenu

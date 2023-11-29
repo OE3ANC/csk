@@ -1,0 +1,15 @@
+menuconfig LTE
+	bool "LTE drivers"
+
+
+if LTE
+
+config LTE_EC718
+    bool "EC718 driver"
+    select NETWORKING
+    select NET_SOCKETS
+    select NET_OFFLOAD
+    select NET_SOCKETS_OFFLOAD
+    default y
+
+endif

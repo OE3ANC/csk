@@ -90,7 +90,11 @@
 };
 
 &uart1 {
-        status = "disabled";
+        status = "okay";
+	current-speed = <115200>;
+	lte: lte_ec718 {
+		compatible = "zephyr,lte-ec718";
+	};
 };
 
 &uart2 {
