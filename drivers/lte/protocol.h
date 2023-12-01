@@ -21,10 +21,10 @@ struct csk_payload_header {
     uint16_t         tag;
 	uint8_t          if_type;
 	uint8_t          flags;
-	uint16_t         payload_len;
+	uint16_t         payload_len; // 5 6
 	uint16_t         tot_checksum;
 	uint16_t         hdr_checksum;
-	uint16_t		 seq_num;
+	uint16_t		 seq_num;  //11 12
 	uint16_t         reserved;
 	uint8_t			 payload[0];
 } __attribute__((packed));

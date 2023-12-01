@@ -16,7 +16,9 @@ LOG_MODULE_REGISTER(ec718_conn, LOG_LEVEL_INF);
 #define MAX_RX_LITTLE_FRAME_NUMS                (10)
 
 #define MAX_RETRANCATION_TIMES                  3
-#define MAX_ACK_WAIT_TIME_MS                    1000
+#define MAX_ACK_WAIT_TIME_MS                    500
+
+#define MAX_RECV_LEN        MAX_FRAME_SIZE
 
 // #define MAX_BIG_FRAME_SIZE                      MAX_FRAME_SIZE
 // #define MAX_BIG_FRAME_NUMS                       (10)
@@ -24,6 +26,9 @@ LOG_MODULE_REGISTER(ec718_conn, LOG_LEVEL_INF);
 // #define MAX_MIDDLE_FRAME_NUMS                    (20)
 // #define MAX_LITTLE_FRAME_SIZE                   FRAME_HEADER_SIZE
 // #define MAX_LITTLE_FRAME_NUMS                    (10)
+
+K_PIPE_DEFINE(s_rx_pipe, MAX_RECV_LEN * 2, 4);
+K_SEM_DEFINE(s_uart_rx_sem, 0, 1);
 
 typedef struct {
 	void *fifo_reserved;
@@ -46,8 +51,10 @@ typedef struct {
 K_MSGQ_DEFINE(frame_msgq, sizeof(frame_fifo_item_t *), 10, 4);
 K_MSGQ_DEFINE(sock_frame_msgq, sizeof(frame_fifo_item_t *), 10, 4);
 static uint16_t s_tx_seq_num = 1;
-static uint16_t s_rx_seq_num = 0;
+static uint16_t s_rx_seq_num = 1;
 // K_SEM_DEFINE(ack_sem, 0, 1);
+
+K_MSGQ_DEFINE(ack_seq_cache, sizeof(uint32_t), 10, 4);
 
 static char ack_msgq_buffer[CSK_IFACE_MAX][sizeof(uint32_t) * 10];
 
@@ -145,87 +152,130 @@ static void payload_checksum_failed_handle(uint8_t *payload, uint16_t size, fram
 
 static void uart_rx_callback(const struct device *dev, void *user_data)
 {
-    uint8_t temp[32];
+    uint8_t temp_buf[64];
 	uart_irq_update(dev);
 	while (uart_irq_is_pending(dev)) {
 		if (uart_irq_rx_ready(dev)) {
+			int recv_len = uart_fifo_read(dev, temp_buf, sizeof(temp_buf));
+            int bytes_written = 0;
+			int ret = k_pipe_put(&s_rx_pipe, temp_buf, recv_len, &bytes_written, 1, K_NO_WAIT);
+            if (ret != 0) {
+                printk("fifo is full\n");
+            }
+            k_sem_give(&s_uart_rx_sem);
+		}
+	}
+}
+
+static void uart_rx_process(void *arg1, void *arg2, void *arg3)
+{
+    int ret = 0;
+    while (1) {
+        k_sem_take(&s_uart_rx_sem, K_FOREVER);
+        while (k_pipe_read_avail(&s_rx_pipe) > 0) {
             frame_fifo_item_t *frame = s_ec718_handle.current_frame;
             if (!frame) {
                 frame = alloca_frame_item(MAX_FRAME_PAYLOAD_SIZE);
                 if (!frame) {
-                    printk("no mem, data lose big\n");
-                    uart_fifo_read(dev, temp, sizeof(temp));
-                    continue;
+                    // printk("no mem, data lose\n");
+                    break;
                 }
                 s_ec718_handle.current_frame = frame;
             }
+
             if (s_ec718_handle.rx_state == 0) {  //rx header
-                int recv_len = uart_fifo_read(dev, &frame->data[frame->size], MAX_FRAME_SIZE - frame->size);
-                frame->size += recv_len;
-                if (frame->size >= FRAME_HEADER_SIZE) {
-                    uint8_t *header = find_header(frame->data, frame->size);
-                    if (header != NULL) {
-                        if (header != frame->data) {
-                            int diff = header - frame->data;
-                            frame->size -= diff;
-                            // printk("throw garbage data: %d\n", diff);
-                            memmove(frame->data, header, frame->size);
-                        }
-                        struct csk_payload_header *payload_header = (struct csk_payload_header *)header;
-                        if (payload_header->payload_len == 0) {  //frame without payload
-                            frame_fifo_item_t *no_payload_frame = alloca_frame_item(0);
-                            if (!no_payload_frame) {
-                                printk("no mem, data lose little\n");
+                    // int recv_len = uart_fifo_read(dev, &frame->data[frame->size], MAX_FRAME_SIZE - frame->size);
+                    int bytes_read = 0;
+                    ret = k_pipe_get(&s_rx_pipe, &frame->data[frame->size], FRAME_HEADER_SIZE - frame->size, &bytes_read, 1, K_NO_WAIT);
+                    // if (ret != 0) {
+                    //     continue;
+                    // }
+                    int recv_len = bytes_read;
+                    // int recv_len = ring_buf_read(s_ec718_handle.ringbuf, &frame->data[frame->size], MAX_FRAME_SIZE - frame->size);
+                    frame->size += recv_len;
+                    if (frame->size >= FRAME_HEADER_SIZE) {
+                        uint8_t *header = find_header(frame->data, frame->size);
+                        if (header != NULL) {
+                            if (header != frame->data) {
+                                int diff = header - frame->data;
+                                frame->size -= diff;
+                                printk("-------------------throw garbage data: %d\n", diff);
+                                memmove(frame->data, header, frame->size);
+                            }
+                            struct csk_payload_header *payload_header = (struct csk_payload_header *)header;
+                            if (payload_header->payload_len == 0) {  //frame without payload
+                                frame_fifo_item_t *no_payload_frame = alloca_frame_item(0);
+                                if (!no_payload_frame) {
+                                    // printk("no mem, data lose\n");
+                                    frame->size = 0;
+                                    s_ec718_handle.rx_state = 0;
+                                    break;
+                                }
+                                memcpy(no_payload_frame->data, frame->data, FRAME_HEADER_SIZE);
+                                no_payload_frame->size = FRAME_HEADER_SIZE;
+
+                                ret = k_msgq_put(&frame_msgq, &no_payload_frame, K_NO_WAIT);
+                                if (ret != 0) {
+                                    printk("msgq is full, data loss\n");
+                                }
                                 frame->size = 0;
                                 s_ec718_handle.rx_state = 0;
-                                continue;
+                                // continue;
+                            } else {
+                                s_ec718_handle.rx_state = 1;
                             }
-                            memcpy(no_payload_frame->data, frame->data, frame->size);
-                            no_payload_frame->size = frame->size;
-                            int ret = k_msgq_put(&frame_msgq, &no_payload_frame, K_NO_WAIT);  //send to process
+                            // ECCUST_PRINTF(UNILOG_LISTENAI_CONN, __LINE__, P_INFO,"got frame header");
+                        } else {
+                            memmove(frame->data, &frame->data[frame->size -1 - (FRAME_HEADER_SIZE - 1)], FRAME_HEADER_SIZE - 1);
+                            frame->size = FRAME_HEADER_SIZE - 1;
+                            s_ec718_handle.rx_state = 0;
+                            printk("---------------------------- no header\n");
+                        }
+                    }
+                }
+                if (s_ec718_handle.rx_state == 1) {  //rx payload
+                    struct csk_payload_header *payload_header = (struct csk_payload_header *)frame->data;
+                    int to_read = payload_header->payload_len - (frame->size - FRAME_HEADER_SIZE);
+
+                    int bytes_read = 0;
+                    ret = k_pipe_get(&s_rx_pipe, &frame->data[frame->size], to_read, &bytes_read, 1, K_NO_WAIT);
+                    // if (ret != 0) {
+                    //     continue;
+                    // }
+                    int recv_len = bytes_read;
+                    // int to_read = payload_header->payload_len - (frame->size - FRAME_HEADER_SIZE);
+                    // int recv_len = ring_buf_read(s_ec718_handle.ringbuf, &frame->data[frame->size], to_read);
+                    frame->size += recv_len;
+
+                    if (frame->size >= (payload_header->payload_len + FRAME_HEADER_SIZE)) {
+                        int tot_checksum = le16toh(payload_header->tot_checksum);
+                        payload_header->tot_checksum = 0;
+                        int total_checksum = compute_checksum(frame->data, FRAME_HEADER_SIZE + payload_header->payload_len);
+                        payload_header->tot_checksum = tot_checksum;
+                        if (total_checksum == tot_checksum) {
+                            // ECCUST_PRINTF(UNILOG_LISTENAI_CONN, __LINE__, P_INFO,"got frame payload");
+
+                            ret = k_msgq_put(&frame_msgq, &frame, K_NO_WAIT);
                             if (ret != 0) {
                                 printk("-----msgq full, data lose\n");
                             }
-                            frame->size = 0;
+                            // os_ret = xQueueSend(frame_queue, &frame, 0);
+                            // if (os_ret != pdPASS) {
+                            //     // printk("-----msgq full, data lose\n");
+                            // }
                             s_ec718_handle.rx_state = 0;
-                            continue;
+                            s_ec718_handle.current_frame = NULL;
+                        } else {
+                            //payload checksum failed, lose payload
+                            // ECCUST_DUMP(UNILOG_LISTENAI_CONN, __LINE__, P_INFO, "dump: ", frame->size, frame->data);
+                            printk("payload checksum failed, %d, calsum: %d  prosum:%d", frame->size, total_checksum, tot_checksum);
+                            payload_checksum_failed_handle(&frame->data[FRAME_HEADER_SIZE], payload_header->payload_len, frame);
+                            s_ec718_handle.rx_state = 0;
                         }
-                        s_ec718_handle.rx_state = 1;
-                    } else {
-                        memmove(frame->data, &frame->data[frame->size - (FRAME_HEADER_SIZE - 1)], FRAME_HEADER_SIZE - 1);
-                        frame->size = FRAME_HEADER_SIZE - 1;
-                        s_ec718_handle.rx_state = 0;
-                        // printk("no header\n");
                     }
                 }
-            } else if (s_ec718_handle.rx_state == 1) {  //rx payload
-                struct csk_payload_header *payload_header = (struct csk_payload_header *)frame->data;
-                int to_read = payload_header->payload_len - (frame->size - FRAME_HEADER_SIZE);
-                int recv_len = uart_fifo_read(dev, &frame->data[frame->size], to_read);
-                frame->size += recv_len;
-
-                if (frame->size >= (payload_header->payload_len + FRAME_HEADER_SIZE)) {
-                    int tot_checksum = le16toh(payload_header->tot_checksum);
-                    payload_header->tot_checksum = 0;
-                    int total_checksum = compute_checksum(frame->data, FRAME_HEADER_SIZE + payload_header->payload_len);
-                    payload_header->tot_checksum = tot_checksum;
-                    if (total_checksum == tot_checksum) {
-                        int ret = k_msgq_put(&frame_msgq, &frame, K_NO_WAIT);  //send to process
-                        if (ret != 0) {
-                            printk("-----msgq full, data lose\n");
-                        }
-                        s_ec718_handle.rx_state = 0;
-                        s_ec718_handle.current_frame = NULL;
-                    } else {
-                        printk("-------------- payload checksum failed\n");
-                        //payload checksum failed, lose payload
-                        payload_checksum_failed_handle(&frame->data[FRAME_HEADER_SIZE], payload_header->payload_len, frame);
-                        s_ec718_handle.rx_state = 0;
-                    }
-                }
-            }
-		}
-	}
+        }
+    }
 }
 
 static void rx_process(void *arg1, void *arg2, void *arg3)
@@ -246,6 +296,13 @@ static void rx_process(void *arg1, void *arg2, void *arg3)
         } else if (payload_header->flags & CSK_HEADER_FLAG_ACK) {
             ack_seq_num = le16toh(payload_header->seq_num);
             k_msgq_put(&s_ec718_handle.ack_msgq[payload_header->if_type], &ack_seq_num, K_FOREVER);
+            if (k_msgq_num_free_get(&ack_seq_cache) > 0) {
+                k_msgq_put(&ack_seq_cache, &ack_seq_num, K_FOREVER);
+            } else {
+                uint32_t temp;
+                k_msgq_get(&ack_seq_cache, &temp, K_FOREVER);
+                k_msgq_put(&ack_seq_cache, &ack_seq_num, K_FOREVER);
+            }
             goto __cleanup;
         } else {
             LOG_HEXDUMP_ERR(frame->data, sizeof(struct csk_payload_header ), "err header");
@@ -253,8 +310,8 @@ static void rx_process(void *arg1, void *arg2, void *arg3)
         }
 
 
-        if (le16toh(payload_header->seq_num) == (s_rx_seq_num + 1)) {
-            s_rx_seq_num = le16toh(payload_header->seq_num);
+        if (le16toh(payload_header->seq_num) == s_rx_seq_num) {
+            s_rx_seq_num = le16toh(payload_header->seq_num) + 1;
             // if (s_rx_seq_num >= 2000) {
             //     printk("yes recv_seq:%d  current_rx_seq:%d  tx: %d\n",
             //         le16toh(payload_header->seq_num), s_rx_seq_num, s_tx_seq_num);
@@ -371,7 +428,65 @@ static void ec718_uart_send_ack(csk_interface_type_e iface, uint16_t seq_num)
 
     payload_header->hdr_checksum = htole16(compute_checksum((uint8_t *)payload_header, FRAME_HEADER_SIZE));
     payload_header->tot_checksum = htole16(compute_checksum((uint8_t *)payload_header, FRAME_HEADER_SIZE));
-    ec718_uart_write(send_buf, FRAME_HEADER_SIZE);
+    int ret = ec718_uart_write(send_buf, FRAME_HEADER_SIZE);
+    if (ret != FRAME_HEADER_SIZE) {
+        __ASSERT(0, "check failed");
+    }
+}
+
+int ec718_uart_send_frame_with_ack(csk_interface_type_e iface, uint8_t *buf, uint16_t len)
+{
+    int ret = 0;
+    uint8_t *send_buf = k_malloc(FRAME_HEADER_SIZE + len);
+    if (!send_buf) {
+        __ASSERT(0, "no mem check failed");
+        return -ENOMEM;
+    }
+    struct csk_payload_header *frame = (struct csk_payload_header *)send_buf;
+    frame->if_type = iface;
+    frame->tag = htole16(CSK_HEADER_TAG);
+    frame->flags = CSK_HEADER_FLAG_ACK_REQ;
+    frame->payload_len = htole16(len);
+    frame->seq_num = htole16(s_tx_seq_num);
+    frame->reserved = 0;
+    frame->hdr_checksum = 0;
+    frame->tot_checksum = 0;
+
+    memcpy(frame->payload, buf, len);
+
+    frame->hdr_checksum = htole16(compute_checksum((uint8_t *)frame, FRAME_HEADER_SIZE));
+    frame->tot_checksum = htole16(compute_checksum((uint8_t *)frame, FRAME_HEADER_SIZE + len));
+
+    int retrancation_cnt = 0;
+    uint32_t ack_seq_num = 0;
+    do {
+        ret = ec718_uart_write(send_buf, FRAME_HEADER_SIZE + len);
+        if (ret != (FRAME_HEADER_SIZE + len)) {
+            __ASSERT(0, "check failed");
+        }
+
+        ret = k_msgq_get(&s_ec718_handle.ack_msgq[iface], &ack_seq_num, K_MSEC(MAX_ACK_WAIT_TIME_MS));
+        if ((ret == 0) && (ack_seq_num == s_tx_seq_num)) {
+            break;
+        }
+        printk("--------------------------------------------get ack failed %d  ,remind: %d\n",
+                s_tx_seq_num, k_pipe_read_avail(&s_rx_pipe));
+        __ASSERT(0, "lose ack");
+        // while (k_msgq_num_used_get(&ack_seq_cache) > 0) {
+        //     uint32_t temp;
+        //     k_msgq_get(&ack_seq_cache, &temp, K_FOREVER);
+        //     printk("%d   ", temp);
+        // }
+        // printk("\n");
+    } while (retrancation_cnt++ < MAX_RETRANCATION_TIMES);
+
+    if (ret == 0) {
+        s_tx_seq_num++;
+    } else {
+        printk("----------- wait ack failed: %d\n", s_tx_seq_num);
+    }
+    k_free(send_buf);
+    return ret;
 }
 
 int ec718_uart_send_frame_with_ack_v2(csk_interface_type_e iface, uint8_t *buf, uint16_t len)
@@ -396,18 +511,26 @@ int ec718_uart_send_frame_with_ack_v2(csk_interface_type_e iface, uint8_t *buf, 
     do {
         ret = ec718_uart_write((uint8_t *)frame, FRAME_HEADER_SIZE);
         if (ret != FRAME_HEADER_SIZE) {
-            printk("---------- send  header failed\n");
+            __ASSERT(0, "check failed");
         }
         ret = ec718_uart_write(buf, len);
         if (ret != len) {
-            printk("send payload failed\n");
+            __ASSERT(0, "check failed");
         }
 
         ret = k_msgq_get(&s_ec718_handle.ack_msgq[iface], &ack_seq_num, K_MSEC(MAX_ACK_WAIT_TIME_MS));
         if ((ret == 0) && (ack_seq_num == s_tx_seq_num)) {
             break;
         }
-        printk("--------------------------------------------get ack failed %d, remind: %d\n", s_tx_seq_num, s_ec718_handle.current_frame->size);
+        printk("--------------------------------------------get ack failed %d  ,remind: %d\n",
+                s_tx_seq_num, k_pipe_read_avail(&s_rx_pipe));
+        __ASSERT(0, "lose ack");
+        // while (k_msgq_num_used_get(&ack_seq_cache) > 0) {
+        //     uint32_t temp;
+        //     k_msgq_get(&ack_seq_cache, &temp, K_FOREVER);
+        //     printk("%d   ", temp);
+        // }
+        // printk("\n");
     } while (retrancation_cnt++ < MAX_RETRANCATION_TIMES);
 
     if (ret == 0) {
@@ -419,9 +542,13 @@ int ec718_uart_send_frame_with_ack_v2(csk_interface_type_e iface, uint8_t *buf, 
     return len;
 }
 
+K_THREAD_DEFINE(uart_rx_process_thread_id, 4096,
+                uart_rx_process, NULL, NULL, NULL,
+                3, 0, 0);
+
 K_THREAD_DEFINE(rx_thread_id, 4096,
                 rx_process, NULL, NULL, NULL,
-                2, 0, 0);
+                3, 0, 0);
 
 K_THREAD_DEFINE(rx_socket_thread_id, 4096,
                 rx_socket_process, NULL, NULL, NULL,
