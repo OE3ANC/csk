@@ -70,6 +70,8 @@ static int proto_sock_wait_rsp_v2(proto_socket_cmd_e cmd, void **out_frame, k_ti
     struct proto_sock_header *sock_header = (struct proto_sock_header *)frame->payload;
     if (out_frame != NULL) {
         *out_frame = frame;
+    } else {
+        k_free(frame);
     }
     return sock_header->ret;
 }
