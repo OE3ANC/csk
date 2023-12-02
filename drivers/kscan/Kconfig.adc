@@ -1,0 +1,18 @@
+# Copyright (c) 2023 Anhui Listenai Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+
+config KSCAN_ADC
+	bool "ADC attached resistor ladder buttons"
+	depends on ADC
+	help
+	  Enable driver for ADC attached resistor ladder buttons.
+
+if KSCAN_ADC
+
+config KSCAN_ADC_PERIOD_MS
+	int "Sample period"
+	default 20
+	help
+	  Sample period in milliseconds.
+
+endif # KSCAN_ADC

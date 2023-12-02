@@ -1,0 +1,32 @@
+# Copyright (c) 2023 Anhui Listenai Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+
+description: ADC attached resistor ladder buttons
+
+compatible: "adc-keys"
+
+include: kscan.yaml
+
+properties:
+  io-channels:
+    type: phandle-array
+    required: true
+    description: Phandle to an ADC channel
+
+  keyup-threshold-mv:
+    type: int
+    required: true
+    description: |
+      Millivolt value to which all the keys are considered up.
+
+  press-thresholds-mv:
+    type: array
+    required: true
+    description: |
+      Array of millivolt values for each key combinations.
+
+      Examples:
+
+      press-thresholds-mv = <1650 (BIT(0))>,
+                            <2300 (BIT(1))>,
+                            <2536 (BIT(0) | BIT(1))>;
