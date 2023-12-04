@@ -1,5 +1,6 @@
 if KSCAN
 
+rsource "Kconfig.adc"
 rsource "Kconfig.csk6"
 rsource "Kconfig.bl6xxx"
 rsource "Kconfig.ft5336"
