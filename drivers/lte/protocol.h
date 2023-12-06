@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,10 +22,10 @@ struct csk_payload_header {
     uint16_t         tag;
 	uint8_t          if_type;
 	uint8_t          flags;
-	uint16_t         payload_len; // 5 6
+	uint16_t         payload_len;
 	uint16_t         tot_checksum;
 	uint16_t         hdr_checksum;
-	uint16_t		 seq_num;  //11 12
+	uint16_t		 seq_num;
 	uint16_t         reserved;
 	uint8_t			 payload[0];
 } __attribute__((packed));
@@ -48,7 +49,9 @@ static inline uint16_t compute_checksum(uint8_t *buf, uint16_t len)
 	return checksum;
 }
 
-void *find_header(uint8_t *buf, uint16_t len);
+bool is_valid_tag(uint8_t *buf);
+bool is_valid_hdr_checksum(uint8_t *buf);
+bool is_valid_tot_checksum(uint8_t *buf);
 
 #ifdef __cplusplus
 }
