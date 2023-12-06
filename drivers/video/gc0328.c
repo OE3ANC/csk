@@ -174,7 +174,7 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x41,0x26,},
 	{0x42,0xff},
 	{0x45,0x00,},
-	{0x44,0x01,},//
+	{0x44,0x01,},// 01=VYUY, 06=RGB565
 	{0x46,0x02,},
 	{0x4b,0x01,},
 	{0x50,0x01,},
@@ -421,7 +421,6 @@ static int gc0328_write_all(const struct device *dev, const struct gc0328_reg *r
 
 static int gc0328_set_fmt_windows(const struct device *dev, int offset_x, int offset_y, int w, int h)
 {
-	gc0328_write_reg(dev, 0xfe, 0x00);
 	gc0328_write_reg(dev, 0x51, (offset_y>>8) & 0xff);
 	gc0328_write_reg(dev, 0x52, offset_y & 0xff);
 	gc0328_write_reg(dev, 0x53, (offset_x>>8) & 0xff);
@@ -436,20 +435,30 @@ static int gc0328_set_fmt_windows(const struct device *dev, int offset_x, int of
 static int gc0328_set_fmt(const struct device *dev, enum video_endpoint_id ep,
 			    struct video_format *fmt)
 {
-	int ret = 0;
+	int ret;
+	uint16_t offset_x, offset_y;
+
+	gc0328_write_reg(dev, 0xfe, 0x00);
+
 	if (fmt->pixelformat == VIDEO_PIX_FMT_VYUY) {
-		if ((fmt->width > 640) || (fmt->height > 480)) {
-			LOG_ERR("video format unsupported \n");
-			return -ENOTSUP;
-		}
-		uint16_t offset_x = (640-fmt->width) /2;
-		uint16_t offset_y = (480-fmt->height) /2;
-		ret = gc0328_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
+		gc0328_write_reg(dev, 0x44, 0x01);
+	} else if (fmt->pixelformat == VIDEO_PIX_FMT_RGB565) {
+		gc0328_write_reg(dev, 0x44, 0x06);
 	} else {
-		LOG_ERR("video format unsupported \n");
+		LOG_ERR("Unsupported format: %d", fmt->pixelformat);
 		return -ENOTSUP;
 	}
-	return ret;
+
+	if ((fmt->width > 640) || (fmt->height > 480)) {
+		LOG_ERR("Unsupported resolution: %d x %d", fmt->width, fmt->height);
+		return -ENOTSUP;
+	}
+
+	offset_x = (640 - fmt->width) / 2;
+	offset_y = (480 - fmt->height) / 2;
+	gc0328_set_fmt_windows(dev, offset_x, offset_y, fmt->width, fmt->height);
+
+	return 0;
 }
 
 static int gc0328_get_fmt(const struct device *dev, enum video_endpoint_id ep,
