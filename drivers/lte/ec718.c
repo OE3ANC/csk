@@ -74,12 +74,6 @@ static ssize_t offload_recvfrom(void *obj, void *buf, size_t len, int flags,
 	ssize_t ret;
 	int sockfd = OBJ_TO_SD(obj);
 
-	// uint32_t diff_time_ms = k_cyc_to_ms_ceil32(k_cycle_get_32() - start_tick);
-    // if (diff_time_ms >= 300) {
-    //     printk("offload recv is slow, %d\n", diff_time_ms);
-    // }
-    // start_tick = k_cycle_get_32();
-
 	if (addr == NULL) {
 		ret = proto_sock_recv(sockfd, buf, len, flags);
 	} else {

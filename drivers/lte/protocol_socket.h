@@ -12,7 +12,7 @@ extern "C" {
 
 #define PROTO_SOCK_HEADER_SIZE  sizeof(struct proto_sock_header)
 
-struct proto_sock_header {
+struct proto_sock_header { //8
     uint32_t cmd;
     int ret;
     uint8_t args[0];
@@ -55,7 +55,7 @@ typedef enum {
     PROTO_SOCK_KEEPALIVE,
 } proto_sock_sockopt_e;
 
-struct socket_args {
+struct socket_args {  //12
     int family;
     int type;
     int proto;
