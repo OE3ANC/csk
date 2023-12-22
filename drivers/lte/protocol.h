@@ -33,6 +33,7 @@ struct csk_payload_header {
 typedef enum {
     AT_CMD_IF,
     SOCKET_IF,
+    PHONE_IF,
 	CSK_IFACE_MAX,
 } csk_interface_type_e;
 

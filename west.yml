@@ -6,6 +6,8 @@ manifest:
       url-base: https://cloud.listenai.com/zephyr
     - name: lsf
       url-base: https://cloud.listenai.com/listenai/lsf-dev
+    - name: listenai_modules
+      url-base: https://cloud.listenai.com/listenai/modules
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
@@ -51,6 +53,21 @@ manifest:
       path: modules/fs/fatfs
       groups:
         - fs
+
+    - name: lsf
+      remote: lsf
+      revision: feat/wakeup_v2
+      path: modules/lib/lsf
+
+    - name: urpc
+      remote: listenai_modules
+      revision: 0e450f3ba1cad8f6b677f917f7f158d3122ddbe3
+      path: modules/lib/urpc
+
+    - name: freertos_shims
+      remote: listenai_modules
+      revision: 7e0db3485fd161f68a359abff1c87cad901bea2f
+      path: modules/lib/freertos_shims
 
   self:
     path: csk
