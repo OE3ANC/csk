@@ -7,6 +7,7 @@
 #include "ec718_conn.h"
 
 #include "protocol_socket_host.h"
+#include "protocol_phone_host.h"
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(ec718_conn, LOG_LEVEL_INF);
@@ -51,6 +52,7 @@ typedef struct {
 
 K_MSGQ_DEFINE(frame_msgq, sizeof(frame_fifo_item_t *), 10, 4);
 K_MSGQ_DEFINE(sock_frame_msgq, sizeof(frame_fifo_item_t *), 10, 4);
+K_MSGQ_DEFINE(phone_frame_msgq, sizeof(frame_fifo_item_t *), 10, 4);
 static uint16_t s_tx_seq_num = 0;
 static uint16_t s_rx_seq_num = 0;
 // K_SEM_DEFINE(ack_sem, 0, 1);
@@ -320,6 +322,9 @@ static void rx_process(void *arg1, void *arg2, void *arg3)
             k_msgq_put(&sock_frame_msgq, &frame, K_FOREVER);
             k_yield();
             continue;
+        } else if (payload_header->if_type == PHONE_IF) {
+            k_msgq_put(&phone_frame_msgq, &frame, K_FOREVER);
+            continue;
         }
 
 __cleanup:
@@ -340,6 +345,23 @@ static void rx_socket_process(void *arg1, void *arg2, void *arg3)
         }
         struct csk_payload_header *payload_header = (struct csk_payload_header *)frame->data;
         proto_sock_rx_process_v2(frame->data, frame->size);
+        if (frame->free_frame) {
+            frame->free_frame(frame);
+        }
+    }
+}
+
+static void phone_frame_process(void *arg1, void *arg2, void *arg3)
+{
+    int ret = 0;
+    frame_fifo_item_t *frame = NULL;
+    while (1) {
+        ret = k_msgq_get(&phone_frame_msgq, &frame, K_FOREVER);
+        if (ret != 0 || frame == NULL) {
+            continue;
+        }
+        struct csk_payload_header *payload_header = (struct csk_payload_header *)frame->data;
+        proto_phone_rx_process(payload_header->payload, payload_header->payload_len);
         if (frame->free_frame) {
             frame->free_frame(frame);
         }
@@ -389,6 +411,7 @@ int ec718_conn_init(void)
 
     uart_irq_callback_user_data_set(s_comm_handle.dev, uart_rx_callback, NULL);
 	uart_irq_rx_enable(s_comm_handle.dev);
+    proto_phone_init();
     proto_socket_init();
     return 0;
 }
@@ -539,5 +562,9 @@ K_THREAD_DEFINE(rx_thread_id, 4096,
 
 K_THREAD_DEFINE(rx_socket_thread_id, 4096,
                 rx_socket_process, NULL, NULL, NULL,
+                3, 0, 0);
+
+K_THREAD_DEFINE(phone_thread_id, 4096,
+                phone_frame_process, NULL, NULL, NULL,
                 3, 0, 0);
 
