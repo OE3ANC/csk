@@ -167,7 +167,7 @@ static int ch32v003_pin_config(const struct device *dev, gpio_pin_t pin, gpio_fl
 	uint8_t dir_update = false;
 	uint8_t out_update = false;
 	uint8_t pull_update = false;
-	int r;
+	int r = 0;
 
 	if (k_is_in_isr()) {
 		return -EWOULDBLOCK;
