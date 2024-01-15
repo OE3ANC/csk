@@ -109,6 +109,6 @@ void main(void)
 		}
 		printk("\n");
 
-		k_sleep(K_MSEC(5000));
+		k_sleep(K_MSEC(500));
 	}
 }
