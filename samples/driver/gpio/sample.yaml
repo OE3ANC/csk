@@ -1,0 +1,10 @@
+sample:
+  name: gpio Sample
+tests:
+  sample.basic.blinky:
+    tags:  gpio
+    filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds")
+    depends_on: gpio
+    harness: 
+    integration_platforms:
+      - frdm_k64f
