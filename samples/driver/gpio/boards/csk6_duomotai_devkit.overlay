@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2023 Anhui(Shenzhen) Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/{
+    aliases {
+        gpioa1 = &gpioa1;
+    };
+
+    gpio,user {
+        compatible = "listenai,csk-gpio-user";
+        gpioa1: gpioa1 {
+            gpios = <&gpioa 0x1 0x0>;
+            label = "gpioa_1";
+        };
+    };
+};
