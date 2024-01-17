@@ -43,6 +43,10 @@ manifest:
       path: modules/lib/gui/lvgl
       groups:
         - lvgl
+    - name: ec718
+      remote: listenai
+      revision: master
+      path: modules/lib/ec718
     - name: csk_sqlite3
       remote: listenai
       revision: 72303f6cbe848a94c665f6d1dc3817526deceacb
