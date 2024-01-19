@@ -65,7 +65,7 @@ void rtc_thread(void *v1, void *v2, void *v3)
 	printk("======RTC device sample end======\n");
 }
 
-void main(void)
+int main(void)
 {
 	int pri = k_thread_priority_get(k_current_get());
 	k_thread_create(&rtc_thread_data, rtc_stack_area, K_THREAD_STACK_SIZEOF(rtc_stack_area),
