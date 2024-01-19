@@ -1,29 +1,11 @@
-.. _adc-sample:
-
-Analog-to-Digital Converter (ADC)
+模数转换器 (ADC)
 #################################
 
-Overview
+概述
 ********
 
-This sample demonstrates how to use the ADC driver API.
+这个demo演示了如何使用这个模块来读取模拟信号。
+通过采集gpio-b7,gpio-b8,gpio-b9三个通道的模拟信号，然后将其转换为数字信号，最后通过串口打印出来。
 
-
-Building and Running
-********************
-
-The ADC peripheral and pinmux is configured in the board's ``.dts`` file. Make
-sure that the ADC is enabled (``status = "okay";``).
-
-In addition to that, this sample requires an ADC channel specified in the
-``io-channels`` property of the ``zephyr,user`` node. This is usually done with
-a devicetree overlay. 
-
-Building and Running 
-=========================================
-
-
-Sample output
-=============
 
 

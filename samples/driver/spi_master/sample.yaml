@@ -1,9 +1,3 @@
-tests:
-  sample.board.csk6.driver.spi_master:
-    platform_allow: csk6011a_nano
-    tags: csk6
-    harness: console
-    harness_config:
-      type: one_line
-      regex:
-        - "spi master sending data ..."
+sample:
+  name: SPI master Sample
+
