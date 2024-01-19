@@ -51,7 +51,7 @@ struct adc_sequence sequence = {
 	.resolution = ADC_RESOLUTION,
 };
 
-void main(void)
+int main(void)
 {
 	int err;
 	const struct device *dev_adc = DEVICE_DT_GET(ADC_NODE);
@@ -60,7 +60,7 @@ void main(void)
 
 	if (!device_is_ready(dev_adc)) {
 		printk("ADC device not found\n");
-		return;
+		return 0;
 	}
 
 	/*
@@ -85,7 +85,7 @@ void main(void)
 		err = adc_read(dev_adc, &sequence);
 		if (err != 0) {
 			printk("ADC reading failed with error %d.\n", err);
-			return;
+			return 0;
 		}
 
 		for (uint8_t i = 0; i < ADC_NUM_CHANNELS; i++) {
