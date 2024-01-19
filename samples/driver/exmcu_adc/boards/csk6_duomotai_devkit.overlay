@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2023 Anhui(Shenzhen) Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+ 
 / {
     /**
     * 
@@ -15,7 +21,7 @@
     */
 
     zephyr,user {
-        /* this sample use ch0 ch1 ch2 */
-        io-channels = <&exadc 0>, <&exadc 1>, <&exadc 2>;
+        /* this sample use ch0*/
+        io-channels = <&exadc 0>;
     };
 };

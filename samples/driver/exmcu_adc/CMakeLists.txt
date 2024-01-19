@@ -12,6 +12,6 @@ if(NOT ${BOARD} IN_LIST SUPPORT_BOARDS)
 endif()
 
 find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})
-project(ADC)
+project(exmcu_adc)
 
 target_sources(app PRIVATE src/main.c)

@@ -12,6 +12,6 @@ if(NOT ${BOARD} IN_LIST SUPPORT_BOARDS)
 endif()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(gpio_led)
+project(exmcu_pwm)
 
 target_sources(app PRIVATE src/main.c)

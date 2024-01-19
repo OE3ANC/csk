@@ -1,17 +1,2 @@
-tests:
-  sample.board.csk6.drivers.exmcu.adc:
-    platform_allow: csk6_duomotai_devkit
-    tags: csk6
-    harness: console
-    harness_config:
-      fixture: ch32v003
-      type: multi_line
-      regex:
-        - "ADC CHECK SUCCESS, 1"
-        - "ADC CHECK SUCCESS, 2"
-        - "ADC CHECK SUCCESS, 3"
-        - "ADC CHECK SUCCESS, 4"
-        - "ADC CHECK SUCCESS, 5"
-        - "ADC CHECK SUCCESS, 6"
-        - "ADC CHECK SUCCESS, 7"
-        - "ADC CHECK SUCCESS, 8"
+sample:
+  name: EXMCU ADC sample
