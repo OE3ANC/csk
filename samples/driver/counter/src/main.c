@@ -54,15 +54,9 @@ void rtc_thread(void *v1, void *v2, void *v3)
 	alarm_cfg.flags = 0;
 	alarm_cfg.callback = sec_counter_callback;
 	counter_get_value(rtc, &now);
-	alarm_cfg.ticks = now + 2; // After 2s alarm
+	alarm_cfg.ticks = now + 10; // After 10s alarm
 	alarm_cfg.user_data = &alarm_cfg;
 	counter_set_channel_alarm(rtc, 0, &alarm_cfg);
-	k_msleep(3000);
-	counter_get_value(rtc, &ticks);
-	printk("RTC value: %ds\n", ticks);
-	printk("======RTC device alarm sample end======\n");
-
-	printk("======RTC device sample end======\n");
 }
 
 int main(void)
