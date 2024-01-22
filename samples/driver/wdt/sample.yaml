@@ -1,3 +1,7 @@
 sample:
   name: WDT Sample
-
+tests:
+  csk.samples.driver.wdt:
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
+    tags: csk6
+    build_only: true

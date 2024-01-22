@@ -1,3 +1,7 @@
 sample:
   name: dvp_gc0328 Sample
-
+tests:
+  csk.samples.driver.video.gc0328:
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
+    tags: csk6
+    build_only: true
