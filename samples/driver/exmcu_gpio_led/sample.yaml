@@ -1,2 +1,7 @@
 sample:
   name: exmcu_gpio_led Sample
+tests:
+  csk.samples.driver.exmcu_gpio_led:
+    platform_allow: csk6_duomotai_devkit
+    tags: csk6
+    build_only: true
