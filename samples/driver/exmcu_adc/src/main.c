@@ -24,8 +24,14 @@
 /* Get the numbers of up to two channels */
 static uint8_t channel_ids[ADC_NUM_CHANNELS] = {
 	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 0),
-	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 1),
-	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 2),
+#if ADC_NUM_CHANNELS == 2
+	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 1)
+#endif
+
+#if ADC_NUM_CHANNELS == 3
+		DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 1),
+	DT_IO_CHANNELS_INPUT_BY_IDX(DT_PATH(zephyr_user), 2)
+#endif
 };
 
 static int16_t sample_buffer[ADC_NUM_CHANNELS];
@@ -45,27 +51,17 @@ struct adc_sequence sequence = {
 	.resolution = ADC_RESOLUTION,
 };
 
-void main(void)
+int main(void)
 {
 	int err;
 	const struct device *dev_adc = DEVICE_DT_GET(ADC_NODE);
-	const struct device *dev_gpio = DEVICE_DT_GET(DT_NODELABEL(exgpioc));
 
 	printk("ADC Sample start, ch:%d\n", ADC_NUM_CHANNELS);
 
 	if (!device_is_ready(dev_adc)) {
 		printk("ADC device not found\n");
-		return;
+		return 0;
 	}
-
-	if (!device_is_ready(dev_gpio)) {
-		printk("dev_gpio device not found\n");
-		return;
-	}
-
-	gpio_pin_configure(dev_gpio, 2, GPIO_OUTPUT);
-	gpio_pin_configure(dev_gpio, 3, GPIO_OUTPUT);
-	gpio_pin_configure(dev_gpio, 4, GPIO_OUTPUT);
 
 	/*
 	 * Configure channels individually prior to sampling
@@ -81,27 +77,17 @@ void main(void)
 	int32_t adc_vref = adc_ref_internal(dev_adc);
 
 	printk("adc_vref %d.\n", adc_vref);
-	uint32_t cnt = 0;
 
 	while (1) {
-		cnt++;
-		printk("\n-----ADC TEST OUTPUT %s-----\n", cnt % 2 == 1 ? "HIGH" : "LOW");
-		gpio_pin_set_raw(dev_gpio, 2, cnt % 2 == 1);
-		gpio_pin_set_raw(dev_gpio, 3, cnt % 2 == 1);
-		gpio_pin_set_raw(dev_gpio, 4, cnt % 2 == 1);
-
-		k_msleep(100);
-
 		/*
 		 * Read sequence of channels (fails if not supported by MCU)
 		 */
 		err = adc_read(dev_adc, &sequence);
 		if (err != 0) {
 			printk("ADC reading failed with error %d.\n", err);
-			return;
+			return 0;
 		}
 
-		uint8_t check = 1;
 		for (uint8_t i = 0; i < ADC_NUM_CHANNELS; i++) {
 			int32_t raw_value = sample_buffer[i];
 
@@ -115,21 +101,10 @@ void main(void)
 				adc_raw_to_millivolts(adc_vref, ADC_GAIN_1, ADC_RESOLUTION,
 						      &mv_value);
 				printk(" adc(%d)= %d mV  ", raw_value, mv_value);
-
-				if (cnt % 2 == 1) {
-					check &= mv_value > (adc_vref / 2);
-				} else {
-					check &= (mv_value < (adc_vref / 2));
-				}
 			}
 		}
 
 		printk("\n");
-		if (check) {
-			printk("ADC CHECK SUCCESS, %d\n", cnt);
-		} else {
-			printk("ADC CHECK FAILED\n");
-		}
 
 		k_sleep(K_MSEC(1000));
 	}
