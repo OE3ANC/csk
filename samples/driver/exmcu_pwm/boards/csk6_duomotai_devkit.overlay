@@ -1,0 +1,23 @@
+/*
+ * Copyright (c) 2023 Anhui(Shenzhen) Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+ 
+
+&expwm{
+        clock-prescaler = <4800>;
+        clock-frequency = <48000000>;
+};
+
+/ {
+    motor {
+        motor_pwm: motor_pwm {
+            compatible = "vnd,phandle-holder";
+            status = "okay";
+            pwms = <&expwm 0 1000 0x0 100>;
+        };
+    };
+
+};
+
