@@ -1,29 +1,9 @@
 .. _adc-sample:
 
-Analog-to-Digital Converter (ADC)
+EXMCU ADC
 #################################
 
 Overview
 ********
 
-This sample demonstrates how to use the ADC driver API.
-
-
-Building and Running
-********************
-
-The ADC peripheral and pinmux is configured in the board's ``.dts`` file. Make
-sure that the ADC is enabled (``status = "okay";``).
-
-In addition to that, this sample requires an ADC channel specified in the
-``io-channels`` property of the ``zephyr,user`` node. This is usually done with
-a devicetree overlay. 
-
-Building and Running 
-=========================================
-
-
-Sample output
-=============
-
-
+该示例演示如何调用adc接口来实现扩展MCU的ADC功能。运行该应用后,会间隔采集EXT_PA2引脚上的电压,并通过日志输出

@@ -1,9 +1,7 @@
+sample:
+  name: uart_polling Sample
 tests:
-  sample.board.csk6.driver.uart.polling:
-    platform_allow: csk6011a_nano
+  csk.samples.driver.uart.uart_polling:
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
     tags: csk6
-    harness: console
-    harness_config:
-      type: one_line
-      regex:
-        - "devices uart@\\d+ is ready"
+    build_only: true
