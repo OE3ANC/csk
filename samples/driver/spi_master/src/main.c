@@ -15,14 +15,14 @@
 
 #define UINT8_MAX_NUM (0xff)
 
-void main(void)
+int main(void)
 {
 	printk("spi master example\n");
 	const struct device *spi;
 	spi = DEVICE_DT_GET(DT_NODELABEL(spi0));
 	if (!device_is_ready(spi)) {
 		printk("SPI device %s is not ready\n", spi->name);
-		return;
+		return 0;
 	}
 
 	struct spi_config spi_cfg = {0};
@@ -46,7 +46,7 @@ void main(void)
 	struct spi_buf *tx_package = k_calloc(tx_package_num, sizeof(struct spi_buf));
 	if (tx_package == NULL) {
 		printk("tx_package calloc failed\n");
-		return;
+		return 0;
 	}
 	struct spi_buf_set tx_set;
 
@@ -54,7 +54,7 @@ void main(void)
 		uint8_t *temp_buf = k_calloc(UINT8_MAX_NUM, sizeof(uint8_t));
 		if (temp_buf == NULL) {
 			printk("temp_buf calloc failed\n");
-			return;
+			return 0;
 		}
 
 		for (int num = 0; num < UINT8_MAX_NUM; num++) {
