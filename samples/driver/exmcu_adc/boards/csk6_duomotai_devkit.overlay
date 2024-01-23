@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) 2023 Anhui(Shenzhen) Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+ 
+/ {
+    /**
+    * 
+    * external adc channel map
+    *
+    * CH0 --> PA2
+    * CH1 --> PA1
+    * CH2 --> PC4
+    * CH3 --> PD2
+    * CH4 --> PD3
+    * CH5 --> PD5
+    * CH6 --> PD6
+    * CH7 --> PD4
+    *
+    */
+
+    zephyr,user {
+        /* this sample use ch0*/
+        io-channels = <&exadc 0>;
+    };
+};
