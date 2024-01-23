@@ -30,20 +30,20 @@ static void uart_rx_callback(const struct device *dev, void *user_data)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	const struct device *uart0 = DEVICE_DT_GET(UART0);
 
 	if (!device_is_ready(uart0)) {
 		LOG_ERR("device:%s is not ready!", uart0->name);
-		return;
+		return 0;
 	}
 	LOG_INF("devices %s is ready", uart0->name);
 
 	const struct device *uart1 = DEVICE_DT_GET(UART1);
 	if (!device_is_ready(uart1)) {
 		LOG_ERR("device:%s is not ready!", uart1->name);
-		return;
+		return 0;
 	}
 	LOG_INF("devices %s is ready", uart1->name);
 
@@ -58,5 +58,5 @@ void main(void)
 	while (1) {
 		k_msleep(20);
 	}
-	return;
+	return 0;
 }
