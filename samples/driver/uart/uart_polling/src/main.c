@@ -14,13 +14,13 @@
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 #define UART0 DT_NODELABEL(uart0)
 
-void main(void)
+int main(void)
 {
 	char rx_char;
 	const struct device *uart = DEVICE_DT_GET(UART0);
 	if (!device_is_ready(uart)) {
 		LOG_ERR("device:%s is not ready!", uart->name);
-		return;
+		return 0;
 	}
 	LOG_INF("devices %s is ready", uart->name);
 
@@ -29,5 +29,5 @@ void main(void)
 			uart_poll_out(uart, rx_char);	 /*send a char*/
 		}
 	}
-	return;
+	return 0;
 }
