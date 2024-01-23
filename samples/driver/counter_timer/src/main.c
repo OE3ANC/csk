@@ -24,7 +24,7 @@ static void test_counter_interrupt_fn(const struct device *counter_dev, void *us
 }
 
 
-void main(void)
+int main(void)
 {
 	const struct device *counter_dev;
 	int err;
@@ -37,7 +37,7 @@ void main(void)
 #endif
 	if (counter_dev == NULL) {
 		printk("counter device not found\n");
-		return;
+		return 0;
 	}
 	top_cfg.flags = 0;
 	top_cfg.ticks = counter_us_to_ticks(counter_dev, DELAY_US);
