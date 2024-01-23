@@ -34,7 +34,7 @@ static void wdt_callback(const struct device *wdt_dev, int channel_id)
 }
 #endif /* WDT_ALLOW_CALLBACK */
 
-void main(void)
+int main(void)
 {
 	int err;
 	int wdt_channel_id;
@@ -45,7 +45,7 @@ void main(void)
 	wdt = DEVICE_DT_GET(DT_NODELABEL(wdt));
 	if (!wdt) {
 		printk("Cannot get WDT device\n");
-		return;
+		return 0;
 	}
 
 	struct wdt_timeout_cfg wdt_config = {
@@ -66,13 +66,13 @@ void main(void)
 	printk("wdt_channel_id=%d.\n", wdt_channel_id);
 	if (wdt_channel_id < 0) {
 		printk("Watchdog install error\n");
-		return;
+		return 0;
 	}
 
 	err = wdt_setup(wdt, WDT_OPT_PAUSE_HALTED_BY_DBG);
 	if (err < 0) {
 		printk("Watchdog setup error\n");
-		return;
+		return 0;
 	}
 
 	/* Feeding watchdog. */
