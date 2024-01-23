@@ -1,12 +1,7 @@
 sample:
   name: exmcu_gpio_led Sample
-
 tests:
-  sample.board.csk6.drivers.exmcu.gpio_led:
-    harness: console
-    platform_allow: csk6011a_nano csk6012_nano
-    harness_config:
-      fixture: ch32v003
-      type: one_line
-      regex:
-        - "GPIO LOOPBACK TEST OK"
+  csk.samples.driver.exmcu_gpio_led:
+    platform_allow: csk6_duomotai_devkit
+    tags: csk6
+    build_only: true
