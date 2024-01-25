@@ -607,15 +607,16 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 		}
 	} else {
 		if (usb_venus_ctrl.out_ep_ctrl[ep_idx].dma_info.enable == 0) {
-			//dma mode disable
-			uint8_t *pFifo_addr = (uint8_t *)(&CSK_USBC->FIFOX[ep_idx]);
-			for (i = 0U; i < data_len; i++) {
-				*pFifo_addr = data[i];
-			}
-			EDPxReg_SEL(ep_idx);
-			CSK_USBC->TXCSRL |= USB_VENUS_TXCSRL_TXPKTRDY;
 			if(data_len == 0){
 				usb_venus_ctrl.status = USB_VENUS_STS_SETUP;
+			} else {
+				//dma mode disable
+				uint8_t *pFifo_addr = (uint8_t *)(&CSK_USBC->FIFOX[ep_idx]);
+				for (i = 0U; i < data_len; i++) {
+					*pFifo_addr = data[i];
+				}
+				EDPxReg_SEL(ep_idx);
+				CSK_USBC->TXCSRL |= USB_VENUS_TXCSRL_TXPKTRDY;
 			}
 
 		} else {
