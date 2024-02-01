@@ -17,8 +17,7 @@
 LOG_MODULE_REGISTER(zephyr_adc_keys, CONFIG_INPUT_LOG_LEVEL);
 
 struct adc_keys_key_config {
-	const uint32_t *press_mv;
-	uint32_t press_mv_cnt;
+	uint32_t press_mv;
 	uint32_t zephyr_code;
 };
 
@@ -94,13 +93,15 @@ static void adc_keys_process(const struct device *dev)
 
 	sample_mv = adc_keys_read(dev);
 
+	/*
+	 * Find the closest key press threshold to the sample value.
+	 */
+
 	for (uint32_t i = 0; i < cfg->key_cnt; i++) {
-		for (uint32_t j = 0; j < cfg->key_cfg[i].press_mv_cnt; j++) {
-			diff = abs(sample_mv - cfg->key_cfg[i].press_mv[j]);
-			if (diff < closest_diff) {
-				closest_diff = diff;
-				closest_mv = cfg->key_cfg[i].press_mv[j];
-			}
+		diff = abs(sample_mv - cfg->key_cfg[i].press_mv);
+		if (diff < closest_diff) {
+			closest_diff = diff;
+			closest_mv = cfg->key_cfg[i].press_mv;
 		}
 	}
 
@@ -109,20 +110,24 @@ static void adc_keys_process(const struct device *dev)
 		closest_mv = cfg->keyup_mv;
 	}
 
-	LOG_DBG("sample=%d mV, closest=%d mV", sample_mv, closest_mv);
+	LOG_DBG("sample=%d mV, closest=%d mV, diff=%d mV", sample_mv, closest_mv, closest_diff);
+
+	/*
+	 * Report the key event if the key state has changed. Note that multiple
+	 * keys may have the same press threshold, which is the mixed voltage
+	 * that these keys are simultaneously pressed.
+	 */
 
 	for (uint32_t i = 0; i < cfg->key_cnt; i++) {
 		key_cfg = &cfg->key_cfg[i];
 		key_data = &data->key_data[i];
-		for (uint32_t j = 0; j < key_cfg->press_mv_cnt; j++) {
-			key_state = closest_mv == key_cfg->press_mv[j];
-			if (key_state != key_data->key_state) {
-				key_data->key_state = key_state;
-				LOG_DBG("Report event %s %d, code=%d", dev->name, key_state,
-					key_cfg->zephyr_code);
-				input_report_key(dev, key_cfg->zephyr_code, key_state, true,
-						 K_FOREVER);
-			}
+
+		key_state = (closest_mv == key_cfg->press_mv);
+		if (key_state != key_data->key_state) {
+			key_data->key_state = key_state;
+			LOG_DBG("Report event %s %d, code=%d", dev->name, key_state,
+				key_cfg->zephyr_code);
+			input_report_key(dev, key_cfg->zephyr_code, key_state, true, K_FOREVER);
 		}
 	}
 }
@@ -151,10 +156,8 @@ static int adc_keys_init(const struct device *dev)
 
 #if defined(CONFIG_INPUT_LOG_LEVEL_DBG)
 	for (uint32_t i = 0; i < cfg->key_cnt; i++) {
-		LOG_DBG("* key %d: code=%d", i, cfg->key_cfg[i].zephyr_code);
-		for (uint32_t j = 0; j < cfg->key_cfg[i].press_mv_cnt; j++) {
-			LOG_DBG("  - %d mV", cfg->key_cfg[i].press_mv[j]);
-		}
+		LOG_DBG("* key %d: threshold=%d mV code=%d", i, cfg->key_cfg[i].press_mv,
+			cfg->key_cfg[i].zephyr_code);
 	}
 #endif /* CONFIG_INPUT_LOG_LEVEL_DBG */
 
@@ -163,20 +166,16 @@ static int adc_keys_init(const struct device *dev)
 	return 0;
 }
 
-#define ADC_KEYS_KEY_CFG_PRESS_MV(node_id)                                                         \
-	static const uint32_t adc_keys_key_cfg_##node_id##_press_mv[] =                            \
-		DT_PROP(node_id, press_thresholds_mv);
-
-#define ADC_KEYS_KEY_CFG(node_id)                                                                  \
+#define ADC_KEYS_KEY_CFG_CODE(node_id, prop, idx)                                                  \
 	{                                                                                          \
-		.press_mv = adc_keys_key_cfg_##node_id##_press_mv,                                 \
-		.press_mv_cnt = DT_PROP_LEN(node_id, press_thresholds_mv),                         \
+		.press_mv = DT_PROP_BY_IDX(node_id, prop, idx),                                    \
 		.zephyr_code = DT_PROP(node_id, zephyr_code),                                      \
 	}
 
+#define ADC_KEYS_KEY_CFG(node_id)                                                                  \
+	DT_FOREACH_PROP_ELEM_SEP(node_id, press_thresholds_mv, ADC_KEYS_KEY_CFG_CODE, (, ))
+
 #define ADC_KEYS_INST(n)                                                                           \
-	DT_INST_FOREACH_CHILD_STATUS_OKAY(n, ADC_KEYS_KEY_CFG_PRESS_MV);                           \
-                                                                                                   \
 	static const struct adc_keys_key_config adc_keys_key_cfg_##n[] = {                         \
 		DT_INST_FOREACH_CHILD_STATUS_OKAY_SEP(n, ADC_KEYS_KEY_CFG, (, ))};                 \
                                                                                                    \
