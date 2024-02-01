@@ -104,6 +104,24 @@
         };
 
         inputs {
+                adc-keys {
+                        compatible = "zephyr,adc-keys";
+                        io-channels = <&exadc 2>;
+                        keyup-threshold-mv = <0>;
+
+                        key_1: key-1 {
+                                press-thresholds-mv = <1650>,  /* K1 */
+                                                      <2536>;  /* K1 + K2 */
+                                zephyr,code = <INPUT_KEY_1>;
+                        };
+
+                        key_2: key-2 {
+                                press-thresholds-mv = <2300>,  /* K2 */
+                                                      <2536>;  /* K1 + K2 */
+                                zephyr,code = <INPUT_KEY_2>;
+                        };
+                };
+
                 gpio-keys {
                         compatible = "zephyr,gpio-keys";
 
