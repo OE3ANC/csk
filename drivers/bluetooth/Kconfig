@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+if BT
+
+rsource "hci/Kconfig.csk6"
+
+endif # WIFI
