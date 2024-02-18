@@ -45,12 +45,12 @@ struct adc_csk6_data {
 	struct adc_context ctx;
 
 	/* Save ADC result to the buffer. */
-	uint16_t *buffer;
+	int16_t *buffer;
 	/*
 	 * The sample buffer pointer should be prepared
 	 * for writing of next sampling results.
 	 */
-	uint16_t *repeat_buffer;
+	int16_t *repeat_buffer;
 
 	uint8_t triggernum;
 };
@@ -170,7 +170,11 @@ static void adc_csk6_get_sample(const struct device *dev)
 		}
 
 		//take the last sample value
+#if defined(CONFIG_ADC_CSK6_OUTPUT_FIXUP)
+		*data->buffer++ = (int16_t)adc_value - 2048;
+#else  /* CONFIG_ADC_CSK6_OUTPUT_FIXUP */
 		*data->buffer++ = adc_value;
+#endif /* CONFIG_ADC_CSK6_OUTPUT_FIXUP */
 
 		channel_mask &= ~BIT(ch);
 	}

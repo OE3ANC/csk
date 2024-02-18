@@ -10,3 +10,18 @@ config ADC_CSK6
 	help
 	  This option enables the ADC driver for CSK6.
 	  Say y if you wish to use ADC modules on CSK6.
+
+if ADC_CSK6
+
+config ADC_CSK6_OUTPUT_FIXUP
+	bool "Fixup ADC output"
+	default n
+	help
+	  The raw ADC output is 0~4095, representing -3.3V~3.3V. For historical
+	  reasons, this value is not shifted in the driver correctly, meaning that
+	  users need to minus the raw value by 2048 at application level to get
+	  the correct voltage.
+
+	  Enable this option to get the correct voltage directly from the driver.
+
+endif # ADC_CSK6
