@@ -6,6 +6,7 @@
 #include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/pwm/pwm.h>
 #include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 #include "csk6_duomotai_devkit_pinctrl.dtsi"
 
 / {
@@ -100,6 +101,41 @@
                 press-thresholds-mv = <1650 (BIT(0))>,
                                       <2300 (BIT(1))>,
                                       <2536 (BIT(0) | BIT(1))>;
+        };
+
+        inputs {
+                adc-keys {
+                        compatible = "zephyr,adc-keys";
+                        io-channels = <&exadc 2>;
+                        sample-period-ms = <100>;
+                        keyup-threshold-mv = <0>;
+
+                        key-1 {
+                                press-thresholds-mv = <1650>,  /* K1 */
+                                                      <2536>;  /* K1 + K2 */
+                                zephyr,code = <INPUT_KEY_1>;
+                        };
+
+                        key-2 {
+                                press-thresholds-mv = <2300>,  /* K2 */
+                                                      <2536>;  /* K1 + K2 */
+                                zephyr,code = <INPUT_KEY_2>;
+                        };
+                };
+
+                gpio-keys {
+                        compatible = "zephyr,gpio-keys";
+
+                        key-3 {
+                                gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+                                zephyr,code = <INPUT_KEY_3>;
+                        };
+
+                        key-boot {
+                                gpios = <&gpiob 1 GPIO_ACTIVE_LOW>;
+                                zephyr,code = <INPUT_KEY_B>;
+                        };
+                };
         };
 };
 
