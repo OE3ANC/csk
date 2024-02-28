@@ -28,6 +28,8 @@ struct gc0328_data {
 	const struct gpio_dt_spec reset_gpios;
 	const struct gpio_dt_spec pwdn_gpios;
 	struct video_format fmt;
+	uint8_t flip;
+	uint8_t mirror;
 };
 
 struct gc0328_reg {
@@ -174,7 +176,7 @@ static const struct gc0328_reg gc0328_init_reg_tb[] = {
 	{0x41,0x26,},
 	{0x42,0xff},
 	{0x45,0x00,},
-	{0x44,0x01,},// 01=VYUY, 06=RGB565
+	{0x44,0x01,},//
 	{0x46,0x02,},
 	{0x4b,0x01,},
 	{0x50,0x01,},
@@ -421,6 +423,7 @@ static int gc0328_write_all(const struct device *dev, const struct gc0328_reg *r
 
 static int gc0328_set_fmt_windows(const struct device *dev, int offset_x, int offset_y, int w, int h)
 {
+	gc0328_write_reg(dev, 0xfe, 0x00);
 	gc0328_write_reg(dev, 0x51, (offset_y>>8) & 0xff);
 	gc0328_write_reg(dev, 0x52, offset_y & 0xff);
 	gc0328_write_reg(dev, 0x53, (offset_x>>8) & 0xff);
@@ -509,6 +512,7 @@ static int gc0328_set_horizontal_mirror(const struct device *dev, int enable)
 {
 	int ret = 0;
 	uint8_t reg_mirror = 0;
+	struct gc0328_data *drv_data = dev->data;
 
 	gc0328_read_reg(dev, PAGE_BANK_REG_CID_MIRROR, &reg_mirror);
 	if (enable) {
@@ -516,12 +520,22 @@ static int gc0328_set_horizontal_mirror(const struct device *dev, int enable)
 	} else {
 		reg_mirror &= ~REG_CID_MIRROR_ON_VALUE;
 	}
+
+	if (drv_data->flip) {
+		reg_mirror |= REG_CID_FLIP_ON_VALUE;
+	} else {
+		reg_mirror &= ~REG_CID_FLIP_ON_VALUE;
+	}
+
 	ret = gc0328_write_reg(dev, PAGE_BANK_REG_CID_MIRROR, reg_mirror);
 
 	if (ret) {
 		LOG_WRN("Unable to write GC0328 mirror ret=%d", ret);
 		return ret;
 	}
+
+	drv_data->mirror = enable;
+
 	return ret;
 }
 
@@ -529,19 +543,30 @@ static int gc0328_set_vertical_flip(const struct device *dev, int enable)
 {
 	int ret = 0;
 	uint8_t reg_value = 0;
+	struct gc0328_data *drv_data = dev->data;
 
 	gc0328_read_reg(dev, PAGE_BANK_REG_CID_FLIP, &reg_value);
+
 	if (enable) {
 		reg_value |= REG_CID_FLIP_ON_VALUE;
 	} else {
 		reg_value &= ~REG_CID_FLIP_ON_VALUE;
 	}
-	ret = gc0328_write_reg(dev, PAGE_BANK_REG_CID_FLIP, reg_value);
 
+	if (drv_data->mirror) {
+		reg_value |= REG_CID_MIRROR_ON_VALUE;
+	} else {
+		reg_value &= ~REG_CID_MIRROR_ON_VALUE;
+	}
+
+	ret = gc0328_write_reg(dev, PAGE_BANK_REG_CID_FLIP, reg_value);
 	if (ret) {
 		LOG_WRN("Unable to write GC0328 flip ret=%d", ret);
 		return ret;
 	}
+
+	drv_data->flip = enable;
+
 	return ret;
 }
 
