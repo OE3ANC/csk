@@ -17,6 +17,13 @@ choice CSK_WIFI_OFFLOAD_MODULE
 		select GPIO
 		select SPI
 
+	config CSK_WIFI_ESP_UART
+		bool "ESP Uart Module"
+		select UART_CSK6
+		select UART_INTERRUPT_DRIVEN
+		select ESP_SOCKET_OFFLOAD
+
+
 	config CSK_WIFI_XR819S
 		bool "XR819S"
 		select XR819S

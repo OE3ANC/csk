@@ -33,6 +33,10 @@ manifest:
       remote: listenai
       revision: 77c953eecdcd023c10fae2fdf98a0350d070766a
       path: modules/lib/esp-hosted
+    - name: esp_socket_offload
+      remote: listenai
+      revision: 0000000000000000000000000000000000000000
+      path: modules/lib/esp_socket_offload
     - name: wifi_manager
       remote: listenai
       revision: 7ae37d4ea352dc5b806c1b24d5f9e00f9ae1b0f3

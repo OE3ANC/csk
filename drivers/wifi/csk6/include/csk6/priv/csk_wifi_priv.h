@@ -18,6 +18,8 @@
 #include "net/wlan/wlan_defs.h"
 #include "net/wlan/wlan.h"
 #include "net/wlan/wlan_ext_req.h"
+#elif CONFIG_ESP_SOCKET_OFFLOAD
+
 #else
 #error "Please select a wifi module driver"
 #endif
