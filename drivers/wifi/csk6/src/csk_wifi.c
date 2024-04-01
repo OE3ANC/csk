@@ -699,7 +699,7 @@ __cleanup:
         k_free(wifi_tx_buf);
         wifi_tx_buf = NULL;
     }
-    net_pkt_unref(pkt);
+
     return ret;
 }
 
