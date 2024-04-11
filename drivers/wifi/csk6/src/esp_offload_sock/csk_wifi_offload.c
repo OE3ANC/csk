@@ -80,10 +80,8 @@ static int esp_mgmt_connect(const struct device *dev,
 	int ret = 0;
 
 	struct proto_wifi_conn_cmd_args conn_arg;
-	#define MY_SSID "yhzhu"
-	#define MY_PWD "12345678"
-	memcpy(conn_arg.ssid, MY_SSID, sizeof(MY_SSID));
-	memcpy(conn_arg.pwd, MY_PWD, sizeof(MY_PWD));
+	strcpy(conn_arg.ssid, params->ssid);
+	strcpy(conn_arg.pwd, params->psk);
 
 	ret = proto_wifi_sta_connect(&conn_arg);
 	printk("wifi esp_mgmt_connect ret: %d\n", ret);
