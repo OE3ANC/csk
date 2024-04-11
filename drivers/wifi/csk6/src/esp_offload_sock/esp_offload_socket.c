@@ -24,153 +24,11 @@ LOG_MODULE_REGISTER(csk_ec718, LOG_LEVEL_INF);
 #include "protocol_socket_host.h"
 
 #include "sockets_internal.h"
+#include "ec718_conn.h"
 
 #define SD_TO_OBJ(sd) ((void *)(sd + 1))
 #define OBJ_TO_SD(obj) (((int)obj) - 1)
 
-struct ec718_drv_data {
-	/*
-	 * Network interface of the sim module.
-	 */
-	struct net_if *netif;
-    uint8_t mac_addr[6];
-};
-
-static struct ec718_drv_data s_ec718_drv_data;
-
-
-static int offload_connect(void *obj, const struct sockaddr *addr,
-			      socklen_t addrlen)
-{
-    int sockfd = OBJ_TO_SD(obj);
-
-	int ret = proto_sock_connect(sockfd, addr, (uint32_t)addrlen);
-
-    return ret;
-}
-
-static ssize_t offload_sendto(void *obj, const void *buf, size_t len,
-				 int flags, const struct sockaddr *addr,
-				 socklen_t addrlen)
-{
-	ssize_t ret;
-	int sockfd = OBJ_TO_SD(obj);
-
-	if (addr == NULL) {
-		// printk(" send \n");
-		ret = proto_sock_send(sockfd, buf, len, flags);
-	} else {
-		ret = proto_sock_sendto(sockfd, buf, len, flags, addr, (uint32_t)addrlen);
-	}
-	return ret;
-}
-
-static uint32_t start_tick = 0;
-
-
-static ssize_t offload_recvfrom(void *obj, void *buf, size_t len, int flags,
-				   struct sockaddr *addr, socklen_t *addrlen)
-{
-	ssize_t ret;
-	int sockfd = OBJ_TO_SD(obj);
-
-	if (addr == NULL) {
-		ret = proto_sock_recv(sockfd, buf, len, flags);
-	} else {
-		ret = proto_sock_recvfrom(sockfd, buf, len, flags, addr, (uint32_t)addrlen);
-	}
-	return ret;
-}
-
-static ssize_t offload_read(void *obj, void *buffer, size_t count)
-{
-	return offload_recvfrom(obj, buffer, count, 0, NULL, 0);
-}
-
-static int offload_setsockopt(void *obj, int level, int optname,
-				 const void *optval, socklen_t optlen)
-{
-	int ret;
-	int ps_optname;
-	int sockfd = OBJ_TO_SD(obj);
-
-	if (optname == SO_SNDTIMEO) {
-		ps_optname = PROTO_SOCK_SNDTIMEO;
-		struct timeval *timeout = optval;
-		struct proto_sock_timeval ps_timeout = {0};
-		ps_timeout.tv_sec = (uint64_t)timeout->tv_sec;
-		ps_timeout.tv_usec = (uint32_t)timeout->tv_usec;
-		ret = proto_sock_set_socketopt(sockfd, level, ps_optname, &ps_timeout, sizeof(ps_timeout));
-	} else if (optname == SO_RCVTIMEO) {
-		ps_optname = PROTO_SOCK_RCVTIMEO;
-		struct timeval *timeout = optval;
-		struct proto_sock_timeval ps_timeout = {0};
-		ps_timeout.tv_sec = (uint64_t)timeout->tv_sec;
-		ps_timeout.tv_usec = (uint32_t)timeout->tv_usec;
-		ret = proto_sock_set_socketopt(sockfd, level, ps_optname, &ps_timeout, sizeof(ps_timeout));
-	} else if (optname == SO_KEEPALIVE) {
-		ps_optname = PROTO_SOCK_KEEPALIVE;
-		ret = proto_sock_set_socketopt(sockfd, level, ps_optname, optval, optlen);
-	} else {
-		return -ENOTSUP;
-	}
-
-	return ret;
-}
-
-static int offload_close(void *obj)
-{
-	printk(" close \n");
-	int sockfd = OBJ_TO_SD(obj);
-	
-	int ret = proto_sock_close(sockfd);
-	return ret;
-}
-
-static ssize_t offload_write(void *obj, const void *buffer,
-					  size_t count)
-{
-	return offload_sendto(obj, buffer, count, 0, NULL, 0);
-}
-
-static int dummy_get(sa_family_t family,
-				enum net_sock_type type,
-				enum net_ip_protocol ip_proto,
-				struct net_context **context)
-{
-	// LOG_ERR("NET_SOCKETS_OFFLOAD must be configured for this driver");
-	return -1;
-}
-
-static struct net_offload offload_funcs = {
-	.get = dummy_get,
-	.bind = NULL,
-	.listen = NULL,
-	.connect = NULL,
-	.accept = NULL,
-	.send = NULL,
-	.sendto = NULL,
-	.recv = NULL,
-	.put = NULL,
-};
-
-static const struct socket_op_vtable ec718_socket_fd_op_vtable = {
-	.fd_vtable = {
-		.read = offload_read,
-		.write = offload_write,
-		.close = offload_close,
-		.ioctl = NULL,
-	},
-	.bind = NULL,
-	.connect = offload_connect,
-	.listen = NULL,
-	.accept = NULL,
-	.sendto = offload_sendto,
-	.sendmsg = NULL,
-	.recvfrom = offload_recvfrom,
-	.getsockopt = NULL,
-	.setsockopt = offload_setsockopt,
-};
 
 static int construct_zsock_addrinfo(struct proto_sock_addrinfo *ps_info, struct zsock_addrinfo **res)
 {
@@ -300,9 +158,114 @@ static void offload_freeaddrinfo(struct zsock_addrinfo *res)
 	}
 }
 
-const struct socket_dns_offload offload_dns_ops = {
-	.getaddrinfo = offload_getaddrinfo,
-	.freeaddrinfo = offload_freeaddrinfo,
+
+static int offload_connect(void *obj, const struct sockaddr *addr,
+			      socklen_t addrlen)
+{
+    int sockfd = OBJ_TO_SD(obj);
+
+	int ret = proto_sock_connect(sockfd, addr, (uint32_t)addrlen);
+
+    return ret;
+}
+
+static int offload_setsockopt(void *obj, int level, int optname,
+				 const void *optval, socklen_t optlen)
+{
+	int ret;
+	int ps_optname;
+	int sockfd = OBJ_TO_SD(obj);
+
+	if (optname == SO_SNDTIMEO) {
+		ps_optname = PROTO_SOCK_SNDTIMEO;
+		struct timeval *timeout = optval;
+		struct proto_sock_timeval ps_timeout = {0};
+		ps_timeout.tv_sec = (uint64_t)timeout->tv_sec;
+		ps_timeout.tv_usec = (uint32_t)timeout->tv_usec;
+		ret = proto_sock_set_socketopt(sockfd, level, ps_optname, &ps_timeout, sizeof(ps_timeout));
+	} else if (optname == SO_RCVTIMEO) {
+		ps_optname = PROTO_SOCK_RCVTIMEO;
+		struct timeval *timeout = optval;
+		struct proto_sock_timeval ps_timeout = {0};
+		ps_timeout.tv_sec = (uint64_t)timeout->tv_sec;
+		ps_timeout.tv_usec = (uint32_t)timeout->tv_usec;
+		ret = proto_sock_set_socketopt(sockfd, level, ps_optname, &ps_timeout, sizeof(ps_timeout));
+	} else if (optname == SO_KEEPALIVE) {
+		ps_optname = PROTO_SOCK_KEEPALIVE;
+		ret = proto_sock_set_socketopt(sockfd, level, ps_optname, optval, optlen);
+	} else {
+		return -ENOTSUP;
+	}
+
+	return ret;
+}
+
+static ssize_t offload_recvfrom(void *obj, void *buf, size_t len, int flags,
+				   struct sockaddr *addr, socklen_t *addrlen)
+{
+	ssize_t ret;
+	int sockfd = OBJ_TO_SD(obj);
+
+	if (addr == NULL) {
+		ret = proto_sock_recv(sockfd, buf, len, flags);
+	} else {
+		ret = proto_sock_recvfrom(sockfd, buf, len, flags, addr, (uint32_t)addrlen);
+	}
+	return ret;
+}
+
+static ssize_t offload_read(void *obj, void *buffer, size_t count)
+{
+	return offload_recvfrom(obj, buffer, count, 0, NULL, 0);
+}
+
+static ssize_t offload_sendto(void *obj, const void *buf, size_t len,
+				 int flags, const struct sockaddr *addr,
+				 socklen_t addrlen)
+{
+	ssize_t ret;
+	int sockfd = OBJ_TO_SD(obj);
+
+	if (addr == NULL) {
+		// printk(" send \n");
+		ret = proto_sock_send(sockfd, buf, len, flags);
+	} else {
+		ret = proto_sock_sendto(sockfd, buf, len, flags, addr, (uint32_t)addrlen);
+	}
+	return ret;
+}
+
+static ssize_t offload_write(void *obj, const void *buffer,
+					  size_t count)
+{
+	return offload_sendto(obj, buffer, count, 0, NULL, 0);
+}
+
+static int offload_close(void *obj)
+{
+	printk(" close \n");
+	int sockfd = OBJ_TO_SD(obj);
+	
+	int ret = proto_sock_close(sockfd);
+	return ret;
+}
+
+static const struct socket_op_vtable ec718_socket_fd_op_vtable = {
+	.fd_vtable = {
+		.read = offload_read,
+		.write = offload_write,
+		.close = offload_close,
+		.ioctl = NULL,
+	},
+	.bind = NULL,
+	.connect = offload_connect,
+	.listen = NULL,
+	.accept = NULL,
+	.sendto = offload_sendto,
+	.sendmsg = NULL,
+	.recvfrom = offload_recvfrom,
+	.getsockopt = NULL,
+	.setsockopt = offload_setsockopt,
 };
 
 static int offload_socket_create(int family, int type, int proto)
@@ -358,41 +321,15 @@ static int offload_socket_create(int family, int type, int proto)
     return fd;
 }
 
-#include "ec718_conn.h"
-
-static void net_iface_init(struct net_if *iface)
-{
-    const struct device *dev = net_if_get_device(iface);
-	struct ec718_drv_data *data = dev->data;
-    net_if_set_link_addr(iface, data->mac_addr, sizeof(data->mac_addr), NET_LINK_ETHERNET);
-    data->netif = iface;
-    iface->if_dev->offload = &offload_funcs;
-	socket_offload_dns_register(&offload_dns_ops);
-}
-
-static struct offloaded_if_api api_funcs = {
-	.iface_api.init = net_iface_init,
-};
-
-
-static int ec718_init(const struct device *dev)
-{
-    // printk("-------------- %s\n", __func__);
-    return 0;
-}
-
 static bool offload_is_supported(int family, int type, int proto)
 {
     return true;
 }
 
-
-
-NET_DEVICE_OFFLOAD_INIT(ec718_dev, "ec718_net", ec718_init, NULL, &s_ec718_drv_data,
-                        NULL, 80, &api_funcs, 1472);
-// NET_DEVICE_DT_INST_OFFLOAD_DEFINE(0, ec718_init, NULL, &s_ec718_drv_data, NULL,
-// 				  80, &api_funcs, 1024);
-
 NET_SOCKET_OFFLOAD_REGISTER(ec718_lte, CONFIG_NET_SOCKETS_OFFLOAD_PRIORITY,
 			    AF_UNSPEC, offload_is_supported, offload_socket_create);
 
+const struct socket_dns_offload esp_offload_dns_ops = {
+	.getaddrinfo = offload_getaddrinfo,
+	.freeaddrinfo = offload_freeaddrinfo,
+};
