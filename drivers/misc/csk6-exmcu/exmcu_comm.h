@@ -92,5 +92,5 @@ enum {
 
 int exmcu_register_read_byte(const struct device *dev, uint8_t reg, uint8_t *value);
 int exmcu_register_write_byte(const struct device *dev, uint8_t reg, uint8_t value);
-
+uint8_t exmcu_get_version(void);
 #endif

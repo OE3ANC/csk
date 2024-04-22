@@ -78,6 +78,16 @@ static void transaction_task(void *arg);
 static void process_rx_task(void *arg);
 static uint8_t *get_tx_buffer(uint8_t *is_valid_tx_buf);
 static void deinit_netdev(void);
+static uint8_t c3_major, c3_minor;
+/**
+ * @brief  esp_get_version
+ * @param  
+ * @retval esp version
+ */
+uint8_t esp_get_version(void)
+{
+	return c3_major*10 + c3_minor;
+}
 
 /**
  * @brief  get private interface of expected type and number
@@ -558,6 +568,8 @@ static void process_rx_task(void *arg)
 						uint8_t major, minor;
 						char commit[8] = {0};
 						hosted_get_fw_version(&major, &minor, commit);
+						c3_major = major;
+						c3_minor = minor;
 						printk("Firmware Version: %d.%d, commit: %s\n", major, minor, commit);
 					} else {
 						printk("Firmware Version not found, please update fw\n");
