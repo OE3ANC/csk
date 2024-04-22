@@ -19,7 +19,7 @@ K_MUTEX_DEFINE(exmcu_lock);
 struct exmcu_config {
 	struct i2c_dt_spec bus;
 };
-
+static uint8_t ch32_ver = 0;
 typedef struct exmcu_info {
 	uint8_t id;
 	const char *name;
@@ -53,6 +53,7 @@ static void print_exmcu_info(uint8_t ver, uint8_t id)
 	if (!found) {
 		LOG_WRN("exmcu info not found, v%d.%d, id:%d", ver / 10, ver % 10, id);
 	} else {
+		ch32_ver = ver;
 		LOG_INF("exmcu info, chip type:%s, ver:%d.%d", info->name, ver / 10, ver % 10);
 		if (EXMCU_PROTOCOL_VERSION != ver) {
 			LOG_WRN("exmcu software version(v%d.%d) is not same as exmcu hardware "
@@ -106,6 +107,10 @@ static void init_work_handler(struct k_work *item)
 
 #endif
 
+uint8_t exmcu_get_version(void)
+{
+	return ch32_ver;
+}
 int exmcu_register_read_byte(const struct device *dev, uint8_t reg, uint8_t *value)
 {
 	int r;
