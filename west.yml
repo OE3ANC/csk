@@ -9,7 +9,7 @@ manifest:
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
-      revision: d0debd3c9330c3763f32ea004dcdbb24942e31a4
+      revision: 55e140bf2b047f45553894057370e8b289fb771a
       import:
         name-allowlist:
           - cmsis
