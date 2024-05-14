@@ -19,7 +19,7 @@ manifest:
           - mcuboot
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
-      revision: 9444f3dc2abec4d49e5daa6112a798ee43999222
+      revision: 7c6fe64a9766925564a4a28998f101eac55503fc
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
