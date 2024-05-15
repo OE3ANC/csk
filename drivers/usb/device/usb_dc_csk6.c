@@ -1381,8 +1381,8 @@ static inline void usb_venus_int_oep_handler(uint32_t intsr)
 {
 	uint32_t ep_int_status;
 	uint8_t ep_idx;
+	uint8_t ep_addr;
 	usb_dc_ep_callback ep_cb;
-	struct cb_msg msg;
 	LOG_DBG("usb_venus_int_oep_handler");
 
 	for (ep_idx = 1U; ep_idx < USB_VENUS_OUT_EP_NUM; ep_idx++) {
@@ -1391,6 +1391,34 @@ static inline void usb_venus_int_oep_handler(uint32_t intsr)
 			EDPxReg_SEL(ep_idx);
 			ep_int_status = CSK_USBC->RXCSRL;
 			usb_venus_ctrl.out_ep_ctrl[ep_idx].data_len = CSK_USBC->RXCOUNT;
+
+
+            // check all EP interrupts, including RxPktRdy, OverRun, SentStall etc.
+            // if it's RxPktRdy, and RXCOUNT may be or may be NOT max packet size,
+            // and call usb_venus_oep_remainpkt_handler if NOT max packet size
+            //     or even if max packet size but usb_venus_dma_setting has not called yet!
+
+            if (ep_int_status & USB_VENUS_RXCSRL_SENTSTALL) { // SentStall
+                LOG_ERR("%s: SentStall is set on EP%d, clear it", __func__, ep_idx);
+                CSK_USBC->RXCSRL &= ~USB_VENUS_RXCSRL_SENTSTALL;
+            }
+
+            if (ep_int_status & (1 << 2)) { // Overrun
+                // or else it could trap into the EP's OVERRUN interrupt repeatedly...
+                if (ep_int_status & USB_VENUS_RXCSRL_RXPKTRDY)
+                    CSK_USBC->RXCSRL |= USB_VENUS_RXCSRL_FLUSHFIFO;
+
+                CSK_USBC->RXCSRL &= ~0x04;
+                LOG_ERR("%s: Overrun is set on EP%d, clear it", __func__, ep_idx);
+            }
+
+            if (usb_venus_ctrl.out_ep_ctrl[ep_idx].data_len == 0) { // no RX data
+                //TODO: wait for OUT data by DMA, but ZLP arrives, so need restore DMA here?
+                LOG_ERR("%s: RXCOUNT is 0 on EP%d, skip it", __func__, ep_idx);
+                CSK_USBC->RXCSRL &= ~USB_VENUS_RXCSRL_RXPKTRDY;
+                EDPxReg_SEL(0);
+                continue; // check next EP
+            }
 
             LOG_DBG("USB OUT EP%u interrupt status: 0x%x data_length: %d, time: %d", ep_idx,
                 ep_int_status, usb_venus_ctrl.out_ep_ctrl[ep_idx].data_len, k_uptime_get_32());
@@ -1402,10 +1430,11 @@ static inline void usb_venus_int_oep_handler(uint32_t intsr)
 			}
 
 			if (ep_cb && (ep_int_status & USB_VENUS_RXCSRL_RXPKTRDY)) {
-				msg.cb = USB_DC_EP_DATA_OUT;
-				msg.ep = ep_idx;
-				msg.type = USB_DC_CB_TYPE_EP;
-				k_msgq_put(&usb_dc_msgq, &msg, K_NO_WAIT);
+				ep_addr = USB_EP_GET_ADDR(ep_idx, USB_EP_DIR_OUT);
+				if (usb_venus_ctrl.out_ep_ctrl[ep_idx].cb) {
+					usb_venus_ctrl.out_ep_ctrl[ep_idx].cb(ep_addr,
+						USB_DC_EP_DATA_OUT);
+				}
 			}
 
 			/* !!!!!Change index to EP0, otherwise EP0 control transfer will not respond when index is not zero!!!!! */
@@ -1419,8 +1448,8 @@ static inline void usb_venus_int_iep_handler(uint32_t intsr)
 {
 	uint32_t ep_int_status;
 	uint8_t ep_idx;
+	uint8_t ep_addr;
 	usb_dc_ep_callback ep_cb;
-	struct cb_msg msg;
 
 	LOG_DBG("usb_venus_int_iep_handler");
 	for (ep_idx = 1U; ep_idx < USB_VENUS_IN_EP_NUM; ep_idx++) {
@@ -1430,14 +1459,16 @@ static inline void usb_venus_int_iep_handler(uint32_t intsr)
 			ep_int_status = CSK_USBC->TXCSRL;
 
 			LOG_DBG("USB IN EP%u interrupt status: 0x%x", ep_idx, ep_int_status);
+			// printk("IN EP%u sta: 0x%x\n", ep_idx, ep_int_status);
 
 			ep_cb = usb_venus_ctrl.in_ep_ctrl[ep_idx].cb;
 			if (ep_cb && ((ep_int_status & USB_VENUS_TXCSRL_TXPKTRDY) == 0)) {
 
-				msg.cb = USB_DC_EP_DATA_IN;
-				msg.ep = ep_idx;
-				msg.type = USB_DC_CB_TYPE_EP;
-				k_msgq_put(&usb_dc_msgq, &msg, K_NO_WAIT);
+				ep_addr = USB_EP_GET_ADDR(ep_idx, USB_EP_DIR_IN);
+				if (usb_venus_ctrl.in_ep_ctrl[ep_idx].cb) {
+					usb_venus_ctrl.in_ep_ctrl[ep_idx].cb(ep_addr,
+						USB_DC_EP_DATA_IN);
+				}
 			}
 
 			/* !!!!!Change index to EP0, otherwise EP0 control transfer will not respond when index is not zero!!!!! */
