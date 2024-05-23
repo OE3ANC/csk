@@ -23,6 +23,18 @@ LOG_MODULE_REGISTER(usb_dc_csk);
 
 #define NUM_OF_EP_MAX		DT_INST_PROP(0, num_bidir_endpoints)
 
+#define IRQ_LOCK(key) do {				\
+	if (!k_is_in_isr()) {				\
+		*key = irq_lock();				\
+	}									\
+} while(0);
+
+#define IRQ_UNLOCK(key) do {			\
+	if (!k_is_in_isr()) {				\
+		irq_unlock(key);				\
+	}									\
+} while(0);
+
 struct cb_msg {
 	uint8_t ep;
 	uint8_t type;
@@ -407,7 +419,7 @@ static int usb_venus_ep_set(uint8_t ep, uint32_t ep_mps, enum usb_dc_ep_transfer
 					CSK_USBC->RXFIFOADD = usb_venus_ctrl.rxfifo_alloc_addr;
 					usb_venus_ctrl.rxfifo_alloc_addr += fifo_size >> 3; //8bytes per address
 
-					LOG_ERR("EP%x RX fifo adress is 0x%x, size is 0x%x, acsize: %x", ep,
+					LOG_INF("EP%x RX fifo adress is 0x%x, size is 0x%x, acsize: %x", ep,
 						usb_venus_ctrl.rxfifo_alloc_addr,
 						usb_venus_ctrl.out_ep_ctrl[ep_idx].fifo_size,
 						GET_FIFOSZ_CFG(ep_mps));
@@ -446,7 +458,7 @@ static int usb_venus_ep_set(uint8_t ep, uint32_t ep_mps, enum usb_dc_ep_transfer
 					CSK_USBC->TXFIFOADD = usb_venus_ctrl.txfifo_alloc_addr;
 					usb_venus_ctrl.txfifo_alloc_addr += fifo_size >> 3; //8bytes per address
 
-					LOG_ERR("EP%x TX fifo adress is 0x%x, size is 0x%x, acsize: %x", ep,
+					LOG_INF("EP%x TX fifo adress is 0x%x, size is 0x%x, acsize: %x", ep,
 						usb_venus_ctrl.txfifo_alloc_addr,
 						usb_venus_ctrl.in_ep_ctrl[ep_idx].fifo_size,
 						GET_FIFOSZ_CFG(ep_mps));
@@ -638,6 +650,7 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 	enum usb_venus_in_ep_idx ep_idx = USB_EP_GET_IDX(ep);
 	uint32_t ep_mps = usb_venus_ctrl.in_ep_ctrl[ep_idx].mps;
 	uint32_t i;
+	unsigned int key = 0;
 
 	LOG_DBG("%s ep %x", __func__, ep);
 
@@ -645,6 +658,8 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 	if (usb_venus_tx_fifo_notempty(ep_idx)){
 		return -EAGAIN;		// try again
 	}
+
+	IRQ_LOCK(&key);
 
 	/* For now tx-fifo sizes are not configured (cf usb_venus_set_fifo). Here
 	 * we force available fifo size to be a multiple of ep mps in order to
@@ -669,6 +684,10 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 			usb_venus_ctrl.status = USB_VENUS_STS_SETUP;
 			EDPxReg_SEL(ep_idx);
 			CSK_USBC->CSR0L |= USB_VENUS_CSR0L_DATAEND;
+
+			EDPxReg_SEL(0);
+			
+			IRQ_UNLOCK(key);
 			return data_len;
 		}
 
@@ -688,6 +707,10 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 			usb_venus_ctrl.status = USB_VENUS_STS_SETUP;
 			}
 			LOG_DBG("USB IN EP%d write %u bytes", ep_idx, data_len);
+
+			EDPxReg_SEL(0);
+
+			IRQ_UNLOCK(key);
 			return data_len;
 		} else {
 			//update state machine
@@ -696,12 +719,17 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 	} else {
 		if (usb_venus_ctrl.out_ep_ctrl[ep_idx].dma_info.enable == 0) {
 			//dma mode disable
-			uint8_t *pFifo_addr = (uint8_t *)(&CSK_USBC->FIFOX[ep_idx]);
-			for (i = 0U; i < data_len; i++) {
-				*pFifo_addr = data[i];
-			}
 			EDPxReg_SEL(ep_idx);
+
+			if(data_len > 0) {
+				uint8_t *pFifo_addr = (uint8_t *)(&CSK_USBC->FIFOX[ep_idx]);
+				for (i = 0U; i < data_len; i++) {
+					*pFifo_addr = data[i];
+				}
+			}
+			
 			CSK_USBC->TXCSRL |= USB_VENUS_TXCSRL_TXPKTRDY;
+
 			if(data_len == 0){
 				usb_venus_ctrl.status = USB_VENUS_STS_SETUP;
 			}
@@ -714,6 +742,12 @@ static int usb_venus_tx(uint8_t ep, const uint8_t *const data, uint32_t data_len
 	}
 
 	LOG_DBG("USB IN EP%d write %u bytes", ep_idx, data_len);
+
+	/* !!!!!Change index to EP0, otherwise EP0 control transfer will not respond when index is not zero!!!!! */
+	EDPxReg_SEL(0);
+
+	IRQ_UNLOCK(key);
+
 	return data_len;
 }
 
@@ -807,6 +841,7 @@ int usb_dc_ep_check_cap(const struct usb_dc_ep_cfg_data *const cfg)
 int usb_dc_ep_configure(const struct usb_dc_ep_cfg_data *const cfg)
 {
 	uint8_t ep;
+	unsigned int key = 0;
 
 	if (!cfg) {
 		return -EINVAL;
@@ -819,7 +854,9 @@ int usb_dc_ep_configure(const struct usb_dc_ep_cfg_data *const cfg)
 		return -EINVAL;
 	}
 
+	IRQ_LOCK(&key);
 	usb_venus_ep_set(ep, cfg->ep_mps, cfg->ep_type);
+	IRQ_UNLOCK(key);
 
 	return 0;
 }
@@ -918,6 +955,7 @@ int usb_dc_ep_is_stalled(const uint8_t ep, uint8_t *const stalled)
 
 int usb_dc_ep_enable(const uint8_t ep)
 {
+	unsigned int key = 0;
 	uint8_t ep_idx = USB_EP_GET_IDX(ep);
 	LOG_INF("usb_dc_ep_enable");
 	
@@ -926,6 +964,7 @@ int usb_dc_ep_enable(const uint8_t ep)
 		return -EINVAL;
 	}
 
+	IRQ_LOCK(&key);
 	EDPxReg_SEL(ep_idx);
 
 	/* enable EP interrupts */
@@ -960,6 +999,7 @@ int usb_dc_ep_enable(const uint8_t ep)
 	}
 
 	EDPxReg_SEL(0);
+	IRQ_UNLOCK(key);
 
 	return 0;
 }
@@ -1066,8 +1106,6 @@ int usb_dc_ep_write(const uint8_t ep, const uint8_t *const data, const uint32_t 
 		*ret_bytes = ret;
 	}
 
-	/* !!!!!Change index to EP0, otherwise EP0 control transfer will not respond when index is not zero!!!!! */
-	EDPxReg_SEL(0);
 	return 0;
 }
 
@@ -1076,6 +1114,7 @@ int usb_dc_ep_read_wait(uint8_t ep, uint8_t *data, uint32_t max_data_len, uint32
 	uint8_t ep_idx = USB_EP_GET_IDX(ep);
 	uint32_t i, j, data_len, bytes_to_copy;
 	struct usb_setup_packet *setup_tmp = NULL;
+	unsigned int key = 0;
 
 	if (!usb_venus_ctrl.attached || !usb_venus_ep_is_valid(ep)) {
 		LOG_ERR("Not attached / Invalid endpoint: EP 0x%x", ep);
@@ -1093,6 +1132,8 @@ int usb_dc_ep_read_wait(uint8_t ep, uint8_t *data, uint32_t max_data_len, uint32
 		LOG_ERR("Wrong arguments");
 		return -EINVAL;
 	}
+
+	IRQ_LOCK(&key);
 
 	data_len = usb_venus_ctrl.out_ep_ctrl[ep_idx].data_len; //received packet count in FIFO
 	if (data_len > max_data_len) {
@@ -1156,6 +1197,7 @@ int usb_dc_ep_read_wait(uint8_t ep, uint8_t *data, uint32_t max_data_len, uint32
 			if (usb_venus_dma_multiple_packet_setting(ep, (uint32_t)data,
 								  max_data_len)) {
 				LOG_ERR("Wrong arguments");
+				IRQ_UNLOCK(key);
 				return -EINVAL;
 			}
 			//			}
@@ -1173,12 +1215,15 @@ int usb_dc_ep_read_wait(uint8_t ep, uint8_t *data, uint32_t max_data_len, uint32
 		*read_bytes = bytes_to_copy;
 	}
 
+	IRQ_UNLOCK(key);
+
 	return 0;
 }
 
 int usb_dc_ep_read_continue(uint8_t ep)
 {
 	uint8_t ep_idx = USB_EP_GET_IDX(ep);
+	unsigned int key = 0;
 
 	if (!usb_venus_ctrl.attached || !usb_venus_ep_is_valid(ep)) {
 		LOG_ERR("Not attached / Invalid endpoint: EP 0x%x", ep);
@@ -1190,6 +1235,8 @@ int usb_dc_ep_read_continue(uint8_t ep)
 		LOG_ERR("Wrong endpoint direction");
 		return -EINVAL;
 	}
+
+	IRQ_LOCK(&key);
 
 	if(ep_idx == 0){
 		if (usb_venus_ctrl.status == USB_VENUS_STS_OUT){
@@ -1205,6 +1252,8 @@ int usb_dc_ep_read_continue(uint8_t ep)
 
 	/* !!!!!Change index to EP0, otherwise EP0 control transfer will not respond when index is not zero!!!!! */
 	EDPxReg_SEL(0);
+
+	IRQ_UNLOCK(key);
 
 	return 0;
 }
