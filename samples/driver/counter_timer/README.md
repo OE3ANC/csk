@@ -1,4 +1,4 @@
-# 简介  
+<!-- # 简介  
 演示使用 RTC 定时器来实现定时，1s后获取定时器计数，设置闹钟为10s后触发回调。
 
 
@@ -31,4 +31,4 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/counter/ -p
 
 
 
-
+ -->
