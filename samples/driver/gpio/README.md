@@ -17,4 +17,4 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/gpio/ -p
 4.交替调用 gpio_a1_enable 和 gpio_a1_disenable 函数，使 gpioa1 引脚的电平每秒钟切换一次
 
 # 运行
-按下开发板复位按钮，运行程序
+按下开发板复位按钮，运行程序,观察示波器的变化。

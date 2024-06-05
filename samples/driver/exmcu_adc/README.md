@@ -25,7 +25,7 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/exmcu_adc/ -p
 
 
 # 运行
-按下开发板复位按钮，运行程序
+按下开发板复位按钮，运行程序,观察串口打印信息。
 
 
 

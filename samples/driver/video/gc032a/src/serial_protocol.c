@@ -16,8 +16,7 @@
 
 const struct device *uart_dev;
 uint8_t txBuf[UART_TX_BLOCK + 1]; // append 1 byte checksum
-uint8_t txFrame[MAX_TX_FRAME_LEN +
-		4]; // tx frame buffer + header & ender & checksum w/ or w/o encoded bytes
+uint8_t txFrame[MAX_TX_FRAME_LEN +4]; // tx frame buffer + header & ender & checksum w/ or w/o encoded bytes
 
 uint32_t rfc1662Encode(uint8_t *buf, uint32_t bufLen, uint8_t *pData, uint32_t dataLen);
 
