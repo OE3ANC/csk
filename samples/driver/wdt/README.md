@@ -13,12 +13,15 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/wdt/ -p
 
 
 3.装载配置并获取通道ID
-```	struct spi_buf *tx_packa```
+```	wdt_channel_id = wdt_install_timeout(wdt, &wdt_config);```
 
-4.先喂食看门狗避免系统重置
+4.设置看门狗实例
+```	err = wdt_setup(wdt, WDT_OPT_PAUSE_HALTED_BY_DBG);```
+
+5.先喂食看门狗避免系统重置
 ```	wdt_feed(wdt, wdt_channel_id); ```
 
-5.等待系统重置
+6.等待系统重置
 
 
 # 运行
