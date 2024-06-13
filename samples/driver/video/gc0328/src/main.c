@@ -134,6 +134,7 @@ int main(void)
 	printk("- Device name: %s\n", "dvp");
 
 	// /* Get capabilities */
+	/*从指定的视频设备（video）的输出端点（VIDEO_EP_OUT）获取设备能力，并将结果存储在 caps 结构中*/
 	if (video_get_caps(video, VIDEO_EP_OUT, &caps)) {
 		LOG_ERR("Unable to retrieve video capabilities");
 		return 0;
@@ -202,8 +203,7 @@ int main(void)
 	#endif
 #endif
 
-		LOG_INF("Got frame %u! size: %u; timestamp %u ms fps %d", frame++,
-			vbuf->bytesused, vbuf->timestamp, calculate_fps(vbuf));
+		LOG_INF("Got frame %u! size: %u; timestamp %u ms fps %d", frame++,vbuf->bytesused, vbuf->timestamp, calculate_fps(vbuf));
 
 		err = video_enqueue(video, VIDEO_EP_OUT, vbuf);
 		if (err) {
