@@ -1,5 +1,5 @@
 tests:
-  sample.board.csk6.driver.i2c.i2c_slave_vdev:
+  sample.board.csk6.driver.i2c.i2c_master:
     platform_allow: csk6011a_nano csk6_duomotai_devkit
     tags: csk6
     harness: console
@@ -7,4 +7,4 @@ tests:
       type: one_line
       ordered: true
       regex:
-        - "I2C Addr:"
+        - "i2c_reg_data_raw"
