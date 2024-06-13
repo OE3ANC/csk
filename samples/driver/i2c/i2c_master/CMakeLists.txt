@@ -13,11 +13,5 @@ endif()
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(i2c_master)
-
-# add_subdirectory_ifdef(CONFIG_I2C_SLAVE_VIRTUAL_DEVICE			common/slave)
-# FILE(GLOB app_sources src/*.c)
-
-# zephyr_include_directories(common/slave)
-# FILE(GLOB app_sources src/*.c common/slave/i2c_slave_vdev.c)
 target_sources(app PRIVATE src/main.c)
 
