@@ -7,20 +7,22 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
 
-#define I2C_DEV_LABEL 		"i2c_1" 	// 根据你的设备树修改
-#define TARGET_DEVICE_ADDR 	0x38      	// I2C 从设备地址
-#define TARGET_REG_ADDR 	0x96      	// I2C 从设备寄存器地址
+
+#define I2C1_NODE DT_INST(0, listenai_csk_i2c)
+#define TARGET_DEVICE_ADDR 	0x38      	
+#define TARGET_REG_ADDR 	0xA8     	
 
 int main(void)
 {
     const struct device *i2c_dev;
 	uint8_t i2c_reg_data_raw;
 	uint8_t i2c_reg_data_modify;
-    uint8_t data = 0x88; 
+    uint8_t data = 0x99; 
 
     int ret;
 
-	i2c_dev = device_get_binding(I2C_DEV_LABEL);
+
+	i2c_dev = DEVICE_DT_GET(I2C1_NODE);
     if (!i2c_dev) {
         printk("No I2C device found");
         return -1;
@@ -34,6 +36,7 @@ int main(void)
 	ret = i2c_reg_read_byte(i2c_dev,TARGET_DEVICE_ADDR,TARGET_REG_ADDR,&i2c_reg_data_raw);
 	if(ret < 0){
 		printk("i2c_reg_read_byte failed!\n");
+		return -1;
 	}
 	printk("i2c_reg_data_raw: %d\n",i2c_reg_data_raw);
 	
@@ -41,10 +44,12 @@ int main(void)
 	ret = i2c_reg_write_byte(i2c_dev,TARGET_DEVICE_ADDR,TARGET_REG_ADDR,data);
 	if(ret < 0){
 		printk("i2c_reg_write_byte failed!\n");
+		return -1;
 	}
 	ret = i2c_reg_read_byte(i2c_dev,TARGET_DEVICE_ADDR,TARGET_REG_ADDR,&i2c_reg_data_modify);
 	if(ret < 0){
 		printk("i2c_reg_read_byte failed!\n");
+		return -1;
 	}
 	printk("i2c_reg_data_modify: %d\n",i2c_reg_data_modify);
 	

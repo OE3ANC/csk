@@ -20,9 +20,7 @@ K_SEM_DEFINE(key_sem, 0, 1);
 
 
 void key_3_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
-{
-	//LOG_DBG("key_3 pressed at %" PRIu32 "\n", k_cycle_get_32());
-	
+{	
 	k_sem_give(&key_sem);
 }
 
@@ -60,7 +58,6 @@ void key_interrupt(void){
 	while(1){
 		err = k_sem_take(&key_sem, K_NO_WAIT);
 		if(err == 0){
-			//LOG_DBG("LIGHT ON LED");		
 			printk("LIGHT ON LED\n");
 
 		}

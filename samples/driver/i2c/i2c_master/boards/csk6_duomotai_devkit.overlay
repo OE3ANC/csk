@@ -18,5 +18,4 @@
 	status = "okay";
 	pinctrl-0 = <&pinctrl_i2c1_scl_default &pinctrl_i2c1_sda_default>;
 	pinctrl-names = "default";
-	label = "i2c_1";
 };
