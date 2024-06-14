@@ -19,8 +19,6 @@ const struct pwm_dt_spec spec = PWM_DT_SPEC_GET(DT_NODELABEL(inter_pwm));
 
 int main(void)
 {
-	int r = 0;
-
 	if (!device_is_ready(spec.dev)) {
 		printk("device: %s is not ready\n", spec.dev->name);
 		return 0;
