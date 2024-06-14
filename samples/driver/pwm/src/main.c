@@ -19,8 +19,6 @@ const struct pwm_dt_spec spec = PWM_DT_SPEC_GET(DT_NODELABEL(inter_pwm));
 
 int main(void)
 {
-	int r = 0;
-
 	if (!device_is_ready(spec.dev)) {
 		printk("device: %s is not ready\n", spec.dev->name);
 		return 0;
@@ -34,11 +32,6 @@ int main(void)
 		printk("pwm_set_dt success\n");
 	}
 	k_sleep(K_SECONDS(4U));
-	while(1){
-		// if(pwm_set_dt(&spec, max_period, max_period / 2U) == 0){
-		// 	printk("pwm_set_dt success\n");
-		// }
-		// k_sleep(K_SECONDS(4U));
-	}
+	while(1){}
 	return 0;
 }
