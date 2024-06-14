@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.20.0)
-set(SUPPORT_BOARDS csk6012_nano csk6011a_nano)
+set(SUPPORT_BOARDS csk6012_nano csk6011a_nano csk6_duomotai_devkit)
 if(NOT ${BOARD} IN_LIST SUPPORT_BOARDS)
     message("Please choose one of the following boards:")
     foreach(item ${SUPPORT_BOARDS})
