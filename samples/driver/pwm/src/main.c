@@ -34,11 +34,6 @@ int main(void)
 		printk("pwm_set_dt success\n");
 	}
 	k_sleep(K_SECONDS(4U));
-	while(1){
-		// if(pwm_set_dt(&spec, max_period, max_period / 2U) == 0){
-		// 	printk("pwm_set_dt success\n");
-		// }
-		// k_sleep(K_SECONDS(4U));
-	}
+	while(1){}
 	return 0;
 }

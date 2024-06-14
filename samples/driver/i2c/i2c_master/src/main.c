@@ -7,9 +7,9 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
 
-#define I2C_DEV_LABEL 		"i2c_1" 	// 根据你的设备树修改
-#define TARGET_DEVICE_ADDR 	0x38      	// I2C 从设备地址
-#define TARGET_REG_ADDR 	0x96      	// I2C 从设备寄存器地址
+#define I2C_DEV_LABEL 		"i2c_1" 	
+#define TARGET_DEVICE_ADDR 	0x38      	
+#define TARGET_REG_ADDR 	0x96      	
 
 int main(void)
 {
