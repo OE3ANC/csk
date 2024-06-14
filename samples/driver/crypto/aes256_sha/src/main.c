@@ -172,13 +172,13 @@ void hash_mode(const struct device *dev)
 	hash_free_session(dev, &ctx);
 }
 
-void main(void)
+int main(void)
 {
 	const struct device *dev = DEVICE_DT_GET(CRYPTO_DRV_NAME);
 
 	if (!dev) {
 		LOG_ERR("crypto device not found \n");
-		return;
+		return -1;
 	}
 
 	LOG_INF("AES128 HASH Cipher Sample");
