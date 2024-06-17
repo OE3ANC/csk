@@ -7,20 +7,22 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
 
-#define I2C_DEV_LABEL 		"i2c_1" 	
+
+#define I2C1_NODE DT_INST(0, listenai_csk_i2c)
 #define TARGET_DEVICE_ADDR 	0x38      	
-#define TARGET_REG_ADDR 	0x96      	
+#define TARGET_REG_ADDR 	0xA8     	
 
 int main(void)
 {
     const struct device *i2c_dev;
 	uint8_t i2c_reg_data_raw;
 	uint8_t i2c_reg_data_modify;
-    uint8_t data = 0x88; 
+    uint8_t data = 0x99; 
 
     int ret;
 
-	i2c_dev = device_get_binding(I2C_DEV_LABEL);
+
+	i2c_dev = DEVICE_DT_GET(I2C1_NODE);
     if (!i2c_dev) {
         printk("No I2C device found");
         return -1;
