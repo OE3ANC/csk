@@ -138,4 +138,6 @@ int main(void)
 	LOG_INF("AES128 ECB Cipher Sample");
 
 	ecb_mode(dev);
+
+	return 0;
 }
