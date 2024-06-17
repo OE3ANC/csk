@@ -184,4 +184,6 @@ int main(void)
 	LOG_INF("AES128 HASH Cipher Sample");
 
 	hash_mode(dev);
+
+	return 0;
 }
