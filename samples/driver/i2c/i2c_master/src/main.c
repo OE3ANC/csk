@@ -34,6 +34,7 @@ int main(void)
 	ret = i2c_reg_read_byte(i2c_dev,TARGET_DEVICE_ADDR,TARGET_REG_ADDR,&i2c_reg_data_raw);
 	if(ret < 0){
 		printk("i2c_reg_read_byte failed!\n");
+		return -1;
 	}
 	printk("i2c_reg_data_raw: %d\n",i2c_reg_data_raw);
 	
@@ -41,10 +42,12 @@ int main(void)
 	ret = i2c_reg_write_byte(i2c_dev,TARGET_DEVICE_ADDR,TARGET_REG_ADDR,data);
 	if(ret < 0){
 		printk("i2c_reg_write_byte failed!\n");
+		return -1;
 	}
 	ret = i2c_reg_read_byte(i2c_dev,TARGET_DEVICE_ADDR,TARGET_REG_ADDR,&i2c_reg_data_modify);
 	if(ret < 0){
 		printk("i2c_reg_read_byte failed!\n");
+		return -1;
 	}
 	printk("i2c_reg_data_modify: %d\n",i2c_reg_data_modify);
 	
