@@ -3,5 +3,7 @@ sample:
   name: lvgl
 tests:
   sample.display.lvgl.gui.SimpleShow:
+    platform_exclude:
+    - csk6_duomotai_devkit
     build_only: true
 
