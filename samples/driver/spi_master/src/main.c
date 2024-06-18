@@ -31,14 +31,17 @@ int main(void)
 	spi_cfg.frequency = 10 * 1000000UL;
 
 #ifdef CONFIG_SPI_SOFT_GPIO_CS_ENABLE
-	const struct spi_cs_control spi_cs_ctrl = {
-		.gpio_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0)),
-		.gpio_pin = 20,
-		.gpio_dt_flags = GPIO_ACTIVE_LOW, /* Invert gpio active level logic */
-		.delay = 5 /* Delay 5us microseconds to wait before starting the */
-			   /* transmission and before releasing the CS line */
+	const struct gpio_dt_spec gpio = {
+		.port = DEVICE_DT_GET(DT_NODELABEL(gpioa)),
+		.pin = 12,
+		.dt_flags = GPIO_ACTIVE_LOW, /* Invert gpio active level logic */
 	};
-	spi_cfg.cs = &spi_cs_ctrl;
+
+	const struct spi_cs_control spi_cs_ctrl = {
+		.gpio = gpio,
+		.delay = 5 /* Delay 5us microseconds to wait before starting the */
+	};
+	spi_cfg.cs = spi_cs_ctrl;
 #endif
 
 	/* Make spi transaction package buffers */
