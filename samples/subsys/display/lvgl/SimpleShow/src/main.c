@@ -16,7 +16,7 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(app);
 
-void main(void)
+int main(void)
 {
 	uint32_t count = 0U;
 	char count_str[11] = {0};
@@ -27,7 +27,7 @@ void main(void)
 	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display_dev)) {
 		LOG_ERR("Device not ready, aborting test");
-		return;
+		return -1;
 	}
 
 	if (IS_ENABLED(CONFIG_LV_Z_POINTER_KSCAN)) {
@@ -58,4 +58,5 @@ void main(void)
 		k_sleep(K_MSEC(10));
 		++count;
 	}
+	return 0;
 }
