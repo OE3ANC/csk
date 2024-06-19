@@ -23,24 +23,24 @@ void print_uart_config(const struct uart_config *cfg)
 	printk("parity: %d\n", cfg->parity);
 }
 
-void main(void)
+int main(void)
 {
 	const struct device *dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
 	struct uart_config cfg = {0};
 
 	if (!device_is_ready(dev)) {
 		printk("device:%s is not ready!\n", dev->name);
-		return;
+		return -1;
 	}
 
 	if (uart_config_get(dev, &cfg) != 0) {
 		printk("uart config get failed.\n");
-		return;
+		return -1;
 	}
 
 	if (cfg.baudrate == NEW_BAUDRATE) {
 		printk("current baudrate is same as new baudrate(%d).\n", NEW_BAUDRATE);
-		return;
+		return -1;
 	}
 
 	printk("current uart configuration:\n");
@@ -56,14 +56,14 @@ void main(void)
 
 	if (uart_configure(dev, &cfg) != 0) {
 		printk("uart configure failed.\n");
-		return;
+		return -1;
 	}
 
 	printk("uart configuration succeeded.\n");
 
 	if (uart_config_get(dev, &cfg) != 0) {
 		printk("uart config get failed.\n");
-		return;
+		return -1;
 	}
 	printk("config result:\n");
 	print_uart_config(&cfg);
@@ -72,4 +72,6 @@ void main(void)
 		printk("hello world\n");
 		k_msleep(500);
 	}
+
+	return 0;
 }

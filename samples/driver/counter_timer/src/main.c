@@ -54,4 +54,5 @@ int main(void)
 		k_msleep(12000);
 		printk("restart\n");
 	}	
+	return 0;
 }
