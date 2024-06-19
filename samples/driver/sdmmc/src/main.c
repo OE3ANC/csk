@@ -19,7 +19,7 @@ static uint32_t disk_sector_count;
 static uint32_t disk_sector_size;
 static uint8_t *wbuf, *rbuf;
 
-void main(void)
+int main(void)
 {
 	int ret = 0;
 	uint32_t cmd_buf;
@@ -29,7 +29,7 @@ void main(void)
 	ret = disk_access_ioctl(disk_pdrv, DISK_IOCTL_GET_SECTOR_COUNT, &cmd_buf);
 	if (ret != 0) {
 		LOG_ERR("Disk ioctl get sector count failed (%d)\n", ret);
-		return;
+		return -1;
 	}
 
 	disk_sector_count = cmd_buf;
@@ -38,7 +38,7 @@ void main(void)
 	ret = disk_access_ioctl(disk_pdrv, DISK_IOCTL_GET_SECTOR_SIZE, &cmd_buf);
 	if (ret != 0) {
 		LOG_ERR("Disk ioctl get sector size failed (%d)\n", ret);
-		return;
+		return -1;
 	}
 
 	disk_sector_size = cmd_buf;
@@ -58,7 +58,7 @@ void main(void)
 	ret = disk_access_write(disk_pdrv, wbuf, 1, NUM_SECTORS);
 	if (ret) {
 		LOG_ERR("disk_access_write failed (%d)\n", ret);
-		return;
+		return -1;
 	}
 
 	rbuf = (uint8_t *)k_malloc(NUM_SECTORS * disk_sector_size);
@@ -70,7 +70,7 @@ void main(void)
 	ret = disk_access_read(disk_pdrv, rbuf, 1, NUM_SECTORS);
 	if (ret) {
 		LOG_ERR("disk_access_write failed (%d)\n", ret);
-		return;
+		return -1;
 	}
 
 	LOG_HEXDUMP_INF(rbuf, 256, "rbuf");
@@ -78,9 +78,11 @@ void main(void)
 	for (uint32_t i = 0; i < NUM_SECTORS * disk_sector_size; i++) {
 		if (rbuf[i] != wbuf[i]) {
 			LOG_ERR("Read data did not match data written to disk %d\n", i);
-			return;
+			return -1;
 		}
 	}
 
 	LOG_DBG("sdcard sample done \n");
+
+	return 0;
 }
