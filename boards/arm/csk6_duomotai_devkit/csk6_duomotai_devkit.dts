@@ -54,7 +54,7 @@
                 led_rgb_red: led_rgb_red {
                         gpios = <&exgpiod 3 GPIO_ACTIVE_LOW>;
                 };
-                green_led: led_rgb_green: led_rgb_green {
+                led_rgb_green: led_rgb_green {
                         gpios = <&exgpiod 4 GPIO_ACTIVE_LOW>;
                 };
                 led_rgb_blue: led_rgb_blue {
