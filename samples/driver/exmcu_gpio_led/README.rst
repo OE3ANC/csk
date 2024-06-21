@@ -29,3 +29,6 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/exmcu_gpio_led/ -
 运行
 =======================
 按下开发板复位按钮，运行程序,观察LED灯的闪烁变化
+
+
+

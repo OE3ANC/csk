@@ -53,3 +53,7 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/video/gc0328/ -p
 运行
 ==========================
 按下开发板复位按钮，运行程序
+
+
+
+
