@@ -78,16 +78,19 @@ static void dvp_framedata_proc(void)
 	temp_vbuf->timestamp = k_uptime_get_32();
 
 	vbuf = k_fifo_get(&data->fifo_in, K_NO_WAIT);
+    
+    printk("1...\n");
 	if (vbuf) {
 		DVP_Stop(dvp_dev);
 		csk6_dvp_start(dev, vbuf);
 		set_current_vbuf(dev, vbuf);
 		k_fifo_put(&data->fifo_out, temp_vbuf);
 	} else {
+        // printk("2...\n");
 		DVP_Stop(dvp_dev);
 		csk6_dvp_start(dev, temp_vbuf);
 		set_current_vbuf(dev, temp_vbuf);
-		LOG_DBG("not enough fifo_in \r\n");
+		LOG_ERR("not enough fifo_in \r\n");
 	}
 }
 
@@ -113,6 +116,7 @@ static void dvp_callback(uint32_t event, uint32_t param)
 static int video_csk6_dvp_set_fmt(const struct device *dev, enum video_endpoint_id ep,
 				  struct video_format *fmt)
 {
+    printk("video_csk6_dvp_set_fmt.\n");
 	const struct video_csk6_dvp_config *config = dev->config;
 	struct video_csk6_dvp_data *data = dev->data;
 	DVP_HandleTypeDef *dvp_dev = data->handle;
@@ -198,6 +202,7 @@ static int check_buf_addr(uint32_t addr)
 
 static int csk6_dvp_start(const struct device *dev, struct video_buffer *vbuf)
 {
+    
 	struct video_csk6_dvp_data *data = dev->data;
 	DVP_HandleTypeDef *dvp_dev = data->handle;
 	DVP_BufferDef dvp_buf;
@@ -218,14 +223,16 @@ static int csk6_dvp_start(const struct device *dev, struct video_buffer *vbuf)
 		LOG_ERR("dvp satrt faild \r\n");
 		return -EIO;
 	}
-
+    printk("csk6_dvp_start.\n");
 	return 0;
 }
 
 static int video_csk6_dvp_stream_start(const struct device *dev)
 {
+    printk("video_csk6_dvp_stream_start.\n");
 	const struct video_csk6_dvp_config *config = dev->config;
 	struct video_csk6_dvp_data *data = dev->data;
+    DVP_HandleTypeDef *dvp_dev = data->handle;
 	struct video_buffer *vbuf;
 
 	vbuf = k_fifo_get(&data->fifo_in, K_NO_WAIT);
@@ -233,20 +240,25 @@ static int video_csk6_dvp_stream_start(const struct device *dev)
 		LOG_ERR("fifo_in is empty \r\n");
 		return -EIO;
 	}
-
+    int key = irq_lock();
 	csk6_dvp_start(dev, vbuf);
 
 	set_current_vbuf(dev, vbuf);
-
+    irq_unlock(key);
 	if (config->sensor_dev && video_stream_start(config->sensor_dev)) {
 		return -EIO;
 	}
+    // DVP_GetState(dvp_dev);
+    // DVP_GetError(dvp_dev);
+    printk("get state : %d\n",  DVP_GetState(dvp_dev));
+    printk("get error : %d\n",  DVP_GetError(dvp_dev));
 
 	return 0;
 }
 
 static int video_csk6_dvp_stream_stop(const struct device *dev)
 {
+    printk("video_csk6_dvp_stream_stop.\n");
 	const struct video_csk6_dvp_config *config = dev->config;
 	struct video_csk6_dvp_data *data = dev->data;
 	DVP_HandleTypeDef *dvp_dev = data->handle;
@@ -255,8 +267,9 @@ static int video_csk6_dvp_stream_stop(const struct device *dev)
 		return -EIO;
 	}
 
+    int key = irq_lock();
 	DVP_Stop(dvp_dev);
-
+    irq_unlock(key);
 	return 0;
 }
 
@@ -264,7 +277,7 @@ static int video_csk6_dvp_flush(const struct device *dev, enum video_endpoint_id
 {
 	struct video_csk6_dvp_data *data = dev->data;
 	struct video_buffer *vbuf;
-
+    
 	if (!cancel) {
 		/* wait for all buffer to be processed */
 		do {
@@ -280,10 +293,10 @@ static int video_csk6_dvp_flush(const struct device *dev, enum video_endpoint_id
 			k_fifo_put(&data->fifo_out, vbuf);
 		}
 	}
-
+    printk("video_csk6_dvp_flush-- \n");
 	return 0;
 }
-
+static int en_cnt =0;
 static int video_csk6_dvp_enqueue(const struct device *dev, enum video_endpoint_id ep,
 				  struct video_buffer *vbuf)
 {
@@ -299,6 +312,8 @@ static int video_csk6_dvp_enqueue(const struct device *dev, enum video_endpoint_
 		LOG_ERR("err bus addr 0x%x\r\n", (uint32_t)vbuf->buffer);
 		return -EINVAL;
 	}
+    en_cnt++;
+    printk("en_cnt %d\n", en_cnt);
 
 	k_fifo_put(&data->fifo_in, vbuf);
 
@@ -307,6 +322,7 @@ static int video_csk6_dvp_enqueue(const struct device *dev, enum video_endpoint_
 
 static inline int video_csk6_dvp_set_ctrl(const struct device *dev, unsigned int cid, void *value)
 {
+    printk("video_csk6_dvp_set_ctrl.\n");
 	const struct video_csk6_dvp_config *config = dev->config;
 	int ret = -ENOTSUP;
 
@@ -320,6 +336,7 @@ static inline int video_csk6_dvp_set_ctrl(const struct device *dev, unsigned int
 
 static inline int video_csk6_dvp_get_ctrl(const struct device *dev, unsigned int cid, void *value)
 {
+    printk("video_csk6_dvp_get_ctrl.\n");
 	const struct video_csk6_dvp_config *config = dev->config;
 	int ret = -ENOTSUP;
 
@@ -330,7 +347,7 @@ static inline int video_csk6_dvp_get_ctrl(const struct device *dev, unsigned int
 
 	return ret;
 }
-
+static int de_cnt = 0;
 static int video_csk6_dvp_dequeue(const struct device *dev, enum video_endpoint_id ep,
 				  struct video_buffer **vbuf, k_timeout_t timeout)
 {
@@ -339,11 +356,12 @@ static int video_csk6_dvp_dequeue(const struct device *dev, enum video_endpoint_
 	if (ep != VIDEO_EP_OUT) {
 		return -EINVAL;
 	}
-
 	*vbuf = k_fifo_get(&data->fifo_out, timeout);
 	if (*vbuf == NULL) {
 		return -EAGAIN;
 	}
+    de_cnt++;
+    printk("de_cnt %d\n", de_cnt);
 
 	return 0;
 }
@@ -351,6 +369,7 @@ static int video_csk6_dvp_dequeue(const struct device *dev, enum video_endpoint_
 static int video_csk6_dvp_get_caps(const struct device *dev, enum video_endpoint_id ep,
 				   struct video_caps *caps)
 {
+    printk("video_csk6_dvp_get_caps.\n");
 	const struct video_csk6_dvp_config *config = dev->config;
 	int err = -ENODEV;
 

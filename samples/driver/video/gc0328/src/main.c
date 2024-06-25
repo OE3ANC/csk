@@ -111,7 +111,7 @@ int calculate_fps(struct video_buffer *vbuf)
 
 	return fps;
 }
-
+static K_SEM_DEFINE(m_sem_wait_result, 0, 1);
 int main(void)
 {
 	struct video_buffer *buffers[VBUF_NUM], *vbuf;
@@ -184,27 +184,17 @@ int main(void)
 	/* Grab video frames */
 	while (1) {
 		int err;
+		int ret = k_sem_take(&m_sem_wait_result, K_FOREVER);
+		if(ret != 0){
+			LOG_ERR("k_sem_take m_sem_wait_result failed: %d", ret);
+		}
+        printk("vbuf->buffer: %p  line :%d\n", vbuf->buffer, __LINE__);
 		err = video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_FOREVER);
 		if (err) {
 			LOG_ERR("Unable to dequeue video buf");
 			return 0;
 		}
-
-#if USE_SERIAL_PROTOCOL
-	#ifdef WEBUSB_IMAGE_DOWNSAMPLING
-			uint32_t dst_width = IMAGE_WIDTH * WEBUSB_IMAGE_SCALE;
-			uint32_t dst_height = IMAGE_HEIGHT * WEBUSB_IMAGE_SCALE;
-			downsample(vbuf->buffer, resample_img, 
-				IMAGE_WIDTH, IMAGE_HEIGHT, WEBUSB_IMAGE_DOWNSAMPLING, 0);
-			frame_send(resample_img, dst_width, dst_height, 0);
-	#else
-			frame_send(vbuf->buffer, fmt.width, fmt.height, 0);
-	#endif
-#endif
-
-		LOG_INF("Got frame %u! size: %u; timestamp %u ms fps %d", frame++,
-			vbuf->bytesused, vbuf->timestamp, calculate_fps(vbuf));
-
+		k_msleep(1500);
 		err = video_enqueue(video, VIDEO_EP_OUT, vbuf);
 		if (err) {
 			LOG_ERR("Unable to requeue video buf");
@@ -212,3 +202,32 @@ int main(void)
 		}
 	}
 }
+int comp_fd_capture(void)
+{
+	struct video_buffer *vbuf;
+	video_stream_stop(video);
+
+	while (video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_NO_WAIT) == 0) {
+		printk("vbuf->buffer: %p  line :%d\n", vbuf->buffer, __LINE__);
+		video_enqueue(video, VIDEO_EP_OUT, vbuf);
+	}
+	k_msleep(10);
+	video_stream_start(video);
+
+	return 0;
+
+}
+
+
+void test(void *p1, void *p2, void *p3)
+{
+    k_msleep(3000);
+
+	while (1) {
+        comp_fd_capture();
+		k_sleep(K_MSEC(1000));
+	}
+}
+
+K_THREAD_DEFINE(test_id, 1024*1, test, NULL, NULL, NULL,
+		6 + 1, 0, 0);
