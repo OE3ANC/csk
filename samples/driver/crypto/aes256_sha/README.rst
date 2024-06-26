@@ -1,31 +1,56 @@
-.. _crypto_sample:
 
-Crypto
-######
+简介
+===================
+本示例演示使用SHA-256算法对输入数据进行哈希处理，并验证计算结果是否正确
 
-Overview
-********
-An example to illustrate the usage of crypto APIs.
+构建步骤
+======================
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/crypto/aes256_sha/ -p
 
-Building and Running
-********************
+功能说明
+=======================
+1.从设备树中获取设备
 
-Make sure you have the csk6 boards connected over Jlink debuger.
+::
 
-The sample can be built and flashed as follows:
+    const struct device *dev = DEVICE_DT_GET(CRYPTO_DRV_NAME);
 
-.. code-block:: console
+2.调用函数进行哈希操作
 
-   lisa zep build -b csk6002_9s_nano
-   lisa zep flash
+::
 
-Sample Output
-=============
+   hash_mode(dev);
 
-.. code-block:: console
+3.开始哈希会话
 
-   *** Booting Zephyr OS build v1.0.3-alpha.1-1-g1cd2b6612079  ***
-   I: HASH256  Sample
+::
+
+   ret = hash_begin_session(dev, &ctx, CRYPTO_HASH_ALGO_SHA256);
+
+
+4.计算哈希值
+
+::
+
+   ret = hash_compute(&ctx, &pkt);
+
+5.验证哈希结果
+
+::
+
+   memcmp(crypto_sha_result_data_8w, sha256_results[6], 32)
+
+6.结束哈希会话
+
+::
+
+   hash_free_session(dev, &ctx);
+
+运行
+========================
+按下开发板复位按钮，运行程序,可通过串口查看打印结果
+
+
 
 
 
