@@ -1,58 +1,38 @@
-CSK6 dma memory copy
-#######################
+简介
+=====================
+演示如何使用Zephyr RTOS的DMA功能进行高效的内存拷贝。运行该代码后，将比较DMA和标准memcpy的性能。
 
-Overview
-********
+构建步骤
+=====================
 
-This sample demonstrates how to use CSK6 dma(working in Memory to Memory mode) to perform a `memcpy()`-like manner.
-And give a speed comparison between in standard lib `memcpy()` and dma copy.
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/dma/ -p
 
-Building and Running
-********************
+功能说明
+=====================
+1. 从设备树中获取DMA设备
 
-Make sure you have the CSK6 connected over Jlink debuger.
+::
 
-The sample can be built and flashed as follows:
+    const struct device *dma = DEVICE_DT_GET(DT_NODELABEL(dma0));
 
-.. code-block:: console
+2. 配置并启动DMA进行内存拷贝
 
-   west build -b csk6 samples/boards/csk6/dma_memcpy
-   west flash
+::
 
-Sample Output
-=============
+    test_dma_copy(dma, src_buffer, dst_buffer, BUFFER_SIZE);
 
-To check output of this sample, any serial console program can be used (i.e. on Linux minicom, putty, screen, etc)
-This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
+3. 使用标准的memcpy进行内存拷贝
 
-.. code-block:: console
+::
 
-   $ minicom -D /dev/ttyUSB0 -b 115200
+    test_std_memcpy(src_buffer, dst_buffer, BUFFER_SIZE);
 
-.. code-block:: console
+4. 输出DMA和memcpy操作的耗时
 
-    *** Booting Zephyr OS build 60a5bbd0f655  ***
+5. 循环执行各种内存拷贝操作
 
-    DMA copy start
-    DMA copy cost time: 204 us
-    DMA copy finish
+运行
+======================
+按下开发板复位按钮，运行程序。程序将间隔性地执行DMA和标准memcpy操作，并通过串口输出各自的耗时数据，以此来比较两者的性能。
 
-    STD memcpy start
-    STD memecpy cost time: 170 us
-    STD memcpy finish
 
-    DMA copy start
-    DMA copy cost time: 112 us
-    DMA copy finish
-
-    STD memcpy start
-    STD memecpy cost time: 164 us
-    STD memcpy finish
-
-    DMA copy start
-    DMA copy cost time: 104 us
-    DMA copy finish
-
-    STD memcpy start
-    STD memecpy cost time: 164 us
-    STD memcpy finish
