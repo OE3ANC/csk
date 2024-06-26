@@ -1,11 +1,52 @@
-.. _UART driver polling samples:
+简介
+=====================
+演示如何使用 UART 驱动程序配置和更改 UART 波特率，并且每隔一段时间打印 "hello world"。
 
-UART driver configure samples
-###########
+构建步骤
+=====================
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/uart/uart_configure/ -p
 
-Overview
-********
-1. 该例程先打印控制台串口当前的配置信息，包括波特率、数据位、停止位、奇偶为、流控模式，
-2. 初始波特率为9600，6秒过后，程序将会把串口的波特率动态的改变为115200，请在此期间，调整接收端的波特率为115200以确保
-能正确的接收到日志，
-3. 之后将会以新的波特率一直打印`hello_world`
+功能说明
+=====================
+1.从设备树中获取设备的句柄
+
+::
+
+    const struct device *dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
+
+2.获取当前的 UART 的配置
+
+::
+
+    uart_config_get(dev, &cfg) != 0
+
+3.打印配置
+
+::
+
+    print_uart_config(&cfg);
+
+4.更改 UART 配置
+
+::
+
+    uart_configure(dev, &cfg) != 0
+
+5.进入一个无限循环，每 500 毫秒打印一次 "hello world"。
+
+::
+
+    	while (1) {
+		printk("hello world\n");
+		k_msleep(500);
+	}
+
+运行
+======================
+按下开发板复位按钮，可通过串口查看输出结果
+
+
+
+
+
+

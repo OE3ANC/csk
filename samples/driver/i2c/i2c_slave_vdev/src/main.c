@@ -24,6 +24,8 @@ LOG_MODULE_REGISTER(vdev_demo, LOG_LEVEL_INF);
 static uint8_t i2_vdev_0_data[TEST_DATA_SIZE] = "0123456789abcdefghij";
 
 const struct device *i2_vdev_0 = NULL;
+
+
 void i2_slave_vdev_init(void)
 {
 	int ret;
@@ -51,9 +53,9 @@ void i2_slave_vdev_init(void)
 int vdev_handler(const struct device *dev, const uint32_t event, const struct i2c_msg msg)
 {
 	// Slave Virtual Device USER Handler
-	LOG_DBG("Event:0x%X", event);
-	if (event & SLAVE_VDEV_EVENT_READ_DONE) {
+	LOG_INF("Event:0x%X", event);
 		printk("I2C Transmit data length:%d, Flag: 0x%X\n", msg.len, msg.flags);
+	if (event & SLAVE_VDEV_EVENT_READ_DONE) {
 		LOG_HEXDUMP_DBG(msg.buf, msg.len, "I2C Transmit data");
 	}
 
@@ -64,7 +66,7 @@ int vdev_handler(const struct device *dev, const uint32_t event, const struct i2
 	return 0;
 }
 
-void main(void)
+int main(void)
 {
 	i2_slave_vdev_init();
 
@@ -73,4 +75,6 @@ void main(void)
 	while (1) {
 		k_msleep(2000);
 	}
+
+	return 0;
 }

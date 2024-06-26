@@ -1,44 +1,43 @@
-.. _gpio_led-sample:
+简介
+=====================
+演示如何使用 Zephyr 的 GPIO API 控制一个 LED 的闪烁。运行该代码后，开发板上的 LED 将每秒闪烁一次。
 
-GPIO_LED
-######
+构建步骤
+=====================
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/gpio_led/ -p
 
-Overview
-********
+功能说明
+=====================
+1. 从设备树中获取 LED 的配置信息
 
-GPIO_LED is a simple application which blinks an LED forever using the :ref:`GPIO
-API <gpio_api>`. The source code shows how to configure GPIO pins as outputs,
-then turn them on and off.
+::
 
-See :ref:`pwm-blinky-sample` for a sample which uses the PWM API to blink an
-LED.
+    static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
-.. _gpio_led-sample-requirements:
+2. 检查 GPIO 设备是否就绪
 
-Requirements
-************
+::
 
-You will see this error if you try to build gpio_led for an unsupported board:
+    if (!gpio_is_ready_dt(&led)) {
+        return -1;
+    }
 
-.. code-block:: none
+3. 配置 GPIO 引脚为输出并设置为初始状态（激活）
 
-   Unsupported board: led0 devicetree alias is not defined
+::
 
-The board must have an LED connected via a GPIO pin. These are called "User
-LEDs" on many of Zephyr's :ref:`boards`. The LED must be configured using the
-``led0`` :ref:`devicetree <dt-guide>` alias. This is usually done in the
-:ref:`BOARD.dts file <devicetree-in-out-files>` or a :ref:`devicetree overlay
-<set-devicetree-overlays>`.
+    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
 
-Building and Running
-********************
+4. 无限循环中切换 LED 状态并等待 1 秒
 
-Build and flash Blinky as follows, changing ``reel_board`` for your board:
+::
 
-.. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6/gpio_led
-   :board: reel_board
-   :goals: build flash
-   :compact:
+   ret = gpio_pin_toggle_dt(&led);
 
-After flashing, the LED starts to blink. gpio_led does not print to the console.
+
+运行
+======================
+按下开发板复位按钮，运行程序。LED 将每秒闪烁一次。
+
+
+

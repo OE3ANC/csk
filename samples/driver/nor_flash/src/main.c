@@ -37,7 +37,7 @@
 
 #define FLASH_WRITE_DATA_STORE_INTERNAL_FLASH (1)
 
-void main(void)
+int main(void)
 {
 	const struct device *flash_dev;
 	uint32_t buf_array_1[4] = {TEST_DATA_WORD_0, TEST_DATA_WORD_1, TEST_DATA_WORD_2,
@@ -57,7 +57,7 @@ void main(void)
 
 	if (!device_is_ready(flash_dev)) {
 		printf("Litenai CSK6 flash driver was not found!\n");
-		return;
+		return -1;
 	}
 	
 #ifdef CONFIG_FLASH_CSK6_LOCK
@@ -72,19 +72,19 @@ void main(void)
 	int test_data = 0x12;
 	if(flash_write(flash_dev, FLASH_TEST_OFFSET, &test_data, sizeof(int)) != 0) {
 		printf("Flash write failed!\n");
-		printf("1Flash flash_lock succeeded!\n");
+		printf("Flash flash_lock succeeded!\n");
 	} else {
 		printf("Flash write succeeded!\n");
 		printf("Flash flash_lock failed!\n");
 		flash_unlock(flash_dev);
-		return;
+		return -1;
 	}
 	
 	flash_unlock(flash_dev);
 	if(flash_write(flash_dev, FLASH_TEST_OFFSET, &test_data, sizeof(int)) != 0) {
 		printf("Flash write failed!\n");
 		printf("Flash flash_unlock failed!\n");
-		return;
+		return -1;
 	} else {
 		printf("Flash write succeeded!\n");
 		printf("Flash flash_unlock succeeded!\n");
@@ -104,12 +104,12 @@ void main(void)
 		printf("   Attempting to write %x at 0x%x\n", buf_array_1[i], offset);
 		if (flash_write(flash_dev, offset, &buf_array_1[i], sizeof(uint32_t)) != 0) {
 			printf("   Flash write failed!\n");
-			return;
+			return -1;
 		}
 		printf("   Attempting to read 0x%x\n", offset);
 		if (flash_read(flash_dev, offset, &buf_word, sizeof(uint32_t)) != 0) {
 			printf("   Flash read failed!\n");
-			return;
+			return -1;
 		}
 		printf("   Data read: %x\n", buf_word);
 		if (buf_array_1[i] == buf_word) {
@@ -133,12 +133,12 @@ void main(void)
 		printf("   Attempting to write %x at 0x%x\n", buf_array_2[i], offset);
 		if (flash_write(flash_dev, offset, &buf_array_2[i], sizeof(uint32_t)) != 0) {
 			printf("   Flash write failed!\n");
-			return;
+			return -1;
 		}
 		printf("   Attempting to read 0x%x\n", offset);
 		if (flash_read(flash_dev, offset, &buf_word, sizeof(uint32_t)) != 0) {
 			printf("   Flash read failed!\n");
-			return;
+			return -1;
 		}
 		printf("   Data read: %x\n", buf_word);
 		if (buf_array_2[i] == buf_word) {
@@ -161,12 +161,12 @@ void main(void)
 		printf("   Attempting to write %x at 0x%x\n", buf_array_3[i], offset);
 		if (flash_write(flash_dev, offset, &buf_array_3[i], sizeof(uint32_t)) != 0) {
 			printf("   Flash write failed!\n");
-			return;
+			return -1;
 		}
 		printf("   Attempting to read 0x%x\n", offset);
 		if (flash_read(flash_dev, offset, &buf_word, sizeof(uint32_t)) != 0) {
 			printf("   Flash read failed!\n");
-			return;
+			return -1;
 		}
 		printf("   Data read: %x\n", buf_word);
 		if (buf_array_3[i] == buf_word) {
@@ -223,7 +223,7 @@ void main(void)
 	printf("\nTest 9: Write data form internal flash address area\n");
 	if (flash_erase(flash_dev, FLASH_TEST_OFFSET, FLASH_PAGE_SIZE) != 0) {
 		printf("   Flash erase failed!\n");
-		return;
+		return -1;
 	} else {
 		printf("   Flash erase succeeded!\n");
 	}
@@ -231,12 +231,12 @@ void main(void)
 	offset = FLASH_TEST_OFFSET;
 	if (flash_write(flash_dev, offset, pstring, strlen(pstring) + 1) != 0) {
 		printf("   Flash write failed!\n");
-		return;
+		return -1;
 	}
 	printf("   Attempting to read 0x%x\n", offset);
 	if (flash_read(flash_dev, offset, flashStr, sizeof(flashStr)) != 0) {
 		printf("   Flash read failed!\n");
-		return;
+		return -1;
 	}
 
 	if (0 == strcmp(pstring, flashStr)) {
@@ -245,4 +245,6 @@ void main(void)
 		printf("   Data read does not match data written!\n");
 	}
 #endif
+
+	return 0;
 }

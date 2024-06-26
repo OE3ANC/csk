@@ -12,11 +12,11 @@
 #include <zephyr/drivers/spi.h>
 #include <string.h>
 
-#define MASTER_MODE 0
+#define MASTER_MODE 1
 #define BUF_SIZE 9
 
 #if MASTER_MODE
-uint8_t master_buffer_tx[BUF_SIZE] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+uint8_t master_buffer_tx[BUF_SIZE] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
 
 #if (CONFIG_SPI_RX_DMA == 1) & (CONFIG_NOCACHE_MEMORY == 1)
 uint8_t master_buffer_rx[BUF_SIZE] __attribute__((section(".nocache"))) = {0};
@@ -26,7 +26,7 @@ uint8_t *master_buffer_rx = NULL;
 
 #else
 
-uint8_t slave_buffer_tx[BUF_SIZE] = { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+uint8_t slave_buffer_tx[BUF_SIZE] = { 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01 };
 #if (CONFIG_SPI_RX_DMA == 1) & (CONFIG_NOCACHE_MEMORY == 1)
 uint8_t slave_buffer_rx[BUF_SIZE] __attribute__((section(".nocache"))) = {0};
 #else
@@ -66,6 +66,7 @@ int spi_master_init(void)
 #else
 int spi_slave_init(void)
 {
+	printk("into spi_slave_init \n");
 	spi_slave = DEVICE_DT_GET(DT_NODELABEL(spi1));
 	if (spi_slave == NULL) {
 		printk("spi_slave: Device is not found.\n");
@@ -121,11 +122,11 @@ void master_thread(void *v1, void *v2, void *v3)
 	const struct spi_buf_set rx = { .buffers = rx_bufs, .count = ARRAY_SIZE(rx_bufs) };
 
 	/* spi master 8bit, LSB first*/
-	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_MASTER | SPI_TRANSFER_LSB;
+	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB;
 	spi_cfg.frequency = 10 * 1000000UL;
 
 	while (1) {
-		k_msleep(1000);
+		k_msleep(100);
 		memset(rx_buff, 0, BUF_SIZE);
 		spi_transceive(spi_master, &spi_cfg, &tx, &rx);
 		printk("[Master]receive:");
@@ -175,7 +176,7 @@ void slave_thread(void *v1, void *v2, void *v3)
 	const struct spi_buf_set rx = { .buffers = rx_bufs, .count = ARRAY_SIZE(rx_bufs) };
 
 	/* spi slave 8bit, LSB first*/
-	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_SLAVE | SPI_TRANSFER_LSB;
+	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_SLAVE | SPI_TRANSFER_MSB;
 	spi_cfg.frequency = 10 * 1000000UL;
 
 	while (1) {
@@ -187,11 +188,13 @@ void slave_thread(void *v1, void *v2, void *v3)
 			printk("0x%02x ", rx_buff[i]);
 		}
 		printk("\n");
+
+		k_msleep(1000);
 	}
 }
 #endif
 
-void main(void)
+int main(void)
 {
 	int ret = 0;
 
@@ -203,7 +206,7 @@ void main(void)
 	ret = spi_slave_init();
 #endif
 	if(ret != 0){
-		return;
+		return -1;
 	}
 
 	/* create master or slave thread */
@@ -223,4 +226,6 @@ void main(void)
 	while (1) {
 		k_msleep(10);
 	}
+
+	return 0;
 }
