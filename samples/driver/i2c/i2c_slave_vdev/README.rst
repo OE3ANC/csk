@@ -1,37 +1,37 @@
-I2C Slave Virtual Device Sample
-##################
+简介
+==================
+演示如何使用 MCU 的虚拟 i2c 从机通信功能，通过其他 i2c 主设备向从设备的寄存器地址写数据和读数据，使用串口观察结果。
 
-I2C Master Operation
-=============
-
-.. code-block:: console
-
-   i2c-tools> i2cset -c 0x32 -r 0x10 0x11 0x12 0x13 0x14 0x15 0x45 0x47
-   I (8259845) cmd_i2ctools: Write OK
-   i2c-tools> i2cset -c 0x32 -r 0x10 0x11 0x12 0x13
-   I (8267105) cmd_i2ctools: Write OK
-   i2c-tools> i2cget -c 0x32 -r 0x10 -l 2
-   0x11 0xac
-   i2c-tools> i2cget -c 0x32 -r 0x10 -l 1
-   0x11
-   i2c-tools> i2cget -c 0x32 -r 0x12 -l 1
-   0x13
-   i2c-tools>
+构建步骤
+==================
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/i2c/i2c_slave_vdev/ -p
 
 
+功能说明
+=================
+1.i2c 虚拟从设备初始化
 
-CSK6 Slave Console Output
-=============
+::
 
-.. code-block:: console
+    i2_slave_vdev_init();
 
-   *** Booting Zephyr OS build nand_scanpen_alpha6-4-gfb9f8c565287  ***       
-   I2C Slave Virtual device Note: SLAVE_VDEV_0                                
-   Device: SLAVE_VDEV_0, I2C Addr: 0x32                                       
-                                                                              
-   [00:00:00.014,000] <inf> slave_vdev: start_slave_vdev_handler_task ok      
-   uart:~$ I2C Receive data length:8                                          
-   I2C Receive data length:4                                                  
-   I2C Receive data length:1                                                  
-   I2C Receive data length:1                                                  
-   I2C Receive data length:1 
+2.配置i2c 虚拟从设备事件处理回调
+
+::
+
+    slave_vdev_event_handler_register(i2_vdev_0, &vdev_handler);
+
+3.启动i2c 虚拟从设备事件处理任务
+
+::
+
+    start_slave_vdev_handler_task(i2_vdev_0);
+
+
+运行
+====================
+按下开发板复位按钮，运行程序，接上其他 i2c 主设备，读写虚拟从设备并观察串口信息。
+
+
+
+

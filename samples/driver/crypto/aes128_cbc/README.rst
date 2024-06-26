@@ -1,34 +1,80 @@
-.. _crypto_sample:
 
-Crypto
-######
+简介
+===================
+本示例演示使用AES-128 CBC模式进行加密和解密的示例操作
 
-Overview
-********
-An example to illustrate the usage of crypto APIs.
+构建步骤
+======================
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/crypto/aes128_cbc/ -p
 
-Building and Running
-********************
+功能说明
+=======================
+1.从设备树中获取设备
 
-Make sure you have the csk6 boards connected over Jlink debuger.
+::
 
-The sample can be built and flashed as follows:
+    const struct device *dev = DEVICE_DT_GET(CRYPTO_DRV_NAME);
 
-.. code-block:: console
+2.调用函数进行加密解密操作
 
-   lisa zep build -b csk6002_9s_nano
-   lisa zep flash
+::
 
-Sample Output
-=============
+   cbc_mode(dev);
 
-.. code-block:: console
+3.首先初始化 cipher_ctx 和 cipher_pkt 结构体。
 
-   *** Booting Zephyr OS build v1.0.3-alpha.1-1-g1cd2b6612079  ***
-   I: AES128 CBC Cipher Sample
-   I: Output length (encryption): 32
-   I: CBC mode ENCRYPT - Match
-   I: Output length (decryption): 32
-   I: CBC mode DECRYPT - Match
+
+4.开始加密会话
+
+::
+
+   cipher_begin_session(dev, &ini, CRYPTO_CIPHER_ALGO_AES, CRYPTO_CIPHER_MODE_CBC,CRYPTO_CIPHER_OP_ENCRYPT)
+
+
+5.执行加密操作
+
+::
+
+   cipher_cbc_op(&ini, &encrypt, iv)
+
+6.验证加密结果
+
+::
+
+   memcmp(encrypt.out_buf, cbc_ciphertext, sizeof(cbc_ciphertext))
+
+7.结束加密会话
+
+::
+
+   cipher_free_session(dev, &ini);
+
+8.开始解密会话
+
+::
+
+   cipher_begin_session(dev, &ini, CRYPTO_CIPHER_ALGO_AES, CRYPTO_CIPHER_MODE_CBC,CRYPTO_CIPHER_OP_DECRYPT)
+
+9.执行解密操作
+
+::
+
+   cipher_cbc_op(&ini, &decrypt, iv)
+
+10.验证解密结果
+
+::
+
+   memcmp(decrypt.out_buf, plaintext, sizeof(plaintext))
+
+11.结束解密会话 
+
+::
+
+   cipher_free_session(dev, &ini);
+
+运行
+========================
+按下开发板复位按钮，运行程序,可通过串口查看打印结果
 
 

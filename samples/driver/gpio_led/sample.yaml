@@ -2,11 +2,13 @@ sample:
   name: gpio_led Sample
 tests:
   sample.basic.blinky:
-    platform_exclude:
-    - csk6_duomotai_devkit
     tags: LED gpio
     filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds")
     depends_on: gpio
     harness: led
     integration_platforms:
       - frdm_k64f
+
+
+
+
