@@ -1,6 +1,6 @@
 tests:
   sample.board.csk6.dma_memcpy:
-    platform_allow: csk6011a_nano
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
     tags: csk6
     harness: console
     harness_config:
@@ -8,3 +8,5 @@ tests:
       regex:
         - "^DMA copy cost time: \\d* us$"
         - "^STD memecpy cost time: \\d* us$"
+
+
