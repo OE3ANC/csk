@@ -1,6 +1,6 @@
 tests:
   sample.board.csk6.driver.uart.uart_async:
-    platform_allow: csk6011a_nano
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
     build_only: true
     tags: csk6
     harness: console
@@ -10,3 +10,7 @@ tests:
       regex:
         - "Uart async tx-rx sample"
         - "Uart async tx-rx complete"
+
+
+
+

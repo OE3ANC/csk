@@ -9,11 +9,11 @@
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/kernel.h>
 
-#define SLAVE_VDEV_EVENT_BUS_STOP   (1UL << 0)
-#define SLAVE_VDEV_EVENT_READ_REQ   (1UL << 1)
-#define SLAVE_VDEV_EVENT_WRITE_REQ  (1UL << 2)
-#define SLAVE_VDEV_EVENT_READ_DONE  (1UL << 3)
-#define SLAVE_VDEV_EVENT_WRITE_DONE (1UL << 4)
+#define SLAVE_VDEV_EVENT_BUS_STOP   (1UL << 0)//1
+#define SLAVE_VDEV_EVENT_READ_REQ   (1UL << 1)//2
+#define SLAVE_VDEV_EVENT_WRITE_REQ  (1UL << 2)//4
+#define SLAVE_VDEV_EVENT_READ_DONE  (1UL << 3)//8
+#define SLAVE_VDEV_EVENT_WRITE_DONE (1UL << 4)//0x10,16
 
 typedef int (*slave_vdev_handler_t)(const struct device *dev, const uint32_t event,
 				    const struct i2c_msg msg);

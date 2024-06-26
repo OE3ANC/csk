@@ -5,3 +5,6 @@ mainmenu "I2C Slave API Test"
 source "Kconfig.zephyr"
 
 rsource "common/slave/Kconfig"
+
+
+

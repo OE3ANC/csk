@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) 2023 Anhui Listenai Co., Ltd.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ 
+ &pinctrl {
+ 
+     /* SPIC alternate function */
+     pinctrl_spi0_cs_default: spi0_cs_default{
+         pinctrls = <SPI0_CS_N_GPIOB_08>;
+     };
+ 
+     pinctrl_spi0_miso_default: spi0_miso_default{
+         pinctrls = <SPI0_MISO_GPIOB_07>;
+     };
+ 
+     pinctrl_spi0_mosi_default: spi0_mosi_default{
+         pinctrls = <SPI0_MOSI_GPIOB_06>;
+     };
+ 
+     pinctrl_spi0_sclk_default: spi0_sclk_default{
+         pinctrls = <SPI0_CLK_GPIOB_09>;
+     };
+ 
+     pinctrl_spi1_sclk_default: spi1_sclk_default{
+         pinctrls = <SPI1_CLK_GPIOA_08>;
+     };
+ 
+     pinctrl_spi1_mosi_default: spi1_mosi_default{
+         pinctrls = <SPI1_MOSI_GPIOA_07>;
+     };
+ 
+     pinctrl_spi1_miso_default: spi1_miso_default{
+         pinctrls = <SPI1_MISO_GPIOA_10>;
+     };
+ 
+     pinctrl_spi1_cs_default: spi1_cs_default{
+         pinctrls = <SPI1_CS_N_GPIOA_09>;
+     };
+ 
+ };
+
+ 
+ &spi1 {
+     pinctrl-0 = <&pinctrl_spi1_sclk_default &pinctrl_spi1_mosi_default &pinctrl_spi1_miso_default &pinctrl_spi1_cs_default>;
+     pinctrl-names = "default";
+     status = "okay";
+ };
+
+
+ 
+ 
+ 

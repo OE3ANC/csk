@@ -24,20 +24,22 @@ int main(void)
 	int ret;
 
 	if (!gpio_is_ready_dt(&led)) {
-		return 0;
+		return -1;
 	}
 
 	ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
 	if (ret < 0) {
-		return 0;
+		return -1;
 	}
 
 	while (1) {
 		ret = gpio_pin_toggle_dt(&led);
 		if (ret < 0) {
-			return 0;
+			return -1;
 		}
 		k_msleep(SLEEP_TIME_MS);
 	}
 	return 0;
 }
+
+

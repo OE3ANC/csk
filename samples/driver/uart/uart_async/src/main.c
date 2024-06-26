@@ -43,13 +43,13 @@ static void uart_async_callback(const struct device *dev, struct uart_event *evt
 static const uint8_t tx_buf[] = "uart async tx-rx sample";
 static uint8_t rx_buf[sizeof(tx_buf)] __attribute__((section(".nocache"))) = {0};
 
-void main(void)
+int main(void)
 {
 	const struct device *uart_dev = DEVICE_DT_GET(DT_NODELABEL(uart1));
 
 	if (!device_is_ready(uart_dev)) {
 		LOG_ERR("uart device not ready!");
-		return;
+		return -1;
 	}
 
 	printk("Uart async tx-rx sample\n");
@@ -64,18 +64,20 @@ void main(void)
 
 	if (k_sem_take(&tx_done, K_MSEC(100)) != 0) {
 		LOG_ERR("TX_DONE timeout\n");
-		return;
+		return -1;
 	}
 
 	if (k_sem_take(&rx_rdy, K_MSEC(100)) != 0) {
 		LOG_ERR("RX_RDY timeout\n");
-		return;
+		return -1;
 	}
 
 	if (memcmp(tx_buf, rx_buf, sizeof(rx_buf)) != 0) {
 		printk("Data check failed\n");
-		return;
+		return -1;
 	}
 
 	printk("Uart async tx-rx complete\n");
+
+	return 0;
 }
