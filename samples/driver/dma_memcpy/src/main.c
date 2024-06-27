@@ -361,7 +361,7 @@ int32_t sample_dma_source_data_width(const struct device *dma, void *src, void *
 	return 0;
 }
 
-void main(void)
+int main(void)
 {
 	const struct device *dma = DEVICE_DT_GET(DT_NODELABEL(dma0));
 
@@ -383,4 +383,8 @@ void main(void)
 		test_std_memcpy(src_buffer, dst_buffer, BUFFER_SIZE);
 		k_msleep(1000);
 	}
+
+	return 0;
 }
+
+
