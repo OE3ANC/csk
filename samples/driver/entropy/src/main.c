@@ -29,7 +29,7 @@ static void dump_entropy(const char *entropy_buf, uint32_t len)
 	printk("\n");
 }
 
-void main(void)
+int main(void)
 {
 	const struct device *dev;
 	int ret = 0;
@@ -37,7 +37,7 @@ void main(void)
 	dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_entropy));
 	if (!device_is_ready(dev)) {
 		printk("error: no random device\n");
-		return;
+		return -1;
 	}
 
 	printk("start get entropy sample \r\n");
@@ -45,7 +45,7 @@ void main(void)
 	ret = entropy_get_entropy(dev, entropy_buf, ENTROPY_LEN_MAX);
 	if (ret != 0) {
 		printk("error: get entropy failed %d\r\n", ret);
-		return;
+		return -1;
 	}
 
 	dump_entropy(entropy_buf, ENTROPY_LEN_MAX);
@@ -55,4 +55,6 @@ void main(void)
 	while (1) {
 		k_sleep(K_MSEC(1000));
 	}
+
+	return 0;
 }
