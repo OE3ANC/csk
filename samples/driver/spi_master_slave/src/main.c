@@ -191,7 +191,7 @@ void slave_thread(void *v1, void *v2, void *v3)
 }
 #endif
 
-void main(void)
+int main(void)
 {
 	int ret = 0;
 
@@ -203,7 +203,7 @@ void main(void)
 	ret = spi_slave_init();
 #endif
 	if(ret != 0){
-		return;
+		return -1;
 	}
 
 	/* create master or slave thread */
@@ -223,4 +223,6 @@ void main(void)
 	while (1) {
 		k_msleep(10);
 	}
+
+	return 0;
 }
