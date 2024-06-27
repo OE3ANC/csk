@@ -88,5 +88,3 @@
 		int-gpios = <&gpiob 11 0>;
 	};
 };
-
-
