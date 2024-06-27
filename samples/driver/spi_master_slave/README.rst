@@ -1,48 +1,47 @@
-CSK6 spi master
-##################
+简介
+=================
+使用芯片上的一组SPI引脚往外发送数据，可以设置主模式或者从模式，可通过示波器或者逻辑分析仪去抓取SPI数据。
+以下以主模式进行讲解
 
-Overview
-********
+构建步骤
+=================
+lisa zep build -b csk6_duomotai_devkit ./samples/driver/spi_master_slave/ -p
 
-This sample demonstrates how to use CSK6 spi master peripheral to transimit/recieve data.
-This sample enable spi hardware Chip-Select function in default, users could disable it by defining
-an overlay file that rewrite the spi node and remove the ``cs-gpios`` item, and then edit the menuconfig
-to enable the software Chip-Select function and select a gpio pin as the cs pin.
+功能说明
+================
+1.从设备树获取SPI设备spi1的设备指针
 
-Building and Running
-********************
+::
 
-Make sure you have the CSK6 connected over Jlink debuger.
+   spi = DEVICE_DT_GET(DT_NODELABEL(spi1));
 
-The sample can be built and flashed as follows:
+2. 配置SPI为主设备模式，设置数据位为8位，最低位优先，频率设置为10 MHz
+::
 
-.. code-block:: console
+   spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB;
+   spi_cfg.frequency = 10 * 1000000UL;
 
-   west build -b csk6 samples/boards/csk6/spi
-   west flash
+3. 分配内存以存储接收缓冲区的数据
+::
 
-Sample Output
-=============
+   rx_buff = k_malloc(BUF_SIZE);
 
-To check output of this sample, any serial console program can be used (i.e. on Linux minicom, putty, screen, etc)
-This example uses ``minicom`` on the serial port ``/dev/ttyUSB0``:
 
-.. code-block:: console
+4. 在无限循环中，周期性地发送和接收数据，并在每次发送后暂停100毫秒
+::
 
-   $ minicom -D /dev/ttyUSB0 -b 115200
+   while (1) {
+    k_msleep(100);
+    memset(rx_buff, 0, BUF_SIZE);
+    spi_transceive(spi_master, &spi_cfg, &tx, &rx);
+    printk("[主设备]接收:");
+    for (uint8_t i = 0; i < BUF_SIZE; i++) {
+        printk("0x%02x ", rx_buff[i]);
+    }
+    printk("\n");
+   }
 
-.. code-block:: console
-
-    *** Booting Zephyr OS build 6d9b2a8c2aee  ***
-    SPI test start 
-    SPI thread created
-    [Master]spi send data 
-    [Master]spi received data 
-    0x90x80x70x60x50x40x30x20x1
-    [Master]spi send data 
-    [Master]spi received data 
-    0x90x80x70x60x50x40x30x20x1
-    [Master]spi send data 
-    [Master]spi received data 
-    0x90x80x70x60x50x40x30x20x1
+运行
+=====================
+按下开发板复位按钮，运行程序，观察示波器或逻辑分析仪抓取的数据。
 
