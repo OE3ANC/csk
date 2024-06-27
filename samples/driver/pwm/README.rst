@@ -30,6 +30,3 @@ lisa zep build -b csk6_duomotai_devkit .sdk/csk/samples/driver/pwm/ -p
 ======================
 按下开发板复位按钮，运行程序，可用示波器观察 PA06 引脚输出的波形。
 
-
-
-
