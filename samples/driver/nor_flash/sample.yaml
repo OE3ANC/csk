@@ -23,7 +23,3 @@ tests:
         -  "SoC flash consists of \\d+ pages."
         -  "write-block-size"
 
-
-
-
-

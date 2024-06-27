@@ -57,7 +57,7 @@ lisa zep build -b csk6_duomotai_devkit ./samples/driver/nor_flash/ -p
 
 ::
 
-   flash_erase(flash_dev, offset, FLASH_PAGE_SIZE * 4) != 0  
+   flash_erase(flash_dev, offset, FLASH_PAGE_SIZE * 4) != 0
 
 9.Test 4:写入和读取数据2，验证结果
 
@@ -86,14 +86,4 @@ lisa zep build -b csk6_duomotai_devkit ./samples/driver/nor_flash/ -p
 运行
 ======================
 按下开发板复位按钮，可通过串口查看输出结果
-
-
-
-
-
-
-
-
-
-
 
