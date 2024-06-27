@@ -59,7 +59,7 @@ LOG_MODULE_REGISTER(sample, LOG_LEVEL_INF);
 #ifdef CONFIG_ARCH_POSIX
 #define RETURN_FROM_MAIN(exit_code) posix_exit_main(exit_code)
 #else
-#define RETURN_FROM_MAIN(exit_code) return
+#define RETURN_FROM_MAIN(exit_code) return exit_code
 #endif
 
 enum corner {
@@ -213,7 +213,7 @@ static void fill_buffer_mono(enum corner corner, uint8_t grey, uint8_t *buf, siz
 	memset(buf, color, buf_size);
 }
 
-void main(void)
+int main(void)
 {
 	size_t x;
 	size_t y;
@@ -236,7 +236,7 @@ void main(void)
 
 	if (display_dev == NULL) {
 		LOG_ERR("Device not found. Aborting sample.");
-		RETURN_FROM_MAIN(1);
+		RETURN_FROM_MAIN(-1);
 	}
 
 	display_get_capabilities(display_dev, &capabilities);
@@ -291,14 +291,14 @@ void main(void)
 		break;
 	default:
 		LOG_ERR("Unsupported pixel format. Aborting sample.");
-		RETURN_FROM_MAIN(1);
+		RETURN_FROM_MAIN(-1);
 	}
 
 	buf = k_malloc(buf_size);
 
 	if (buf == NULL) {
 		LOG_ERR("Could not allocate memory. Aborting sample.");
-		RETURN_FROM_MAIN(1);
+		RETURN_FROM_MAIN(-1);
 	}
 
 	(void)memset(buf, 0xFFu, buf_size);
@@ -351,3 +351,5 @@ void main(void)
 
 	RETURN_FROM_MAIN(0);
 }
+
+
