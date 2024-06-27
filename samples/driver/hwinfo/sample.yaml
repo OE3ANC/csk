@@ -1,9 +1,10 @@
 tests:
   sample.board.csk6.driver.hwinfo:
-    platform_allow: csk6011a_nano
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
     tags: csk6
     harness: console
     harness_config:
       type: one_line
       regex:
         - "get device id success"
+
