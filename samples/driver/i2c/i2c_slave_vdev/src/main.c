@@ -64,7 +64,7 @@ int vdev_handler(const struct device *dev, const uint32_t event, const struct i2
 	return 0;
 }
 
-void main(void)
+int main(void)
 {
 	i2_slave_vdev_init();
 
@@ -73,4 +73,6 @@ void main(void)
 	while (1) {
 		k_msleep(2000);
 	}
+
+	return 0;
 }
