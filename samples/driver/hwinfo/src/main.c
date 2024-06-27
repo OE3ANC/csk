@@ -11,7 +11,7 @@
 #include <string.h>
 
 
-void main(void)
+int main(void)
 {
     uint32_t buffer[3] = {0};
     uint64_t chip_id = 0;
@@ -22,7 +22,7 @@ void main(void)
 
     if(length != sizeof(buffer)){
         printk("length error (%d)\n", length);
-        return;
+        return -1;
     }
 
     memcpy((void*)&chip_id, (void*)buffer, sizeof(chip_id));
@@ -34,4 +34,6 @@ void main(void)
     printk("chip type: %x\n", chip_type);
 
     printk("get device id success\n");
+
+    return 0;
 }
