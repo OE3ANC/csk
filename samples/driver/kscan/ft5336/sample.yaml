@@ -1,0 +1,11 @@
+tests:
+  samples.boards.csk6.driver.kscan.ft5336:
+    platform_allow: csk6_duomotai_devkit
+    tags: csk6
+    build_only: true
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "ft5336 sample application start"
+
