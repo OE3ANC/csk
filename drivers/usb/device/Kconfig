@@ -19,6 +19,7 @@ config USB_DC_CSK6_THREAD_STACK_SIZE
 config USB_DC_CSK6_THREAD_COOP_PRIO
 	int "USBD thread cooperative priority"
 	range 0 NUM_COOP_PRIORITIES
+	default 0 if !COOP_ENABLED
 	default 2
 	depends on USB_DC_CSK6
 	help

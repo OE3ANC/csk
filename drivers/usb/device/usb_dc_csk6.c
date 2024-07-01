@@ -148,7 +148,7 @@ static int usb_venus_init(void)
 	k_thread_create(&dev_data.thread, dev_data.thread_stack,
 		CONFIG_USB_DC_CSK6_THREAD_STACK_SIZE,
 		usb_csk6001_thread_main, NULL, NULL, NULL,
-		K_PRIO_COOP(CONFIG_USB_DC_CSK6_THREAD_COOP_PRIO), 0, K_NO_WAIT);
+		3, 0, K_NO_WAIT);
 
 
 	/* Register USB ISR */
