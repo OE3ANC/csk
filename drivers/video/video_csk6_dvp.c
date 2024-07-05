@@ -78,16 +78,19 @@ static void dvp_framedata_proc(void)
 	temp_vbuf->timestamp = k_uptime_get_32();
 
 	vbuf = k_fifo_get(&data->fifo_in, K_NO_WAIT);
-    
+    // DVP_Stop(dvp_dev);
+
+    // csk6_dvp_start(dev, vbuf);
     printk("1...\n");
-	if (vbuf) {
 		DVP_Stop(dvp_dev);
+	if (vbuf) {
+
 		csk6_dvp_start(dev, vbuf);
 		set_current_vbuf(dev, vbuf);
 		k_fifo_put(&data->fifo_out, temp_vbuf);
 	} else {
         // printk("2...\n");
-		DVP_Stop(dvp_dev);
+		// DVP_Stop(dvp_dev);
 		csk6_dvp_start(dev, temp_vbuf);
 		set_current_vbuf(dev, temp_vbuf);
 		LOG_ERR("not enough fifo_in \r\n");
@@ -199,7 +202,7 @@ static int check_buf_addr(uint32_t addr)
 
 	return 0;
 }
-
+static uint8_t dvp_tmp_buf[640*480*3]__attribute__((section(".psram_section")));
 static int csk6_dvp_start(const struct device *dev, struct video_buffer *vbuf)
 {
     
@@ -213,8 +216,8 @@ static int csk6_dvp_start(const struct device *dev, struct video_buffer *vbuf)
 	memset(&dvp_buf, 0, sizeof(DVP_BufferDef));
 
 	// DVP驱动访问的是CP侧的AHB总线，如果在AP侧使用DVP驱动，传入的地址必须重新映射
-	dvp_buf.pAddrY = (uint8_t *)DVP_PSRAM_ADDR_WRAP(vbuf->buffer);
-	dvp_buf.bufLenY = vbuf->size;
+	dvp_buf.pAddrY = (uint8_t *)DVP_PSRAM_ADDR_WRAP(dvp_tmp_buf);
+	dvp_buf.bufLenY = sizeof(dvp_tmp_buf);
 
 	SCB_InvalidateDCache_by_Addr((void *)vbuf->buffer, vbuf->bytesused);
 
@@ -267,9 +270,7 @@ static int video_csk6_dvp_stream_stop(const struct device *dev)
 		return -EIO;
 	}
 
-    int key = irq_lock();
 	DVP_Stop(dvp_dev);
-    irq_unlock(key);
 	return 0;
 }
 

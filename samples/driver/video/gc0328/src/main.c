@@ -189,13 +189,13 @@ int main(void)
 			LOG_ERR("k_sem_take m_sem_wait_result failed: %d", ret);
 		}
         printk("vbuf->buffer: %p  line :%d\n", vbuf->buffer, __LINE__);
-		err = video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_FOREVER);
-		if (err) {
-			LOG_ERR("Unable to dequeue video buf");
-			return 0;
-		}
-		k_msleep(1500);
-		err = video_enqueue(video, VIDEO_EP_OUT, vbuf);
+		// err = video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_FOREVER);
+		// if (err) {
+		// 	LOG_ERR("Unable to dequeue video buf");
+		// 	return 0;
+		// }
+		// // k_msleep(1500);
+		// err = video_enqueue(video, VIDEO_EP_OUT, vbuf);
 		if (err) {
 			LOG_ERR("Unable to requeue video buf");
 			return 0;
@@ -213,7 +213,7 @@ int comp_fd_capture(void)
 	}
 	k_msleep(10);
 	video_stream_start(video);
-
+    k_sem_give(&m_sem_wait_result);
 	return 0;
 
 }
