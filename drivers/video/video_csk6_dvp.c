@@ -17,7 +17,7 @@
 #define LOG_LEVEL CONFIG_LOG_DEFAULT_LEVEL
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(csk6_dvp);
-
+static K_SEM_DEFINE(m_sem_wait_stop, 0, 1);
 #define AP2CP_PSRAM_ADDR_OFFSET (0x30000000)
 #define DVP_PSRAM_ADDR_WRAP(x)  (((uint32_t)x + AP2CP_PSRAM_ADDR_OFFSET))
 
@@ -36,7 +36,7 @@ struct video_csk6_dvp_config {
 struct video_csk6_dvp_data {
 	/* driver handle */
 	void *handle;
-
+	bool stop_flg;
 	const struct device *dev;
 
 	struct k_fifo fifo_in;
@@ -80,14 +80,22 @@ static void dvp_framedata_proc(void)
 	vbuf = k_fifo_get(&data->fifo_in, K_NO_WAIT);
 	if (vbuf) {
 		DVP_Stop(dvp_dev);
-		csk6_dvp_start(dev, vbuf);
-		set_current_vbuf(dev, vbuf);
-		k_fifo_put(&data->fifo_out, temp_vbuf);
+		if (!data->stop_flg) {
+			csk6_dvp_start(dev, vbuf);
+			set_current_vbuf(dev, vbuf);
+			k_fifo_put(&data->fifo_out, temp_vbuf);
+		} else {
+			k_sem_give(&m_sem_wait_stop);
+		}
 	} else {
 		DVP_Stop(dvp_dev);
-		csk6_dvp_start(dev, temp_vbuf);
-		set_current_vbuf(dev, temp_vbuf);
-		LOG_DBG("not enough fifo_in \r\n");
+		if (!data->stop_flg) {
+			csk6_dvp_start(dev, temp_vbuf);
+			set_current_vbuf(dev, temp_vbuf);
+			LOG_DBG("not enough fifo_in \r\n");
+		} else {
+			k_sem_give(&m_sem_wait_stop);
+		}
 	}
 }
 
@@ -212,7 +220,7 @@ static int csk6_dvp_start(const struct device *dev, struct video_buffer *vbuf)
 	dvp_buf.bufLenY = vbuf->size;
 
 	SCB_InvalidateDCache_by_Addr((void *)vbuf->buffer, vbuf->bytesused);
-
+	data->stop_flg = false;
 	ret = DVP_Start(dvp_dev, dvp_buf);
 	if (ret != 0) {
 		LOG_ERR("dvp satrt faild \r\n");
@@ -249,13 +257,11 @@ static int video_csk6_dvp_stream_stop(const struct device *dev)
 {
 	const struct video_csk6_dvp_config *config = dev->config;
 	struct video_csk6_dvp_data *data = dev->data;
-	DVP_HandleTypeDef *dvp_dev = data->handle;
-
 	if (config->sensor_dev && video_stream_stop(config->sensor_dev)) {
 		return -EIO;
 	}
-
-	DVP_Stop(dvp_dev);
+	data->stop_flg = true;
+	k_sem_take(&m_sem_wait_stop, K_FOREVER);
 
 	return 0;
 }
