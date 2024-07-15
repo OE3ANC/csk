@@ -14,13 +14,9 @@
 
 #define BUF_SIZE 9
 
-uint8_t master_buffer_tx[BUF_SIZE] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-#if (CONFIG_SPI_RX_DMA == 1) & (CONFIG_NOCACHE_MEMORY == 1)
-uint8_t master_buffer_rx[BUF_SIZE] __attribute__((section(".nocache"))) = {0};
-#else
+uint8_t *master_buffer_tx = NULL;
 uint8_t *master_buffer_rx = NULL;
-#endif /* end of (CONFIG_SPI_RX_DMA == 1) & (CONFIG_NOCACHE_MEMORY == 1) */
 
 
 #define MASTER_STACK_SIZE 4096
@@ -34,7 +30,7 @@ const struct device *spi_master = NULL;
 
 int spi_master_dev_init(void)
 {
-	spi_master = DEVICE_DT_GET(DT_NODELABEL(spi1));
+	spi_master = DEVICE_DT_GET(DT_NODELABEL(spi0));
 	if (spi_master == NULL) {
 		printk("spi_master: Device is not found.\n");
 		return -ENODEV;
@@ -44,7 +40,12 @@ int spi_master_dev_init(void)
 		printk("spi_master: Device is not ready.\n");
 		return -ENODEV;
 	}
+    master_buffer_tx = k_aligned_alloc(32,BUF_SIZE);
+    for(int i=0;i<BUF_SIZE;i++){
+        master_buffer_tx[i] = i;
+    }
 
+    master_buffer_rx = k_aligned_alloc(32,BUF_SIZE);
 	return 0;
 }
 
@@ -52,25 +53,7 @@ int spi_master_dev_init(void)
 void master_thread(void *v1, void *v2, void *v3)
 {
 	struct spi_config spi_cfg = { 0 };
-	uint8_t *rx_buff;
 
-	rx_buff = master_buffer_rx;
-	if (rx_buff == NULL) {
-#if CONFIG_SPI_RX_DMA
-		rx_buff = k_aligned_alloc(32, BUF_SIZE);
-		printk("master rx buffer use k_aligned_alloc.\n");
-#else
-		rx_buff = k_malloc(BUF_SIZE);
-		printk("master rx buffer use k_malloc.\n");
-#endif
-	} else {
-		printk("master rx buffer use static allocation.\n");
-	}
-
-	if (rx_buff == NULL) {
-		printk("rx_buff: memory alloc failed\n");
-		return;
-	}
 
 	const struct spi_buf tx_bufs[] = {
 		{
@@ -80,7 +63,7 @@ void master_thread(void *v1, void *v2, void *v3)
 	};
 	const struct spi_buf rx_bufs[] = {
 		{
-			.buf = rx_buff,
+			.buf = master_buffer_rx,
 			.len = BUF_SIZE,
 		},
 	};
@@ -90,14 +73,15 @@ void master_thread(void *v1, void *v2, void *v3)
 	/* spi master 8bit, LSB first*/
 	spi_cfg.operation = SPI_WORD_SET(8) | SPI_OP_MODE_MASTER | SPI_TRANSFER_LSB;
 	spi_cfg.frequency = 10 * 1000000UL;
-
+    printk("[Master][%s %d]\n", __FUNCTION__, __LINE__);
 	while (1) {
 		k_msleep(1000);
-		memset(rx_buff, 0, BUF_SIZE);
+		memset(master_buffer_rx, 0, BUF_SIZE);
+        printk("[Master][%s %d]\n", __FUNCTION__, __LINE__);
 		spi_transceive(spi_master, &spi_cfg, &tx, &rx);
 		printk("[Master]receive:");
 		for (uint8_t i = 0; i < BUF_SIZE; i++) {
-			printk("0x%02x ", rx_buff[i]);
+			printk("0x%02x ", master_buffer_rx[i]);
 		}
 		printk("\n");
 	}

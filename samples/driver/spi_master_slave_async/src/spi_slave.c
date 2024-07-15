@@ -14,12 +14,8 @@
 
 #define BUF_SIZE 9
 
-uint8_t slave_buffer_tx[BUF_SIZE] = { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-#if (CONFIG_SPI_RX_DMA == 1) & (CONFIG_NOCACHE_MEMORY == 1)
-uint8_t slave_buffer_rx[BUF_SIZE] __attribute__((section(".nocache"))) = {0};
-#else
+uint8_t *slave_buffer_tx = NULL;
 uint8_t *slave_buffer_rx = NULL;
-#endif /* end of (CONFIG_SPI_RX_DMA == 1) & (CONFIG_NOCACHE_MEMORY == 1) */
 
 
 
@@ -50,7 +46,12 @@ int spi_slave_dev_init(void)
 		printk("spi_slave: Device is not ready.\n");
 		return -ENODEV;
 	}
+    slave_buffer_tx = k_aligned_alloc(32,BUF_SIZE);
+    for(int i=0;i<BUF_SIZE;i++){
+        slave_buffer_tx[i] = i;
+    }
 
+    slave_buffer_rx = k_aligned_alloc(32,BUF_SIZE);
 	return 0;
 }
 
@@ -58,11 +59,16 @@ static void spi_async_call_cb(void* ptr1,void *ptr2,void *ptr3)
 {
 	int ret;
 
-	LOG_DBG("Polling...");
+	printk("Polling...");
 
 	while (1) {
-		ret = k_poll(&async_evt, 1, K_MSEC(200));
-		zassert_false(ret, "one or more events are not ready");
+		ret = k_poll(&async_evt, 1, K_FOREVER);
+        if(ret){
+            printk("one or more events are not ready,ret:%d\n",ret);
+            continue;
+        }
+
+        printk("Got data");
 
 	
 		k_sem_give(&caller_sem);
@@ -77,25 +83,6 @@ static void spi_async_call_cb(void* ptr1,void *ptr2,void *ptr3)
 void slave_thread(void *v1, void *v2, void *v3)
 {
 	struct spi_config spi_cfg = { 0 };
-	uint8_t *rx_buff;
-
-	rx_buff = slave_buffer_rx;
-	if (rx_buff == NULL) {
-#if CONFIG_SPI_RX_DMA
-		rx_buff = k_aligned_alloc(32, BUF_SIZE);
-		printk("slave rx buffer use k_aligned_alloc.\n");
-#else
-		rx_buff = k_malloc(BUF_SIZE);
-		printk("slave rx buffer use k_malloc.\n");
-#endif
-	} else {
-		printk("slave rx buffer use static allocation.\n");
-	}
-
-	if (rx_buff == NULL) {
-		printk("rx_buff: memory alloc failed\n");
-		return;
-	}
 
 	const struct spi_buf tx_bufs[] = {
 		{
@@ -105,7 +92,7 @@ void slave_thread(void *v1, void *v2, void *v3)
 	};
 	const struct spi_buf rx_bufs[] = {
 		{
-			.buf = rx_buff,
+			.buf = slave_buffer_rx,
 			.len = BUF_SIZE,
 		},
 	};
@@ -117,15 +104,15 @@ void slave_thread(void *v1, void *v2, void *v3)
 	spi_cfg.frequency = 10 * 1000000UL;
 
 	while (1) {
-		memset(rx_buff, 0, BUF_SIZE);
+		memset(slave_buffer_rx, 0, BUF_SIZE);
 		// spi_transceive(spi_slave, &spi_cfg, &tx, &rx);
-		spi_transceive_signal(spec->bus, &spec->config, &tx, &rx, &async_sig);
+		spi_transceive_signal(spi_slave,&spi_cfg, &tx, &rx, &async_sig);
 
         k_sem_take(&caller_sem, K_FOREVER);
 
 		printk("[Slave]receive:");
 		for (uint8_t i = 0; i < BUF_SIZE; i++) {
-			printk("0x%02x ", rx_buff[i]);
+			printk("0x%02x ", slave_buffer_rx[i]);
 		}
 		printk("\n");
 	}
