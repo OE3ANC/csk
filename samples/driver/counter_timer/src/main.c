@@ -11,14 +11,17 @@
 #include <zephyr/drivers/counter.h>
 
 #define DELAY_US 1000000
-
-
+uint32_t time=0;
+uint32_t start=0;
 uint32_t g_counter = 0;
 static void test_counter_interrupt_fn(const struct device *counter_dev, void *user_data)
 {
 	printk("g_counter: %d\n",g_counter);
 	if(g_counter>=10){
 		counter_stop(counter_dev);
+		time =
+		(double)(k_cycle_get_32() - start) / sys_clock_hw_cycles_per_sec() * 1000 * 1000;
+		printk("cost time: %d us\n", time);
 	}
 	g_counter++;
 }
@@ -50,9 +53,12 @@ int main(void)
 	while (1)
 	{
 		g_counter = 0;
+		printk("start\n");
 		counter_start(counter_dev);
+
 		k_msleep(12000);
 		printk("restart\n");
+		start = k_cycle_get_32();
 	}	
 	return 0;
 }
