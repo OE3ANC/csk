@@ -6,14 +6,14 @@
 
 /{
     aliases {
-        gpioa1 = &gpioa1;
+        gpioa7 = &gpioa7;
     };
 
     gpio,user {
         compatible = "listenai,csk-gpio-user";
-        gpioa1: gpioa1 {
-            gpios = <&gpioa 0x1 0x0>;
-            label = "gpioa_1";
+        gpioa7: gpioa7 {
+            gpios = <&gpioa 0x7 0x0>;
+            label = "gpioa_7";
         };
     };
 };
