@@ -39,6 +39,7 @@ struct csk_spi_config {
 	/* SPI alternate configuration */
 	const struct pinctrl_dev_config *pcfg;
 	uint32_t reg;
+	const struct gpio_dt_spec dtr_gpios;
 };
 
 static void *spi_csk_get_ctx(const struct device *dev)
@@ -173,6 +174,7 @@ static int transceive(const struct device *dev,
 				    void *userdata)
 {
 	struct csk_spi_data *data = dev->data;
+	const struct csk_spi_config *config = DEV_CFG(dev);
 	uint8_t dw = SPI_WORD_SIZE_GET(spi_cfg->operation);
 
 	if (dw != 8 && dw != 16 && dw != 32) {
@@ -237,7 +239,28 @@ static int transceive(const struct device *dev,
 	spi_context_buffers_setup(&data->ctx, tx_bufs, rx_bufs, dw);
     spi_context_cs_control(&data->ctx, true);
 	csk_spi_hal_transceive(dev);
+#ifdef CONFIG_SPI_SLAVE
+	if (spi_context_is_slave(&data->ctx)) {
+		printk("spi is slave\n");
+		if (gpio_is_ready_dt(&config->dtr_gpios)) {
+			gpio_pin_configure_dt(&config->dtr_gpios, GPIO_OUTPUT_ACTIVE);
+			printk("spi dtr active\n");
+		}
+	}
+#endif
+
 	ret = spi_context_wait_for_completion(&data->ctx);
+
+#ifdef CONFIG_SPI_SLAVE
+	if (spi_context_is_slave(&data->ctx)) {
+		printk("spi is slave\n");
+		if (gpio_is_ready_dt(&config->dtr_gpios)) {
+			gpio_pin_configure_dt(&config->dtr_gpios, GPIO_OUTPUT_INACTIVE);
+			printk("spi dtr inactive\n");
+		}
+	}
+#endif
+
 #ifdef CONFIG_SPI_SLAVE
 	SPI_DEV *hal_spi = data->driver_context;
 	if (spi_context_is_slave(&data->ctx)) {
@@ -341,6 +364,11 @@ static int spi_csk_init(const struct device *dev)
 		return err;
 	}
 
+	if (gpio_is_ready_dt(&config->dtr_gpios)) {
+		gpio_pin_configure_dt(&config->dtr_gpios, GPIO_OUTPUT | GPIO_OUTPUT_INACTIVE);
+		LOG_INF("dtr is ready");
+	}
+
 	spi_context_unlock_unconditionally(&data->ctx);
 
 	return 0;
@@ -363,6 +391,8 @@ static int spi_csk_init(const struct device *dev)
 		.irq_config_func = spi_csk_config_func_##n,                             \
         .pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(n),                              \
 		.reg = DT_REG_ADDR(DT_DRV_INST(n)),										\
+		.dtr_gpios = COND_CODE_1(DT_NODE_HAS_PROP(DT_DRV_INST(n), dtr_gpios),   \
+					 (GPIO_DT_SPEC_INST_GET(n, dtr_gpios)), ({0})),             \
 	};                                                                     		\
 																				\
 	static struct csk_spi_data csk_spi_data_##n = {	     					\
