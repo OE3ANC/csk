@@ -5,7 +5,6 @@ config SOC_CSK6
 	select ARM
 	select CPU_CORTEX_M33
 	select CPU_CORTEX_M_HAS_DWT
-	select CPU_HAS_ARM_SAU
 	select CPU_HAS_FPU
 	select CPU_HAS_MPU
 	select CPU_HAS_ARM_MPU
@@ -19,7 +18,7 @@ config SOC_CSK6
 	select PINCTRL
 	select CPU_HAS_DCACHE
 	select CPU_HAS_ICACHE
-
+	select POSIX_API
 config HAS_CSK6
 	bool
 	select HAS_CMSIS_CORE

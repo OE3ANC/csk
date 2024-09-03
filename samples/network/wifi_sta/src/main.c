@@ -29,8 +29,6 @@ static void handler_cb(struct net_mgmt_event_callback *cb, uint32_t mgmt_event,
 	printk("Your address: %s\n",
 	       net_addr_ntop(AF_INET, &iface->config.dhcpv4.requested_ip, buf, sizeof(buf)));
 	printk("Lease time: %u seconds\n", iface->config.dhcpv4.lease_time);
-	printk("Subnet: %s\n",
-	       net_addr_ntop(AF_INET, &iface->config.ip.ipv4->netmask, buf, sizeof(buf)));
 	printk("Router: %s\n",
 	       net_addr_ntop(AF_INET, &iface->config.ip.ipv4->gw, buf, sizeof(buf)));
 }

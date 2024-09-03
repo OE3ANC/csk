@@ -17,6 +17,7 @@ manifest:
           - tinycrypt
           - littlefs
           - mcuboot
+          - lvgl
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
       revision: 4e3db75609a22e3bfd8f7f69c750e4ea8b746022
@@ -35,12 +36,6 @@ manifest:
       remote: listenai
       revision: a9c986933d0805e010ecacccd3bf36bb279387f7
       path: modules/lib/wifi_manager
-    - name: lvgl
-      remote: listenai
-      revision: 702997cb1d61aece05fda62c140defd52dd3c36f
-      path: modules/lib/gui/lvgl
-      groups:
-        - lvgl
     - name: csk_sqlite3
       remote: listenai
       revision: 72303f6cbe848a94c665f6d1dc3817526deceacb

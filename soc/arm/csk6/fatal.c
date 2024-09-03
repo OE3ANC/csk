@@ -33,7 +33,7 @@ static bool disassembly_ins_is_bl_blx(uint32_t addr) {
     }
 }
 
-static size_t _backtrace_call_stack(uint32_t *buffer, size_t size, const z_arch_esf_t *esf)
+static size_t _backtrace_call_stack(uint32_t *buffer, size_t size, const struct arch_esf *esf)
 {
 	uint32_t stack_start_addr, stack_size, pc;
     uint32_t depth = 0;
@@ -97,7 +97,7 @@ static size_t _backtrace_call_stack(uint32_t *buffer, size_t size, const z_arch_
 
 #include <stdio.h>
 static char call_stack_info[_CALL_STACK_MAX_DEPTH * (8 + 1)] = { 0 };
-static void _print_call_stack(const z_arch_esf_t *esf)
+static void _print_call_stack(const struct arch_esf *esf)
 {
 	size_t i, cur_depth = 0;
 	uint32_t call_stack_buf[_CALL_STACK_MAX_DEPTH] = {0};
@@ -175,7 +175,7 @@ void csk6_fatal_unhandle_interrupt_print(void)
 #endif
 
 void k_sys_fatal_error_handler(unsigned int reason,
-				      const z_arch_esf_t *esf)
+				      const struct arch_esf *esf)
 {
     LOG_ERR("*** CSK FATAL ***");
 #if CONFIG_CSK6_FATAL_UNHANDLE_INTERRUPT

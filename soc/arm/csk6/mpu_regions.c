@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr/arch/arm/aarch32/mpu/arm_mpu.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/arch/arm/cortex_m/arm_mpu_mem_cfg.h>
 
 #define ROM_CODE_BASE_ADDRESS 0x00000000UL
 #define ROM_CODE_SIZE 1024

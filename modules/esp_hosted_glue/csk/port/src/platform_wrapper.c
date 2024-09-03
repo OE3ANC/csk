@@ -174,7 +174,7 @@ void *hosted_create_semaphore(int init_value)
 	return *sem_id;
 }
 
-#ifndef CONFIG_POSIX_CLOCK
+#ifndef CONFIG_POSIX_API
 unsigned int sleep(unsigned int seconds)
 {
 	k_msleep(seconds * 1000);

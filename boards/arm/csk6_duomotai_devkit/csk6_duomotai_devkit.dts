@@ -94,15 +94,6 @@
                 };
         };
 
-        adckey: adckey {
-                compatible = "adc-keys";
-                io-channels = <&exadc 2>;
-                keyup-threshold-mv = <0>;
-                press-thresholds-mv = <1650 (BIT(0))>,
-                                      <2300 (BIT(1))>,
-                                      <2536 (BIT(0) | BIT(1))>;
-        };
-
         inputs {
                 adc-keys {
                         compatible = "zephyr,adc-keys";
