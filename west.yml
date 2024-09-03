@@ -20,7 +20,7 @@ manifest:
           - lvgl
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
-      revision: 4e3db75609a22e3bfd8f7f69c750e4ea8b746022
+      revision: v3.7-zephyr-branch
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
