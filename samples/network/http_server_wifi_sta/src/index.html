@@ -1,10 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zephyr HTTP Server</title>
+    <title>Wifi HTTP Configuration Server</title>
 </head>
 <body>
-    <h1>Welcome to Zephyr HTTP Server!</h1>
-    <p>This is a simple HTML file.</p>
+    <h1>Wifi HTTP Configuration Server</h1>
+    <form action="/submit" method="POST">
+        ssid    : <input type="text" name="ssid"><br>
+        password: <input type="text" name="password"><br>
+        <label for="auth">auth:</label>
+        <select id="auth" name="auth">
+            <option value="Open">open</option>
+            <option value="WEP">WEP</option>
+            <option value="WPA_PSK">WPA_PSK</option>
+            <option value="WPA2_PSK">WPA2_PSK</option>
+            <option value="WPA_WPA2_PSK">WPA_WPA2_PSK</option>
+            <option value="WPA2_ENTERPRISE">WPA2_ENTERPRISE</option>
+            <option value="WPA3_PSK">WPA3_PSK</option>
+            <option value="WPA2_WPA3_PSK">WPA2_WPA3_PSK</option>
+        </select>
+        </br>
+        <input type="submit" value="Submit">
+    </form>
 </body>
 </html>

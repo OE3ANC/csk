@@ -50,4 +50,8 @@ config NET_SAMPLE_NUM_WEBSOCKET_HANDLERS
 	  Each websocket connection is served by a thread which needs
 	  memory. Only increase the value here if really needed.
 
+config DHCP_SERVER_BASE_ADDR
+	string "DHCP server base address"
+	default "192.168.0.100"
+
 source "Kconfig.zephyr"

@@ -11,17 +11,25 @@
 #include <zephyr/net/tls_credentials.h>
 #include <zephyr/net/http/server.h>
 #include <zephyr/net/http/service.h>
+#include <zephyr/net/net_if.h>
 #include <zephyr/net/net_ip.h>
 #include <zephyr/net/socket.h>
 
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(net_http_server_sample, LOG_LEVEL_DBG);
 
+struct app_msg {
+	uint32_t id;
+	uint32_t len;
+	void *data;
+};
+
+K_MSGQ_DEFINE(app_msgq, sizeof(struct app_msg), 4, 4);
+
 static uint8_t index_html_gz[] = {
 #include "index.html.gz.inc"
 };
 
-#if defined(CONFIG_NET_SAMPLE_HTTP_SERVICE)
 static uint16_t test_http_service_port = CONFIG_NET_SAMPLE_HTTP_SERVER_SERVICE_PORT;
 HTTP_SERVICE_DEFINE(test_http_service, CONFIG_NET_CONFIG_MY_IPV4_ADDR, &test_http_service_port, 1,
 		    10, NULL);
@@ -67,6 +75,8 @@ static int dyn_handler(struct http_client_ctx *client, enum http_data_status sta
 	if (status == HTTP_SERVER_DATA_FINAL) {
 		LOG_DBG("All data received (%zd bytes).", processed);
 		processed = 0;
+		struct app_msg msg;
+		k_msgq_put(&app_msgq, &msg, K_FOREVER);
 	}
 
 	/* This will echo data back to client as the buffer and recv_buffer
@@ -87,119 +97,42 @@ struct http_resource_detail_dynamic dyn_resource_detail = {
 	.user_data = NULL,
 };
 
-HTTP_RESOURCE_DEFINE(dyn_resource, test_http_service, "/dynamic",
-		     &dyn_resource_detail);
+HTTP_RESOURCE_DEFINE(dyn_resource, test_http_service, "/submit", &dyn_resource_detail);
 
-#if defined(CONFIG_NET_SAMPLE_WEBSOCKET_SERVICE)
-extern int ws_setup(int ws_socket, void *user_data);
+extern int wifi_softAP(void);
 
-static uint8_t ws_recv_buffer[1024];
-
-struct http_resource_detail_websocket ws_resource_detail = {
-	.common = {
-			.type = HTTP_RESOURCE_TYPE_WEBSOCKET,
-
-			/* We need HTTP/1.1 Get method for upgrading */
-			.bitmask_of_supported_http_methods = BIT(HTTP_GET),
-		},
-	.cb = ws_setup,
-	.data_buffer = ws_recv_buffer,
-	.data_buffer_len = sizeof(ws_recv_buffer),
-	.user_data = NULL, /* Fill this for any user specific data */
-};
-
-HTTP_RESOURCE_DEFINE(ws_resource, test_http_service, "/", &ws_resource_detail);
-
-#endif /* CONFIG_NET_SAMPLE_WEBSOCKET_SERVICE */
-#endif /* CONFIG_NET_SAMPLE_HTTP_SERVICE */
-
-#if defined(CONFIG_NET_SAMPLE_HTTPS_SERVICE)
-#include "certificate.h"
-
-static const sec_tag_t sec_tag_list_verify_none[] = {
-		HTTP_SERVER_CERTIFICATE_TAG,
-#if defined(CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
-		PSK_TAG,
-#endif
-	};
-
-static uint16_t test_https_service_port = CONFIG_NET_SAMPLE_HTTPS_SERVER_SERVICE_PORT;
-HTTPS_SERVICE_DEFINE(test_https_service, CONFIG_NET_CONFIG_MY_IPV4_ADDR,
-		     &test_https_service_port, 1, 10, NULL,
-		     sec_tag_list_verify_none, sizeof(sec_tag_list_verify_none));
-
-static struct http_resource_detail_static index_html_gz_resource_detail_https = {
-	.common = {
-			.type = HTTP_RESOURCE_TYPE_STATIC,
-			.bitmask_of_supported_http_methods = BIT(HTTP_GET),
-			.content_encoding = "gzip",
-		},
-	.static_data = index_html_gz,
-	.static_data_len = sizeof(index_html_gz),
-};
-
-HTTP_RESOURCE_DEFINE(index_html_gz_resource_https, test_https_service, "/",
-		     &index_html_gz_resource_detail_https);
-
-#endif /* CONFIG_NET_SAMPLE_HTTPS_SERVICE */
-
-static void setup_tls(void)
-{
-#if defined(CONFIG_NET_SAMPLE_HTTPS_SERVICE)
-#if defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS)
-	int err;
-
-#if defined(CONFIG_NET_SAMPLE_CERTS_WITH_SC)
-	err = tls_credential_add(HTTP_SERVER_CERTIFICATE_TAG,
-				 TLS_CREDENTIAL_CA_CERTIFICATE,
-				 ca_certificate,
-				 sizeof(ca_certificate));
-	if (err < 0) {
-		LOG_ERR("Failed to register CA certificate: %d", err);
-	}
-#endif /* defined(CONFIG_NET_SAMPLE_CERTS_WITH_SC) */
-
-	err = tls_credential_add(HTTP_SERVER_CERTIFICATE_TAG,
-				 TLS_CREDENTIAL_SERVER_CERTIFICATE,
-				 server_certificate,
-				 sizeof(server_certificate));
-	if (err < 0) {
-		LOG_ERR("Failed to register public certificate: %d", err);
-	}
-
-	err = tls_credential_add(HTTP_SERVER_CERTIFICATE_TAG,
-				 TLS_CREDENTIAL_PRIVATE_KEY,
-				 private_key, sizeof(private_key));
-	if (err < 0) {
-		LOG_ERR("Failed to register private key: %d", err);
-	}
-
-#if defined(CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
-	err = tls_credential_add(PSK_TAG,
-				 TLS_CREDENTIAL_PSK,
-				 psk,
-				 sizeof(psk));
-	if (err < 0) {
-		LOG_ERR("Failed to register PSK: %d", err);
-	}
-
-	err = tls_credential_add(PSK_TAG,
-				 TLS_CREDENTIAL_PSK_ID,
-				 psk_id,
-				 sizeof(psk_id) - 1);
-	if (err < 0) {
-		LOG_ERR("Failed to register PSK ID: %d", err);
-	}
-#endif /* defined(CONFIG_MBEDTLS_KEY_EXCHANGE_PSK_ENABLED) */
-#endif /* defined(CONFIG_NET_SOCKETS_SOCKOPT_TLS) */
-#endif /* defined(CONFIG_NET_SAMPLE_HTTPS_SERVICE) */
-}
-
-extern int wifi_connect(void);
 int main(void)
 {
-	wifi_connect();
-	setup_tls();
+	struct net_if *iface = net_if_get_by_index(1);
+
+	if (!iface) {
+		LOG_ERR("No such interface in index %d", 1);
+		return -1;
+	}
+
+	struct in_addr my_addr4;
+	struct in_addr my_netmask4;
+
+	net_addr_pton(AF_INET, CONFIG_NET_CONFIG_MY_IPV4_ADDR, &my_addr4);
+	net_addr_pton(AF_INET, CONFIG_NET_CONFIG_MY_IPV4_NETMASK, &my_netmask4);
+
+	net_if_ipv4_addr_add(iface, &my_addr4, NET_ADDR_AUTOCONF, 0);
+	net_if_ipv4_set_netmask_by_addr(iface, &my_addr4, &my_netmask4);
+
+	wifi_softAP();
+
 	http_server_start();
+
+	struct app_msg msg;
+	while (1) {
+		k_msgq_get(&app_msgq, &msg, K_FOREVER);
+		extern int wifi_connect(void);
+		extern int wifi_softAP_stop(void);
+		wifi_softAP_stop();
+		http_server_stop();
+		net_if_ipv4_addr_rm(iface, &my_addr4);
+		wifi_connect();
+	}
+
 	return 0;
 }
