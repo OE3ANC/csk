@@ -213,7 +213,6 @@ int csk_wifi_remove_callback(csk_wifi_event_cb_t *wifi_event_cb);
  */
 int csk_wifi_scan_ap(csk_wifi_scan_info_t **ap_info, csk_wifi_result_t *result, k_timeout_t timeout);
 
-#ifdef CONFIG_CSK_WIFI_STATION
 /**
  * @brief Start a WIFI connection request as a WiFi station device
  *
@@ -264,8 +263,6 @@ int csk_wifi_sta_disconnect(csk_wifi_result_t *result, k_timeout_t timeout);
  */
 int csk_wifi_sta_get_status(void);
 
-#endif
-
 /**
  * @brief Get WiFi MAC address
  * 
@@ -277,7 +274,6 @@ int csk_wifi_sta_get_status(void);
  */
 int csk_wifi_get_mac(csk_wifi_mode_t mode, uint8_t *mac_addr);
 
-#ifdef CONFIG_CSK_WIFI_SOFTAP
 /**
  * @brief Set up WIFI Access Point
  *
@@ -312,7 +308,9 @@ int csk_wifi_ap_start(const csk_wifi_softap_config_t *ap_config, csk_wifi_result
  * @return 0 if successful, negative errno code on failure.
  */
 int csk_wifi_ap_stop(csk_wifi_result_t *result, k_timeout_t timeout);
-#endif
+
+
+int csk_wifi_mode_set(csk_wifi_mode_t mode, csk_wifi_result_t *result, k_timeout_t timeout);
 
 #ifdef __cplusplus
 }

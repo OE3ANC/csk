@@ -85,8 +85,6 @@ __exit:
     return ret;
 }
 
-#ifdef CONFIG_CSK_WIFI_STATION
-
 int csk_wifi_sta_connect(csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *result, k_timeout_t timeout)
 {
     CSK_WIFI_CHECK(sta_config != NULL && result != NULL, -EINVAL);
@@ -200,8 +198,6 @@ int csk_wifi_sta_get_status(void)
     return ret_status;
 }
 
-#endif
-
 int csk_wifi_get_mac(csk_wifi_mode_t mode, uint8_t *mac_addr)
 {
     wifi_sta_state_machine_t current_sm = wifi_obj_get_sm();
@@ -215,8 +211,6 @@ int csk_wifi_get_mac(csk_wifi_mode_t mode, uint8_t *mac_addr)
     memcpy(mac_addr, data->mac_addr, sizeof(data->mac_addr));
     return 0;
 }
-
-#ifdef CONFIG_CSK_WIFI_SOFTAP
 
 int csk_wifi_ap_start(const csk_wifi_softap_config_t *ap_config, csk_wifi_result_t *result, k_timeout_t timeout)
 {
@@ -279,4 +273,39 @@ __exit:
     return ret;
 }
 
-#endif
+int csk_wifi_mode_set(csk_wifi_mode_t mode, csk_wifi_result_t *result, k_timeout_t timeout)
+{
+	CSK_WIFI_CHECK(result != NULL, -EINVAL);
+
+    if (mode >= CSK_WIFI_MODE_MAX) {
+        return -EINVAL;
+    }
+
+	bool async_mode = K_TIMEOUT_EQ(timeout, K_NO_WAIT);
+	int ret = 0;
+
+	wifi_ret_msg_t ret_msg;
+	k_mutex_lock(&wifi_api_mutex, K_FOREVER);
+
+	const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_AP);
+    struct csk_wifi_data *data = dev->data;
+    data->mode = mode;
+
+	ret = wifi_send_command(dev, WIFI_CMD_MODE_SET, K_NO_WAIT, async_mode);
+	if (ret != 0)
+		goto __exit;
+	ret = wifi_take_result(&ret_msg, timeout);
+	if (ret != 0)
+		goto __exit;
+	*result = ret_msg.result;
+	if (*result != CSK_WIFI_SUCCESS) {
+		ret = -EIO;
+		goto __exit;
+	}
+
+	return 0;
+
+__exit:
+	k_mutex_unlock(&wifi_api_mutex);
+	return ret;
+}

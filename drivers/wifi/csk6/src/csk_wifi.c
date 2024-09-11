@@ -65,17 +65,9 @@ typedef struct {
     wifi_fsm_t state;
     const struct device *dev[CSK_WIFI_MODE_MAX];
 } csk_wifi_object_t;
+
 static csk_wifi_object_t s_csk_wifi_obj = {0};
-
-/* TODO: Remove this macro */
-#ifdef CONFIG_CSK_WIFI_STATION
-static struct csk_wifi_data csk_wifi_sta_data = {0};
-#endif
-
-#ifdef CONFIG_CSK_WIFI_SOFTAP
-static struct csk_wifi_data csk_wifi_ap_data = {0};
-#endif
-
+static struct csk_wifi_data csk_wifi_data = {0};
 static hosted_event_callback_t s_driver_event_cb;
 
 const char *WIFI_STA_SM_STRINGS[] = {
@@ -244,26 +236,10 @@ static inline int wifi_get_message(csk_wifi_ctrl_msg_t *msg, k_timeout_t timeout
     return k_msgq_get(&wifi_interactive_msgq, msg, timeouts);
 }
 
-const struct device * wifi_obj_get_dev(csk_wifi_mode_t mode)
+const struct device *wifi_obj_get_dev(csk_wifi_mode_t mode)
 {
-    if (mode == CSK_WIFI_MODE_STA) {
-    #ifdef CONFIG_CSK_WIFI_STATION
-        return csk_wifi_sta_data.dev;
-    #else
-        return NULL;
-    #endif
-    } else if (mode == CSK_WIFI_MODE_AP) {
-    #ifdef CONFIG_CSK_WIFI_SOFTAP
-        return csk_wifi_ap_data.dev;
-    #else 
-        return NULL;
-    #endif
-    } else {
-        return NULL;
-    }
+	return csk_wifi_data.dev;
 }
-
-
 
 static void hosted_event_handler(hosted_event_t events, void *arg)
 {
@@ -304,30 +280,11 @@ static int wifi_driver_init(void)
 
 static void wifi_virtual_netif_init(const struct device *dev)
 {
-    ctrl_cmd_t *resp = NULL;
-    ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
-    const struct csk_wifi_config *config = dev->config;
     struct csk_wifi_data *data = dev->data;
-    wifi_mode_e esp_wifi_mode = wifi_get_drv_wifi_mode(config->mode);
-    if ((esp_wifi_mode != WIFI_MODE_STA) && (esp_wifi_mode != WIFI_MODE_AP)) {
-        LOG_ERR("wifi mode err, %d", config->mode);
-        return;
-    }
-	req.u.wifi_mac.mode = esp_wifi_mode;
-	resp = wifi_get_mac(req);
-    if (resp == NULL) {
-        return;
-    }
-    convert_str_to_bytes(data->mac_addr, resp->u.wifi_mac.mac);
-    CLEANUP_APP_MSG(resp);
-    if (config->mode == CSK_WIFI_MODE_STA) {
-        data->virtual_netif = network_open(STA_INTERFACE, csk_wifi_receive_pkt, data);
-    } else if (config->mode == CSK_WIFI_MODE_AP) {
-        data->virtual_netif = network_open(SOFTAP_INTERFACE, csk_wifi_receive_pkt, data);
-    } else {
-        abort();
-    }
-    assert(data->virtual_netif);
+    data->virtual_netif_sta = network_open(STA_INTERFACE, csk_wifi_receive_pkt, data);
+    data->virtual_netif_ap = network_open(SOFTAP_INTERFACE, csk_wifi_receive_pkt, data);
+    assert(data->virtual_netif_sta);
+    assert(data->virtual_netif_ap);
 }
 
 static csk_wifi_result_t wifi_sta_connect(const struct device *dev)
@@ -473,6 +430,26 @@ static csk_wifi_result_t wifi_scan_list(int *ap_count, wifi_scan_list_t *aps)
     return ret;
 }
 
+static void wifi_mode_set(const struct device *dev)
+{
+	ctrl_cmd_t *resp = NULL;
+	ctrl_cmd_t req = CTRL_CMD_DEFAULT_REQ();
+	const struct csk_wifi_config *config = dev->config;
+	struct csk_wifi_data *data = dev->data;
+	wifi_mode_e esp_wifi_mode = wifi_get_drv_wifi_mode(data->mode);
+	if ((esp_wifi_mode != WIFI_MODE_STA) && (esp_wifi_mode != WIFI_MODE_AP)) {
+		LOG_ERR("wifi mode err, %d", config->mode);
+		return;
+	}
+	req.u.wifi_mac.mode = esp_wifi_mode;
+	resp = wifi_get_mac(req);
+	if (resp == NULL) {
+		return;
+	}
+	convert_str_to_bytes(data->mac_addr, resp->u.wifi_mac.mac);
+	CLEANUP_APP_MSG(resp);
+}
+
 static void wifi_command_handler(const struct device *dev,  wifi_req_t req)
 {
     wifi_cmd_t command = req.cmd;
@@ -482,14 +459,13 @@ static void wifi_command_handler(const struct device *dev,  wifi_req_t req)
     };
 
     switch (command) {
+        case WIFI_CMD_MODE_SET:
+            wifi_mode_set(dev);
+            wifi_give_result(&ret_msg, req.async_mode);
+            break;
         case WIFI_CMD_INIT: {
             wifi_driver_init();
-#ifdef CONFIG_CSK_WIFI_STATION
-            wifi_virtual_netif_init(wifi_obj_get_dev(CSK_WIFI_MODE_STA));
-#endif
-#ifdef CONFIG_CSK_WIFI_SOFTAP
             wifi_virtual_netif_init(wifi_obj_get_dev(CSK_WIFI_MODE_AP));
-#endif
             wifi_give_result(&ret_msg, req.async_mode);
         } break;
         case WIFI_CMD_STA_CONNECT: {
@@ -676,17 +652,19 @@ static int csk_wifi_send_pkt(const struct device *dev, struct net_pkt *pkt)
     wifi_tx_buf->len = pkt_len;
     wifi_tx_buf->payload = k_malloc(pkt_len);
     if (wifi_tx_buf->payload == NULL) {
-        k_free(wifi_tx_buf);
-        return -ENOMEM;
+	    k_free(wifi_tx_buf);
+	    return -ENOMEM;
     }
     if (net_pkt_read(pkt, wifi_tx_buf->payload, pkt_len) < 0) {
-        ret = -EIO;
-        goto __cleanup;
+	    ret = -EIO;
+	    goto __cleanup;
     }
-    int send_ret = network_write(data->virtual_netif, wifi_tx_buf);
+    int send_ret = network_write(data->mode == CSK_WIFI_MODE_STA ? data->virtual_netif_sta
+								 : data->virtual_netif_ap,
+				 wifi_tx_buf);
     if (send_ret != 0) {
-        ret = -EIO;
-        goto __cleanup;
+	    ret = -EIO;
+	    goto __cleanup;
     }
     return 0;
 
@@ -715,36 +693,17 @@ static const struct ethernet_api csk_eth_apis = {
 	.send = csk_wifi_send_pkt,
 };
 
-#ifdef CONFIG_CSK_WIFI_STATION
-const struct csk_wifi_config csk_wifi_sta_config = {
-    .mode = CSK_WIFI_MODE_STA,
+const struct csk_wifi_config csk_wifi_config = {
+    .mode = CSK_WIFI_MODE_AP,
 };
 
 NET_DEVICE_DT_INST_DEFINE(0,
                         csk_eth_dev_init,
                         NULL,
-                        &csk_wifi_sta_data,
-                        &csk_wifi_sta_config,
+                        &csk_wifi_data,
+                        &csk_wifi_config,
                         CONFIG_ETH_INIT_PRIORITY,
                         &csk_eth_apis,
                         ETHERNET_L2,
                         NET_L2_GET_CTX_TYPE(ETHERNET_L2),
                         NET_ETH_MTU);
-#endif
-
-#ifdef CONFIG_CSK_WIFI_SOFTAP
-const struct csk_wifi_config csk_wifi_ap_config = {
-    .mode = CSK_WIFI_MODE_AP
-};
-
-NET_DEVICE_DT_INST_DEFINE(0,
-                        csk_eth_dev_init,
-                        NULL,
-                        &csk_wifi_ap_data,
-                        &csk_wifi_ap_config,
-                        CONFIG_ETH_INIT_PRIORITY,
-                        &csk_eth_apis,
-                        ETHERNET_L2,
-                        NET_L2_GET_CTX_TYPE(ETHERNET_L2),
-                        NET_ETH_MTU);
-#endif
