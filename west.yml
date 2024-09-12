@@ -33,7 +33,7 @@ manifest:
       path: modules/lib/esp-hosted
     - name: wifi_manager
       remote: listenai
-      revision: 7ae37d4ea352dc5b806c1b24d5f9e00f9ae1b0f3
+      revision: a9c986933d0805e010ecacccd3bf36bb279387f7
       path: modules/lib/wifi_manager
     - name: lvgl
       remote: listenai
