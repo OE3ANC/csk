@@ -1,0 +1,9 @@
+config EXAMPLE_LOCAL_IPV4_ADDRESS
+    string "local ipv4 address for example"
+    default "192.168.2.1"
+
+config EXAMPLE_LOCAL_IPV4_NETMASK
+    string "local ipv4 netmask for example"
+    default "255.255.255.0"
+
+source "Kconfig.zephyr"
