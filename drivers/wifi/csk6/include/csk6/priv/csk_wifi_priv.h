@@ -130,7 +130,8 @@ typedef enum {
 
 struct csk_wifi_data {
     const struct device *dev;
-    void *virtual_netif;
+    void *virtual_netif_sta;
+    void *virtual_netif_ap;
     struct net_if *netif;
     uint8_t mac_addr[6];
     union {
@@ -138,6 +139,7 @@ struct csk_wifi_data {
         csk_wifi_softap_config_t ap_config;
     };
     bool sta_is_connected;
+    uint8_t mode; /* 0:sta, 1:softAP */
 #ifdef CONFIG_CSK_WIFI_XR819S
     csk_wifi_result_t err;
 #endif
@@ -152,6 +154,7 @@ typedef enum {
     WIFI_CMD_AP_INIT,
     WIFI_CMD_AP_START,
     WIFI_CMD_AP_STOP,
+    WIFI_CMD_MODE_SET,
     WIFI_CMD_SCAN,
 } wifi_cmd_t;
 

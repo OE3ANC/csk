@@ -16,7 +16,9 @@ choice CSK_WIFI_OFFLOAD_MODULE
    default CSK_WIFI_ESP32C3
 
 	config CSK_WIFI_ESP32C3
-      bool "ESP32C3"
+            bool "ESP32C3"
+            imply CSK6_EXMCU
+            imply GPIO_CSK6_CH32V003
 
 	config CSK_WIFI_XR819S
       bool "XR819S"
