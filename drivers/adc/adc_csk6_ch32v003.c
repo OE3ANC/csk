@@ -233,6 +233,6 @@ static const struct adc_driver_api api_ch32v003_driver_api = {
 			      &api_ch32v003_driver_api);                                           \
 	K_THREAD_DEFINE(adc_ch32v003_thread_id_##inst, CONFIG_ADC_CSK6_CH32V003_THREAD_STACK_SIZE, \
 			adc_ch32v003_thread, DEVICE_DT_INST_GET(inst),                             \
-			CONFIG_ADC_CSK6_CH32V003_THREAD_PRIO, NULL, 0, 0, 0);
+			NULL, NULL, CONFIG_ADC_CSK6_CH32V003_THREAD_PRIO, 0, 0);
 
 DT_INST_FOREACH_STATUS_OKAY(ADC_DEVICE_INSTANCE);
