@@ -75,7 +75,7 @@ int db_exec(sqlite3 *db, const char *sql)
 	return rc;
 }
 
-void main(void)
+int main(void)
 {
 	sqlite3 *db1;
 	sqlite3 *db2;
@@ -94,7 +94,7 @@ void main(void)
 	if (rc < 0) {
 		printk("FAIL: mount id %" PRIuPTR " at %s: %d\n", (uintptr_t)mp->storage_dev,
 		       mp->mnt_point, rc);
-		return;
+		return 0;
 	}
 	printk("%s mount: %d\n", mp->mnt_point, rc);
 #else
@@ -118,28 +118,28 @@ void main(void)
 	}
 
 	if (db_open("/lfs1/test1.db", &db1))
-		return;
+		return 0;
 	if (db_open("/lfs1/test2.db", &db2))
-		return;
+		return 0;
 
 	rc = db_exec(db1, "CREATE TABLE test1 (id INTEGER, content);");
 	if (rc != SQLITE_OK) {
 		sqlite3_close(db1);
 		sqlite3_close(db2);
-		return;
+		return 0;
 	}
 	rc = db_exec(db2, "CREATE TABLE test2 (id INTEGER, content);");
 	if (rc != SQLITE_OK) {
 		sqlite3_close(db1);
 		sqlite3_close(db2);
-		return;
+		return 0;
 	}
 
 	rc = db_exec(db1, "INSERT INTO test1 VALUES (1, 'Hello, World from test1');");
 	if (rc != SQLITE_OK) {
 		sqlite3_close(db1);
 		sqlite3_close(db2);
-		return;
+		return 0;
 	}
 	// rc = db_exec(db1, "INSERT INTO test1 VALUES (2, 'over, World from test1');");
 	// if (rc != SQLITE_OK) {
@@ -151,20 +151,20 @@ void main(void)
 	if (rc != SQLITE_OK) {
 		sqlite3_close(db1);
 		sqlite3_close(db2);
-		return;
+		return 0;
 	}
 
 	rc = db_exec(db1, "SELECT * FROM test1");
 	if (rc != SQLITE_OK) {
 		sqlite3_close(db1);
 		sqlite3_close(db2);
-		return;
+		return 0;
 	}
 	rc = db_exec(db2, "SELECT * FROM test2");
 	if (rc != SQLITE_OK) {
 		sqlite3_close(db1);
 		sqlite3_close(db2);
-		return;
+		return 0;
 	}
 
 	sqlite3_close(db1);
@@ -173,4 +173,5 @@ void main(void)
 	rc = fs_unmount(mp);
 	printk("%s unmount: %d\n", mp->mnt_point, rc);
 	printk("CSK sqlite3 test complete!\n");
+	return 0;
 }

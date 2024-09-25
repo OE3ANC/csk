@@ -15,7 +15,7 @@ The sample can be built as follows:
 
 .. zephyr-app-commands::
    :zephyr-app: samples/boards/csk6/subsys/sqlite3_littefs
-   :board: csk6012_c3_nano
+   :board: csk6012_c3_nano csk6_duomotai_devkit
    :goals: build flash
    :compact:
 
