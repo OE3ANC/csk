@@ -12,8 +12,8 @@
 #define HEAD_AUDIO     0x0303
 
 &zephyr_udc0 {
-	hs_0 {
-		label = "HEADSET";
+	HEADSET:hs_0 {
+		// label = "HEADSET";
 		compatible = "usb-audio-hs";
 		mic-feature-mute;
 		mic-channel-c;
