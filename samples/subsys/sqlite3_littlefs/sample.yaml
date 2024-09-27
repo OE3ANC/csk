@@ -5,7 +5,11 @@ sample:
 tests:
   sample.board.csk6.subsys.sqlite3_littefs:
     tags: csk6
+<<<<<<< HEAD
     platform_allow: csk6012_c3_nano 
+=======
+    platform_allow: csk6012_c3_nano csk6_duomotai_devkit
+>>>>>>> e659b7d59eec576f40625ef22ac48f60da70017c
     harness: console
     harness_config:
       type: multi_line
