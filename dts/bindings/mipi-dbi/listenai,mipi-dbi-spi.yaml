@@ -1,0 +1,23 @@
+# Copyright 2023 ListenAI
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  利用CSK的DMA发送显存数据
+compatible: "listenai,mipi-dbi-spi"
+
+include: ["zephyr,mipi-dbi-spi.yaml", "pinctrl-device.yaml"]
+
+properties:
+  dma-channel:
+    type: int
+    required: false
+    description: |
+      默认为通道为0， 请注意根据项目实际使用的DMA通道进行配置
+
+  rotate:
+    type: int
+    required: false
+    description: |
+      配置旋转的角度，当前仅仅支持0和90
+      如果该值为90, 则利用DMA-SG模式，将显存中的数据搬运至SPI外设从而实现图像旋转显示
+
