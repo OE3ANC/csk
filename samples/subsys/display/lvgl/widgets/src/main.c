@@ -22,7 +22,7 @@ int main(void)
 	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display_dev)) {
 		LOG_ERR("Device not ready, aborting test");
-		return 0;
+		return -ENODEV;
 	}
 
 	display_blanking_off(display_dev);
