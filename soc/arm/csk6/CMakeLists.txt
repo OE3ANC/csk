@@ -5,6 +5,8 @@ zephyr_sources(
   soc.c
   )
 
+set(SOC_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/linker.ld CACHE INTERNAL "linker script for csk")
+
 # make sure csk6_boot_tag.ld at the end of vectors
 zephyr_linker_sources(ROM_START SORT_KEY 0x0vectors0boottag csk6_boot_tag.ld)
 zephyr_sources_ifdef(CONFIG_CPU_HAS_CUSTOM_FIXED_SOC_MPU_REGIONS mpu_regions.c)
