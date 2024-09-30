@@ -131,12 +131,19 @@
                 };
         };
 
+        pointer {
+                compatible = "zephyr,lvgl-pointer-input";
+                input = <&ft5336>;
+                invert-x;
+        };
+
         mipi_dbi {
                 compatible = "listenai,mipi-dbi-spi";
                 dc-gpios = <&gpioa 18 GPIO_ACTIVE_HIGH>;
                 // reset-gpios = <&exgpioc 2 1>;
                 spi-dev = <&spi1>;
                 write-only;
+                rotate = <90>;
                 #address-cells = <1>;
                 #size-cells = <0>;
                 st7789v: st7789v@0 {
