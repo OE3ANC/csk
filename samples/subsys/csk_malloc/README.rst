@@ -8,18 +8,17 @@ This sample will show how to use the related API interface of csk_malloc.
 The API provides a methods similar to k_malloc, but the heap's memory address can be placed in 
 user-defined memory segments.
 
+Building and Running
+********************
 
-Building
-***********************************************
+Make sure you have the CSK6 connected over USB port.
 
-The sample can be built as follows:
+The sample can be built and flashed as follows:
 
-.. zephyr-app-commands::
-   :zephyr-app: samples/boards/csk6/subsys/csk_malloc
-   :board: csk6002_9s_nano
-   :goals: build flash
-   :compact:
+.. code-block:: console
 
+   west build -b csk6 samples/subsys/csk_malloc
+   west flash
 
 Sample Output
 ***********************************************
