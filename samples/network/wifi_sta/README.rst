@@ -17,7 +17,7 @@ The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6 samples/boards/csk6/wifi_station
+   west build -b csk6 samples/network/wifi_station
    west flash
 
 Sample Output
