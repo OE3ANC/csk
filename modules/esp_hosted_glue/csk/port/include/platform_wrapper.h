@@ -181,7 +181,7 @@ int hosted_timer_stop(void *timer_handle);
  *      0 : success
  *      <0 : failure
  */
-unsigned int msleep(unsigned int mseconds);
+unsigned int hosted_msleep(unsigned int mseconds);
 
 /* sleep is sleep in seconds
  * Input parameters
@@ -190,7 +190,7 @@ unsigned int msleep(unsigned int mseconds);
  *      0 : success
  *      <0 : failure
  */
-unsigned int sleep(unsigned int seconds);
+unsigned int hosted_sleep(unsigned int seconds);
 
 /*
  * serial_drv_open function opens driver interface.

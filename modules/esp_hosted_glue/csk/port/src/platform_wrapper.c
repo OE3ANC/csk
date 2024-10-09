@@ -174,13 +174,13 @@ void *hosted_create_semaphore(int init_value)
 	return *sem_id;
 }
 
-unsigned int sleep(unsigned int seconds)
+unsigned int hosted_sleep(unsigned int seconds)
 {
 	k_msleep(seconds * 1000);
 	return 0;
 }
 
-unsigned int msleep(unsigned int mseconds)
+unsigned int hosted_msleep(unsigned int mseconds)
 {
 	k_msleep(mseconds);
 	return 0;
