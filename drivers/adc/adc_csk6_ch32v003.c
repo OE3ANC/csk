@@ -14,11 +14,12 @@
 #include "adc_context.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(csk6_adc_ch32v003, CONFIG_ADC_LOG_LEVEL);
+LOG_MODULE_REGISTER(csk6_adc_ch32v003, 4);
 
 #include "exmcu_comm.h"
 
-#define CH32V003_ADC_RESOLUTION	   (10)
+#define CH32V003_ADC_RESOLUTION	   (12)
+#define CH32V203_ADC_RESOLUTION	   (12)
 
 struct adc_ch32v003_config {
 	const struct device *exmcu;
@@ -117,11 +118,6 @@ static void adc_context_start_sampling(struct adc_context *ctx)
 static int adc_ch32v003_start_read(const struct device *dev, const struct adc_sequence *sequence)
 {
 	struct adc_ch32v003_data *data = dev->data;
-
-	if (sequence->resolution != CH32V003_ADC_RESOLUTION) {
-		LOG_ERR("ADC resolution must be %d", CH32V003_ADC_RESOLUTION);
-		return -EINVAL;
-	}
 
 	adc_context_start_read(&data->ctx, sequence);
 

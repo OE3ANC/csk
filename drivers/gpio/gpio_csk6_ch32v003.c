@@ -30,25 +30,26 @@ struct gpio_ch32003_config {
 struct gpio_ch32003_drv_data {
 	struct gpio_driver_data common;
 	struct {
-		uint8_t input;
-		uint8_t output;
-		uint8_t dir;
-		uint8_t pull_mode;
-		uint8_t pull_en;
-		uint8_t od;
+		uint32_t input;
+		uint32_t output;
+		uint32_t dir;
+		uint32_t pull_mode;
+		uint32_t pull_en;
+		uint32_t od;
 	} reg_cache;
 
 	struct k_sem lock;
 };
 
-static inline int ch32v003_dir_set(const struct device *dev, uint8_t flag)
+static inline int ch32v003_dir_set(const struct device *dev, uint32_t flag)
 {
 	const struct gpio_ch32003_config *config = dev->config;
 	struct gpio_ch32003_drv_data *const drv_data =
 		(struct gpio_ch32003_drv_data *const)dev->data;
 
-	int r = exmcu_register_write_byte(config->exmcu, CH32V003_DIR_REG(config->id), flag);
-
+	int r = exmcu_register_write_byte(config->exmcu, CH32V003_DIR_REG(config->id), flag & 0xFF);
+	r |= exmcu_register_write_byte(config->exmcu, CH32V003_HIGH_8_DIR_REG(config->id),
+				       (flag >> 8) & 0xFF);
 	if (r == 0) {
 		drv_data->reg_cache.dir = flag;
 	}
@@ -56,89 +57,188 @@ static inline int ch32v003_dir_set(const struct device *dev, uint8_t flag)
 	return r;
 }
 
-static inline int ch32v003_dir_get(const struct device *dev, uint8_t *flag)
+static inline int ch32v003_dir_get(const struct device *dev, uint32_t *flag)
 {
 	const struct gpio_ch32003_config *config = dev->config;
 	struct gpio_ch32003_drv_data *const drv_data =
 		(struct gpio_ch32003_drv_data *const)dev->data;
+	uint8_t tmp1;
+	uint8_t tmp2;
 
-	int r = exmcu_register_read_byte(config->exmcu, CH32V003_DIR_REG(config->id), flag);
+	int r = exmcu_register_read_byte(config->exmcu, CH32V003_DIR_REG(config->id), &tmp1);
+	r |= exmcu_register_read_byte(config->exmcu, CH32V003_HIGH_8_DIR_REG(config->id), &tmp2);
 	if (r == 0) {
+		*flag = ((uint32_t)tmp2) << 8 | tmp1;
 		drv_data->reg_cache.dir = *flag;
 	}
 
 	return r;
 }
 
-static inline int ch32v003_od_set(const struct device *dev, uint8_t flag)
+static inline int ch32v003_od_set(const struct device *dev, uint32_t flag)
 {
 	const struct gpio_ch32003_config *config = dev->config;
 	struct gpio_ch32003_drv_data *const drv_data =
 		(struct gpio_ch32003_drv_data *const)dev->data;
 
-	int r = exmcu_register_write_byte(config->exmcu, CH32V003_OD_REG(config->id), flag);
+	int r = exmcu_register_write_byte(config->exmcu, CH32V003_OD_REG(config->id), flag & 0xFF);
+	r = exmcu_register_write_byte(config->exmcu, CH32V003_HIGH_8_OD_REG(config->id),
+				      (flag >> 8) & 0xFF);
+
 	if (r == 0) {
 		drv_data->reg_cache.od = flag;
 	}
+
 	return r;
 }
 
-static inline int ch32v003_od_get(const struct device *dev, uint8_t *flag)
-{
-	const struct gpio_ch32003_config *config = dev->config;
-	return exmcu_register_read_byte(config->exmcu, CH32V003_OD_REG(config->id), flag);
-}
-
-static inline int ch32v003_out_set(const struct device *dev, uint8_t flag)
+static inline int ch32v003_od_get(const struct device *dev, uint32_t *flag)
 {
 	const struct gpio_ch32003_config *config = dev->config;
 	struct gpio_ch32003_drv_data *const drv_data =
 		(struct gpio_ch32003_drv_data *const)dev->data;
-	int r = exmcu_register_write_byte(config->exmcu, CH32V003_OUT_REG(config->id), flag);
+	uint8_t tmp1;
+	uint8_t tmp2;
+	int r;
+
+	r = exmcu_register_read_byte(config->exmcu, CH32V003_OD_REG(config->id), &tmp1);
+	r |= exmcu_register_read_byte(config->exmcu, CH32V003_HIGH_8_OD_REG(config->id), &tmp2);
+
+	if (r == 0) {
+		*flag = ((uint32_t)tmp2) << 8 | tmp1;
+		drv_data->reg_cache.od = *flag;
+	}
+
+	return r;
+}
+
+static inline int ch32v003_out_set(const struct device *dev, uint32_t flag)
+{
+	const struct gpio_ch32003_config *config = dev->config;
+	struct gpio_ch32003_drv_data *const drv_data =
+		(struct gpio_ch32003_drv_data *const)dev->data;
+	int r = exmcu_register_write_byte(config->exmcu, CH32V003_OUT_REG(config->id), flag & 0xFF);
+	r |= exmcu_register_write_byte(config->exmcu, CH32V003_HIGH_8_OUT_REG(config->id),
+				       (flag >> 8) & 0xFF);
 	if (r == 0) {
 		drv_data->reg_cache.output = flag;
+	} else {
+		LOG_ERR("ch32v003_out_set failed, err:%d", r);
 	}
+
 	return r;
 }
 
-static inline int ch32v003_out_get(const struct device *dev, uint8_t *flag)
-{
-	const struct gpio_ch32003_config *config = dev->config;
-	return exmcu_register_read_byte(config->exmcu, CH32V003_OUT_REG(config->id), flag);
-}
-
-static inline int ch32v003_pull_mode_set(const struct device *dev, uint8_t flag)
-{
-	const struct gpio_ch32003_config *config = dev->config;
-	return exmcu_register_write_byte(config->exmcu, CH32V003_PULL_CTRL_REG(config->id), flag);
-}
-
-static inline int ch32v003_pull_mode_get(const struct device *dev, uint8_t *flag)
-{
-	const struct gpio_ch32003_config *config = dev->config;
-	return exmcu_register_read_byte(config->exmcu, CH32V003_PULL_CTRL_REG(config->id), flag);
-}
-
-static inline int ch32v003_pull_en_set(const struct device *dev, uint8_t flag)
-{
-	const struct gpio_ch32003_config *config = dev->config;
-	return exmcu_register_write_byte(config->exmcu, CH32V003_PULL_EN_REG(config->id), flag);
-}
-
-static inline int ch32v003_pull_en_get(const struct device *dev, uint8_t *flag)
-{
-	const struct gpio_ch32003_config *config = dev->config;
-	return exmcu_register_read_byte(config->exmcu, CH32V003_PULL_EN_REG(config->id), flag);
-}
-
-static inline int ch32v003_in_get(const struct device *dev, uint8_t *flag)
+static inline int ch32v003_out_get(const struct device *dev, uint32_t *flag)
 {
 	const struct gpio_ch32003_config *config = dev->config;
 	struct gpio_ch32003_drv_data *const drv_data =
 		(struct gpio_ch32003_drv_data *const)dev->data;
-	int r = exmcu_register_read_byte(config->exmcu, CH32V003_IN_REG(config->id), flag);
+	uint8_t tmp1;
+	uint8_t tmp2;
+	int r;
+
+	r = exmcu_register_read_byte(config->exmcu, CH32V003_OUT_REG(config->id), &tmp1);
+	r |= exmcu_register_read_byte(config->exmcu, CH32V003_HIGH_8_OUT_REG(config->id), &tmp2);
 
 	if (r == 0) {
+		*flag = ((uint32_t)tmp2) << 8 | tmp1;
+		drv_data->reg_cache.output = *flag;
+	}
+
+	return r;
+}
+
+static inline int ch32v003_pull_mode_set(const struct device *dev, uint32_t flag)
+{
+	const struct gpio_ch32003_config *config = dev->config;
+	int r;
+	struct gpio_ch32003_drv_data *const drv_data =
+		(struct gpio_ch32003_drv_data *const)dev->data;
+
+	r = exmcu_register_write_byte(config->exmcu, CH32V003_PULL_CTRL_REG(config->id), flag);
+	r |= exmcu_register_write_byte(config->exmcu, CH32V003_HIGH_8_PULL_CTRL_REG(config->id),
+				       flag);
+
+	if (r == 0) {
+		drv_data->reg_cache.pull_mode = flag;
+	}
+
+	return r;
+}
+
+static inline int ch32v003_pull_mode_get(const struct device *dev, uint32_t *flag)
+{
+	const struct gpio_ch32003_config *config = dev->config;
+	int r;
+	uint8_t tmp1;
+	uint8_t tmp2;
+	struct gpio_ch32003_drv_data *const drv_data =
+		(struct gpio_ch32003_drv_data *const)dev->data;
+
+	r = exmcu_register_read_byte(config->exmcu, CH32V003_PULL_CTRL_REG(config->id), &tmp1);
+	r |= exmcu_register_read_byte(config->exmcu, CH32V003_HIGH_8_PULL_CTRL_REG(config->id),
+				       &tmp2);
+
+	if (r == 0) {
+		*flag = ((uint32_t)tmp2) << 8 | tmp1;
+		drv_data->reg_cache.pull_mode = *flag;
+	}
+
+	return r;
+}
+
+static inline int ch32v003_pull_en_set(const struct device *dev, uint32_t flag)
+{
+	const struct gpio_ch32003_config *config = dev->config;
+	int r;
+	struct gpio_ch32003_drv_data *const drv_data =
+		(struct gpio_ch32003_drv_data *const)dev->data;
+
+	r = exmcu_register_write_byte(config->exmcu, CH32V003_PULL_EN_REG(config->id), flag & 0xFF);
+	r |= exmcu_register_write_byte(config->exmcu, CH32V003_HIGH_8_PULL_EN_REG(config->id),
+				       (flag >> 8) & 0xFF);
+
+	if (r == 0) {
+		drv_data->reg_cache.pull_en = flag;
+	}
+
+	return r;
+}
+
+static inline int ch32v003_pull_en_get(const struct device *dev, uint32_t *flag)
+{
+	const struct gpio_ch32003_config *config = dev->config;
+	int r;
+	uint8_t tmp1;
+	uint8_t tmp2;
+	struct gpio_ch32003_drv_data *const drv_data =
+		(struct gpio_ch32003_drv_data *const)dev->data;
+
+	r = exmcu_register_read_byte(config->exmcu, CH32V003_PULL_EN_REG(config->id), &tmp1);
+	r |= exmcu_register_read_byte(config->exmcu, CH32V003_HIGH_8_PULL_EN_REG(config->id),
+				      &tmp2);
+
+	if (r) {
+		*flag = ((uint32_t)tmp2) << 8 | tmp1;
+		drv_data->reg_cache.pull_en = *flag;
+	}
+
+	return r;
+}
+
+static inline int ch32v003_in_get(const struct device *dev, uint32_t *flag)
+{
+	const struct gpio_ch32003_config *config = dev->config;
+	struct gpio_ch32003_drv_data *const drv_data =
+		(struct gpio_ch32003_drv_data *const)dev->data;
+	uint8_t tmp1;
+	uint8_t tmp2;
+	int r = exmcu_register_read_byte(config->exmcu, CH32V003_IN_REG(config->id), &tmp1);
+	r |= exmcu_register_read_byte(config->exmcu, CH32V003_HIGH_8_IN_REG(config->id), &tmp2);
+
+	if (r == 0) {
+		*flag = ((uint32_t)tmp2) << 8 | tmp1;
 		drv_data->reg_cache.input = *flag;
 	}
 
@@ -160,10 +260,10 @@ int gpio_ch32003_init(const struct device *dev)
 static int ch32v003_pin_config(const struct device *dev, gpio_pin_t pin, gpio_flags_t flags)
 {
 	struct gpio_ch32003_drv_data *data = dev->data;
-	uint8_t dir = data->reg_cache.dir;
-	uint8_t output = data->reg_cache.output;
-	uint8_t pull_mode = data->reg_cache.pull_mode;
-	uint8_t pull_en = data->reg_cache.pull_en;
+	uint32_t dir = data->reg_cache.dir;
+	uint32_t output = data->reg_cache.output;
+	uint32_t pull_mode = data->reg_cache.pull_mode;
+	uint32_t pull_en = data->reg_cache.pull_en;
 	uint8_t dir_update = false;
 	uint8_t out_update = false;
 	uint8_t pull_update = false;
@@ -246,13 +346,13 @@ static int ch32v003_set_masked_raw(const struct device *dev, gpio_port_pins_t ma
 				   gpio_port_value_t value)
 {
 	struct gpio_ch32003_drv_data *data = dev->data;
-	uint8_t output;
+	uint32_t output;
 	int r;
 
 	k_sem_take(&data->lock, K_FOREVER);
 	output = data->reg_cache.output;
-	mask &= 0xFF;
-	value &= 0xFF;
+	mask &= 0xFFFF;
+	value &= 0xFFFF;
 	output = (output & ~mask) | (value & mask);
 
 	r = ch32v003_out_set(dev, output);
@@ -265,12 +365,12 @@ static int ch32v003_set_masked_raw(const struct device *dev, gpio_port_pins_t ma
 static int ch32v003_set_bits_raw(const struct device *dev, gpio_port_pins_t pins)
 {
 	struct gpio_ch32003_drv_data *data = dev->data;
-	uint8_t output;
+	uint32_t output;
 	int r;
 
 	k_sem_take(&data->lock, K_FOREVER);
 	output = data->reg_cache.output;
-	output |= (pins & 0xFF);
+	output |= (pins & 0xFFFF);
 
 	r = ch32v003_out_set(dev, output);
 	LOG_DBG("ch32v003_set_bits_raw, output:%02X", output);
@@ -282,12 +382,12 @@ static int ch32v003_set_bits_raw(const struct device *dev, gpio_port_pins_t pins
 static int ch32v003_clear_bits_raw(const struct device *dev, gpio_port_pins_t pins)
 {
 	struct gpio_ch32003_drv_data *data = dev->data;
-	uint8_t output;
+	uint32_t output;
 	int r;
 
 	k_sem_take(&data->lock, K_FOREVER);
 	output = data->reg_cache.output;
-	output &= ~(pins & 0xFF);
+	output &= ~(pins & 0xFFFF);
 	LOG_DBG("ch32v003_clear_bits_raw, output:%02X", output);
 	r = ch32v003_out_set(dev, output);
 	k_sem_give(&data->lock);
@@ -298,14 +398,14 @@ static int ch32v003_clear_bits_raw(const struct device *dev, gpio_port_pins_t pi
 static int ch32v003_toggle_bits(const struct device *dev, gpio_port_pins_t pins)
 {
 	struct gpio_ch32003_drv_data *data = dev->data;
-	uint8_t output;
+	uint32_t output;
 	int r;
 
 	k_sem_take(&data->lock, K_FOREVER);
 	output = data->reg_cache.output;
-	LOG_DBG("ch32v003_toggle_bits, cache output:%02X", output);
-	output ^= (pins & 0xFF);
-	LOG_DBG("ch32v003_toggle_bits, output:%02X", output);
+	LOG_DBG("ch32v003_toggle_bits, cache output:%04X", output);
+	output ^= (pins & 0xFFFF);
+	LOG_DBG("ch32v003_toggle_bits, pins:%X, output:%04X", pins, output);
 	r = ch32v003_out_set(dev, output);
 	k_sem_give(&data->lock);
 
@@ -318,10 +418,8 @@ static int ch32v003_get_raw(const struct device *dev, uint32_t *value)
 	int r;
 
 	k_sem_take(&data->lock, K_FOREVER);
-	uint8_t sta;
-	r = ch32v003_in_get(dev, &sta);
-	*value = sta;
-	LOG_DBG("ch32v003_get_raw, sta:%02X, value:%02X", sta, *value);
+	r = ch32v003_in_get(dev, value);
+	LOG_DBG("ch32v003_get_raw, value:%02X", *value);
 	k_sem_give(&data->lock);
 
 	return r;
