@@ -11,7 +11,7 @@
 #include <zephyr/device.h>
 
 
-#define EXMCU_PROTOCOL_VERSION 13 /* v1.3 */
+#define EXMCU_PROTOCOL_VERSION 14 /* v1.4 */
 
 enum {
 	CH32V003_STATUS_INVALID = 0,
@@ -33,8 +33,8 @@ enum {
 #define CH32V003_OUT_REG_BASE	    		0x11
 #define CH32V003_OD_REG_BASE	    		0x12
 #define CH32V003_IN_REG_BASE	    		0x13
-#define CH32V003_PULL_EN_REG_BASE  	0x14
-#define CH32V003_PULL_CTRL_REG_BASE 	0x15
+#define CH32V003_PULL_EN_REG_BASE  			0x14
+#define CH32V003_PULL_CTRL_REG_BASE 		0x15
 #define CH32V003_INT_STA_REG_BASE   		0x16
 #define CH32V003_INT_EN_REG_BASE    		0x17
 #define CH32V003_INT_CTL_REG_BASE   		0x18
@@ -48,6 +48,16 @@ enum {
 #define CH32V003_INT_STA_REG(index)   ((CH32V003_INT_STA_REG_BASE) + (index * 0x10))
 #define CH32V003_INT_EN_REG(index)    ((CH32V003_INT_EN_REG_BASE) + (index * 0x10))
 #define CH32V003_INT_CTL_REG(index)   ((CH32V003_INT_CTL_REG_BASE) + (index * 0x10))
+
+#define CH32V003_HIGH_8_DIR_REG(index)	     (0x70 + (CH32V003_DIR_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_OUT_REG(index)	     (0x70 + (CH32V003_OUT_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_OD_REG(index)	     (0x70 + (CH32V003_OD_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_IN_REG(index)	     (0x70 + (CH32V003_IN_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_PULL_EN_REG(index)   (0x70 + (CH32V003_PULL_EN_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_PULL_CTRL_REG(index) (0x70 + (CH32V003_PULL_CTRL_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_INT_STA_REG(index)   (0x70 + (CH32V003_INT_STA_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_INT_EN_REG(index)    (0x70 + (CH32V003_INT_EN_REG_BASE) + (index * 0x10))
+#define CH32V003_HIGH_8_INT_CTL_REG(index)   (0x70 + (CH32V003_INT_CTL_REG_BASE) + (index * 0x10))
 
 /* adc control registers */
 #define CH32V003_ADC_CONFIG_0	0x50

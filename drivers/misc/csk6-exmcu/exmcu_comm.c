@@ -30,6 +30,10 @@ const static exmcu_info_t exmcu_infos[] = {
 		.id = 0x01,
 		.name = "ch32v003",
 	},
+	{
+		.id = 0x02,
+		.name = "ch32v203",
+	},
 };
 
 static void print_exmcu_info(uint8_t ver, uint8_t id)
@@ -40,6 +44,7 @@ static void print_exmcu_info(uint8_t ver, uint8_t id)
 	const exmcu_info_t *info = &exmcu_infos[0];
 
 	for (i = 0; i < sizeof(exmcu_infos) / sizeof(exmcu_infos[0]); i++) {
+		info = &exmcu_infos[i];
 		if (info == NULL) {
 			break;
 		}
