@@ -4,7 +4,38 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include <zephyr/dt-bindings/display/ili9xxx.h>
+#include <zephyr/dt-bindings/mipi_dbi/mipi_dbi.h>
 
+/{
+	mipi_dbi {
+		compatible = "zephyr,mipi-dbi-spi";
+		dc-gpios = <&gpioa 8 1>;
+		reset-gpios = <&gpioa 9 1>;
+		spi-dev = <&spi0>;
+		write-only;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ili9488: ili9488@0 {
+			height = <480>;
+			width = <320>;
+			compatible = "ilitek,ili9488";
+			mipi-max-frequency = <50000000>;
+			mipi-mode = <MIPI_DBI_MODE_SPI_4WIRE>;
+			mipi-hold-cs;
+			reg = <0>;
+			// cmd-data-gpios = <&gpioa 8 1>;
+			// reset-gpios = <&gpioa 9 1>;
+			pixel-format = <ILI9XXX_PIXEL_FORMAT_RGB888>;
+			rotation = <0>;
+			frmctr1 = [ a0 11  ];
+			pwctrl1 = [ 17 15  ];
+			pwctrl2 = [ 41  ];
+			pgamctrl = [ 00 03 09 08 16 0a 3f 78 4c 09 0a 08 16 1a 0f  ];
+			ngamctrl = [ 00 16 19 03 0f 05 32 45 46 04 0e 0d 35 37 0f  ];
+		};
+	};
+};
 &pinctrl {
 	pinctrl_spi0_sclk_default: spi0_sclk_default {
 		pinctrls = <SPI0_CLK_GPIOA_07>;
@@ -24,21 +55,4 @@
 	status = "okay";
 	pinctrl-0 = <&pinctrl_spi0_sclk_default &pinctrl_spi0_mosi_default &pinctrl_spi0_miso_default &pinctrl_spi0_cs_default>;
 	pinctrl-names = "default";
-
-	ili9488@0 {
-		height = <480>;
-		width = <320>;
-		compatible = "ilitek,ili9488";
-		spi-max-frequency = <10000000>;
-		reg = <0>;
-		cmd-data-gpios = <&gpioa 8 1>;
-		reset-gpios = <&gpioa 9 1>;
-		pixel-format = <ILI9XXX_PIXEL_FORMAT_RGB888>;
-		rotation = <0>;
-		frmctr1 = [ a0 11  ];
-		pwctrl1 = [ 17 15  ];
-		pwctrl2 = [ 41  ];
-		pgamctrl = [ 00 03 09 08 16 0a 3f 78 4c 09 0a 08 16 1a 0f  ];
-		ngamctrl = [ 00 16 19 03 0f 05 32 45 46 04 0e 0d 35 37 0f  ];
-	};
 };
