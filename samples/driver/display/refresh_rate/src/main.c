@@ -135,7 +135,7 @@ int calculate_fps(uint32_t in, uint32_t out)
 	return 1000000 / time_us;
 }
 
-void main(void)
+int main(void)
 {
 	uint8_t *buf;
 	const struct device *display_dev;
@@ -151,7 +151,7 @@ void main(void)
 
 	if (display_dev == NULL) {
 		LOG_ERR("Device %s not found. Aborting sample.", CONFIG_DISPLAY_DEV_NAME);
-		return;
+		return -1;
 	}
 
 	display_get_capabilities(display_dev, &capabilities);
@@ -189,13 +189,13 @@ void main(void)
 		break;
 	default:
 		LOG_ERR("Unsupported pixel format. Aborting sample.");
-		return;
+		return -1;
 	}
 
 	buf = k_heap_alloc(&display_buffer_pool, buf_size, K_FOREVER);
 	if (buf == NULL) {
 		LOG_ERR("Could not allocate memory. Aborting sample.");
-		return;
+		return -1;
 	}
 
 	buf_desc.buf_size = buf_size;
@@ -222,4 +222,6 @@ void main(void)
 
 		k_msleep(1000);
 	}
+
+	return 0;
 }
