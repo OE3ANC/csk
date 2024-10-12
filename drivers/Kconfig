@@ -50,8 +50,6 @@ rsource "infrared/Kconfig"
 
 rsource "display/Kconfig"
 
-rsource "rtc/Kconfig"
-
 rsource "bluetooth/Kconfig"
 rsource "mipi_dbi/Kconfig"
 
