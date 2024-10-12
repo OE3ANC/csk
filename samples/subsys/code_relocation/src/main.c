@@ -15,7 +15,7 @@
  */
 
 #ifdef CONFIG_ARM_MPU
-#include <zephyr/arch/arm/aarch32/cortex_m/cmsis.h>
+#include <cmsis_core.h>
 void disable_mpu_rasr_xn(void)
 {
 	uint32_t index;
@@ -34,7 +34,7 @@ void disable_mpu_rasr_xn(void)
 extern void function_in_sram2(void);
 extern void function_in_split_multiple(void);
 
-void main(void)
+int main(void)
 {
 #ifdef CONFIG_ARM_MPU
 	disable_mpu_rasr_xn();
@@ -44,4 +44,6 @@ void main(void)
 	function_in_sram2();
 	function_in_split_multiple();
 	printk("out \n\n");
+
+	return 0;
 }

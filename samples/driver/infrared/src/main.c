@@ -21,7 +21,7 @@ LOG_MODULE_REGISTER(Infrared, LOG_LEVEL_INF);
 #endif
 
 
-void main(void)
+int main(void)
 {
 	const struct device *ir_dev;
 	ir_config_t ir_config;
@@ -31,7 +31,7 @@ void main(void)
 	ir_dev = DEVICE_DT_GET(IR0_DEV_NAME);
 	if (ir_dev == NULL) {
 		LOG_ERR("Failed to get infrared device");
-		return;
+		return -1;
 	}
 
 	LOG_INF("IR Sample Start");
@@ -42,7 +42,7 @@ void main(void)
 	ret = infrared_configure(ir_dev, &ir_config);
 	if (ret != 0) {
 		LOG_ERR("Failed to configure infrared device, error code %d\n", ret);
-		return;
+		return -1;
 	}
 
 	LOG_INF("1.IR Send");
@@ -81,4 +81,6 @@ void main(void)
 				ir_data.cmd);
 		}
 	}
+
+	return 0;
 }
