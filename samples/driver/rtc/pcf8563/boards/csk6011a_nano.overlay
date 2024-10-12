@@ -29,7 +29,6 @@
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
 		alarms-count = <1>;
-		battery-switch-over = "standard";
 		/*
 		* Interrupt connection must be manually established using a jumper wire between
 		* pins "SQ" and "Digital I/O 7".
