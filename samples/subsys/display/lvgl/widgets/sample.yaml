@@ -4,4 +4,4 @@ sample:
 tests:
   sample.display.lvgl.gui.wedgets:
     build_only: true
-    platform_allow: csk6011a_nano csk6_duomotai_devkit
+    platform_allow: csk6_duomotai_devkit
