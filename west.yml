@@ -9,7 +9,7 @@ manifest:
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
-      revision: zephyr3.7_ada
+      revision: feat/zephyr3.7_ada
       import:
         name-allowlist:
           - cmsis
