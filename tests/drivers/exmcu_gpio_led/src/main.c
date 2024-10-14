@@ -147,9 +147,11 @@ void exgpio_pull_mode_test(void)
 	}
 }
 
-void main(void)
+int main(void)
 {
 	printk("exmcu gpio led sample\n");
 	exgpio_test_group();
 	exgpio_pull_mode_test();
+
+	return 0;
 }

@@ -13,7 +13,7 @@
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS 1000
 
-void main(void)
+int main(void)
 {
 	const struct pwm_dt_spec spec = PWM_DT_SPEC_GET(DT_NODELABEL(motor_pwm));
 
@@ -35,4 +35,6 @@ void main(void)
 	while (1) {
 		k_msleep(SLEEP_TIME_MS);
 	}
+
+	return 0;
 }

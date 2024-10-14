@@ -45,7 +45,7 @@ struct adc_sequence sequence = {
 	.resolution = ADC_RESOLUTION,
 };
 
-void main(void)
+int main(void)
 {
 	int err;
 	const struct device *dev_adc = DEVICE_DT_GET(ADC_NODE);
@@ -55,12 +55,12 @@ void main(void)
 
 	if (!device_is_ready(dev_adc)) {
 		printk("ADC device not found\n");
-		return;
+		return -1;
 	}
 
 	if (!device_is_ready(dev_gpio)) {
 		printk("dev_gpio device not found\n");
-		return;
+		return -1;
 	}
 
 	gpio_pin_configure(dev_gpio, 2, GPIO_OUTPUT);
@@ -98,7 +98,7 @@ void main(void)
 		err = adc_read(dev_adc, &sequence);
 		if (err != 0) {
 			printk("ADC reading failed with error %d.\n", err);
-			return;
+			return -1;
 		}
 
 		uint8_t check = 1;
@@ -133,4 +133,6 @@ void main(void)
 
 		k_sleep(K_MSEC(1000));
 	}
+
+	return 0;
 }
