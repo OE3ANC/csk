@@ -1,6 +1,6 @@
 # 仓库简介
 
-[![](https://img.shields.io/badge/zephyr-v3.4.0-blue)](https://github.com/zephyrproject-rtos/zephyr/releases/tag/zephyr-v3.4.0)
+[![](https://img.shields.io/badge/zephyr-v3.7.0-blue)](https://github.com/zephyrproject-rtos/zephyr/releases/tag/v3.7.0)
 
 
 ![build status](https://cloud.listenai.com/zephyr/csk/badges/main/pipeline.svg)
