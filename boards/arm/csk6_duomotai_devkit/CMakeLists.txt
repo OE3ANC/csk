@@ -1,0 +1,2 @@
+zephyr_linker_sources_ifdef(CONFIG_LV_Z_VBD_CUSTOM_SECTION SECTIONS lvgl_buf.ld)
+zephyr_linker_sources_ifdef(CONFIG_LV_Z_MEMORY_POOL_CUSTOM_SECTION SECTIONS lvgl_heap.ld)
