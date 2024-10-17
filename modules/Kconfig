@@ -1,2 +1,4 @@
 rsource "mbedtls/Kconfig"
 rsource "esp_hosted_glue/Kconfig"
+rsource "csk6_cm33/Kconfig"
+rsource "csk_heap/Kconfig"
