@@ -1,2 +1,4 @@
 add_subdirectory_ifdef(CONFIG_MBEDTLS mbedtls)
 add_subdirectory_ifdef(CONFIG_ESP_HOSTED esp_hosted_glue)
+add_subdirectory_ifdef(CONFIG_SOC_SERIES_CSK6 csk6_cm33)
+add_subdirectory_ifdef(CONFIG_CSK_HEAP csk_heap)
