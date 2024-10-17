@@ -1,0 +1,11 @@
+# Copyright (c) 2024 Fujie Li <cexianl@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_FAMILY_LISTENAI_CSK
+	bool
+	default y
+
+config SOC_FAMILY
+	default "listenai_csk" if SOC_FAMILY_LISTENAI_CSK
+
+rsource "*/Kconfig.soc"

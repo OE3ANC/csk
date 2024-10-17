@@ -1,0 +1,6 @@
+# Copyright (c) 2024 ListenAI
+# SPDX-License-Identifier: Apache-2.0
+
+if SOC_FAMILY_LISTENAI_CSK
+rsource "*/Kconfig"
+endif
