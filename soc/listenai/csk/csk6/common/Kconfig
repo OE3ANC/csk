@@ -1,0 +1,12 @@
+config CSK6_FATAL
+    bool "csk fatal"
+    default y
+
+config CSK6_FATAL_BACKTRACE
+    bool "csk fatal backtrace"
+    default y
+    select EXTRA_EXCEPTION_INFO
+
+config CSK6_FATAL_UNHANDLE_INTERRUPT
+    bool "csk fatal unhandled interrupt"
+    default y

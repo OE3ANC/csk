@@ -1,0 +1,66 @@
+# Copyright (c) 2024 Fujie Li <cexianl@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_CSK6
+	bool "soc csk6"
+
+config SOC_SERIES_CSK6
+	select ARM
+	select CPU_CORTEX_M33
+	select CPU_CORTEX_M_HAS_DWT
+	select CPU_HAS_FPU
+	select CPU_HAS_MPU
+	select CPU_HAS_ARM_MPU
+	select ARMV8_M_DSP
+	select CPU_CORTEX_M_HAS_SYSTICK
+	select HAS_CSK6
+	select CPU_HAS_CUSTOM_FIXED_SOC_MPU_REGIONS
+	select ARCH_HAS_NOCACHE_MEMORY_SUPPORT
+	select BUILD_OUTPUT_HEX
+	select PLATFORM_SPECIFIC_INIT
+	select PINCTRL
+	select CPU_HAS_DCACHE
+	select CPU_HAS_ICACHE
+    select HAS_CSK6
+	select SOC_CSK6
+
+if SOC_SERIES_CSK6
+
+DT_CHOSEN_Z_FLASH := zephyr,flash
+
+config FLASH_SIZE
+	default $(dt_chosen_reg_size_int,$(DT_CHOSEN_Z_FLASH),0,K)
+
+config FLASH_BASE_ADDRESS
+	default $(dt_chosen_reg_addr_hex,$(DT_CHOSEN_Z_FLASH))
+	
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	default $(dt_node_int_prop_int,/cpus/cpu@0,clock-frequency)
+
+config NUM_IRQS
+	default 32
+
+config HAS_CSK6
+    bool
+
+config CSK6_ICACHE
+    bool "Enable CSK6 ICACHE"
+    default y
+    help
+        Enable CSK6 ICACHE
+
+config CSK6_DCACHE
+    bool "Enable CSK6 DCACHE"
+    default y
+    help
+        Enable CSK6 DCACHE
+
+config CSK6_PSRAM
+    bool "Enable CSK6 PSRAM"
+    default y
+    help
+        Enable CSK6 PSRAM
+
+rsource "Kconfig.defconfig.csk6*"
+
+endif # SOC_SERIES_CSK6
