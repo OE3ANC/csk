@@ -13,6 +13,16 @@ ISO endpoints. The device will show up as single audio device.
 Building and Running
 ********************
 
+Make sure you have the CSK6 connected over USB port.
+
+The sample can be built and flashed as follows:
+
+.. code-block:: console
+
+   west build -b csk6 samples/subsys/code_relocation
+   west flash
+
+
 In order to build the sample an overlay file with required options
 must be provided. By default app.overlay is added. An overlay contains
 software and hardware specific information which allow to fully
