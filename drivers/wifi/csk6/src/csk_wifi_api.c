@@ -28,11 +28,11 @@ int csk_wifi_add_callback(csk_wifi_event_cb_t *wifi_event_cb)
 int csk_wifi_init()
 {
     int ret = 0;
-
+    const struct device *dev = wifi_obj_get_dev();
     sys_slist_init(&wifi_callback_list);
     wifi_ret_msg_t ret_msg;
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    ret = wifi_send_command(NULL, WIFI_CMD_INIT, K_NO_WAIT, false);
+    ret = wifi_send_command(dev, WIFI_CMD_INIT, K_NO_WAIT, false);
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(&ret_msg, K_FOREVER);
     if (ret != 0)   goto __exit;
@@ -60,9 +60,10 @@ int csk_wifi_scan_ap(csk_wifi_scan_info_t **ap_info, csk_wifi_result_t *result, 
 
     bool async_mode = K_TIMEOUT_EQ(timeout, K_NO_WAIT);
     int ret = 0;
+    const struct device *dev = wifi_obj_get_dev();
     wifi_ret_msg_t ret_msg;
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    ret = wifi_send_command(NULL, WIFI_CMD_SCAN, K_NO_WAIT, async_mode);
+    ret = wifi_send_command(dev, WIFI_CMD_SCAN, K_NO_WAIT, async_mode);
     if (ret != 0)   goto __exit;
     if (async_mode == false) {
         ret = wifi_take_result(&ret_msg, timeout);
@@ -108,7 +109,7 @@ int csk_wifi_sta_connect(csk_wifi_sta_config_t *sta_config, csk_wifi_result_t *r
     int ret = 0;
     wifi_ret_msg_t ret_msg;
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_STA);
+    const struct device *dev = wifi_obj_get_dev();
     struct csk_wifi_data *data = dev->data;
     wifi_sta_state_machine_t current_sm = wifi_obj_get_sm();
     const char* wifi_sm_str = WIFI_STA_SM_STRINGS[current_sm];
@@ -161,7 +162,7 @@ int csk_wifi_sta_disconnect(csk_wifi_result_t *result, k_timeout_t timeout)
     CSK_WIFI_CHECK_RETURN((K_TIMEOUT_EQ(timeout, K_FOREVER)) || (K_TIMEOUT_EQ(timeout, K_NO_WAIT)),
                             -ENOTSUP, "This timeout parameter is not available now, "
                             "only FOREVER or NO_WAIT is abailable");
-    const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_STA);
+    const struct device *dev = wifi_obj_get_dev();
     struct csk_wifi_data *data = dev->data;
     CSK_WIFI_CHECK_RETURN(data->sta_is_connected == true, -EAGAIN,
                             "Invalid State, Staion has disconnected");
@@ -190,7 +191,7 @@ __exit:
 int csk_wifi_sta_get_status(void)
 {
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_STA);
+    const struct device *dev = wifi_obj_get_dev();
     int ret_status = CSK_WIFI_STATUS_STA_UNKNOWN;
     struct csk_wifi_data *data = dev->data;
 
@@ -213,7 +214,7 @@ int csk_wifi_get_mac(csk_wifi_mode_t mode, uint8_t *mac_addr)
     }
     CSK_WIFI_CHECK(mac_addr != NULL, -EINVAL);
     CSK_WIFI_CHECK((mode >= CSK_WIFI_MODE_STA) && (mode < CSK_WIFI_MODE_MAX), -EINVAL);
-    const struct device *dev = wifi_obj_get_dev(mode);
+    const struct device *dev = wifi_obj_get_dev();
     struct csk_wifi_data *data = dev->data;
     memcpy(mac_addr, data->mac_addr, sizeof(data->mac_addr));
     return 0;
@@ -233,7 +234,7 @@ int csk_wifi_ap_start(const csk_wifi_softap_config_t *ap_config, csk_wifi_result
     int ret = 0;
     wifi_ret_msg_t ret_msg;
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_AP);
+    const struct device *dev = wifi_obj_get_dev();
     struct csk_wifi_data *data = dev->data;
 
     memcpy(&data->ap_config, ap_config, sizeof(csk_wifi_softap_config_t));
@@ -263,7 +264,7 @@ int csk_wifi_ap_stop(csk_wifi_result_t *result, k_timeout_t timeout)
     int ret = 0;
     wifi_ret_msg_t ret_msg;
     k_mutex_lock(&wifi_api_mutex, K_FOREVER);
-    const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_AP);
+    const struct device *dev = wifi_obj_get_dev();
     ret = wifi_send_command(dev, WIFI_CMD_AP_STOP, K_NO_WAIT, async_mode);
     if (ret != 0)   goto __exit;
     ret = wifi_take_result(&ret_msg, timeout);
@@ -294,7 +295,7 @@ int csk_wifi_mode_set(csk_wifi_mode_t mode, csk_wifi_result_t *result, k_timeout
 	wifi_ret_msg_t ret_msg;
 	k_mutex_lock(&wifi_api_mutex, K_FOREVER);
 
-	const struct device *dev = wifi_obj_get_dev(CSK_WIFI_MODE_AP);
+	const struct device *dev = wifi_obj_get_dev();
     struct csk_wifi_data *data = dev->data;
     data->mode = mode;
 
