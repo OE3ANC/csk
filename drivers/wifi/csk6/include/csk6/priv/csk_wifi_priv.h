@@ -139,7 +139,7 @@ struct csk_wifi_data {
         csk_wifi_softap_config_t ap_config;
     };
     bool sta_is_connected;
-    uint8_t mode; /* 0:sta, 1:softAP */
+    csk_wifi_mode_t mode;
 #ifdef CONFIG_CSK_WIFI_XR819S
     csk_wifi_result_t err;
 #endif
@@ -175,7 +175,7 @@ typedef struct {
 
 extern const char *WIFI_STA_SM_STRINGS[];
 
-const struct device * wifi_obj_get_dev(csk_wifi_mode_t mode);
+const struct device * wifi_obj_get_dev(void);
 int wifi_send_command(const struct device *dev, wifi_cmd_t command, k_timeout_t timeouts, bool async_mode);
 int wifi_take_result(wifi_ret_msg_t *ret_msg, k_timeout_t timeout);
 
