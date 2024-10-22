@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "zephyr/kernel.h"
 #define DT_DRV_COMPAT espressif_esp_hosted
 
 #include "csk6/priv/csk_wifi_priv.h"
@@ -47,12 +48,11 @@ typedef struct {
 K_MSGQ_DEFINE(wifi_result_msgq, sizeof(wifi_ret_msg_t), 1, 4);
 K_MSGQ_DEFINE(wifi_interactive_msgq, sizeof(csk_wifi_ctrl_msg_t), 4, 4);
 
-static void wifi_control_thread(void *, void *, void *);
-
 K_SEM_DEFINE(init_sem, 0, 1);
-K_THREAD_DEFINE(wifi_ctrl_thread_id, CONFIG_WIFI_CTRL_STACK_SIZE,
-                wifi_control_thread, NULL, NULL, NULL,
-                CONFIG_WIFI_CTRL_PRIORITY, 0, 0);
+
+K_THREAD_STACK_DEFINE(wifi_control_stack, CONFIG_WIFI_CTRL_STACK_SIZE);
+struct k_thread wifi_control_thread;
+static void wifi_control_thread_func(void *, void *, void *);
 
 static void wifi_virtual_netif_init(const struct device *dev);
 static void csk_wifi_receive_pkt(struct network_handle *virtual_netif, void *arg);
@@ -590,7 +590,7 @@ static void wifi_event_handler(const struct device *dev, csk_wifi_event_t event)
     }
 }
 
-static void wifi_control_thread(void *arg1, void *arg2, void *arg3)
+static void wifi_control_thread_func(void *arg1, void *arg2, void *arg3)
 {
     csk_wifi_ctrl_msg_t msg;
     while (1) {
@@ -658,6 +658,16 @@ static void csk_wifi_netif_init(struct net_if *netif)
 {
     const struct device *dev = net_if_get_device(netif);
     struct csk_wifi_data *data = dev->data;
+
+	k_thread_create(&wifi_control_thread,
+			wifi_control_stack,
+			sizeof(wifi_control_stack),
+			wifi_control_thread_func,
+			NULL, NULL, NULL,
+			CONFIG_WIFI_CTRL_PRIORITY, 0, K_NO_WAIT);
+
+    k_thread_name_set(&wifi_control_thread, "wifi_ctrl_thread_id");
+
     data->netif = netif;
     net_if_flag_set(data->netif, NET_IF_NO_AUTO_START);
     net_if_set_link_addr(data->netif, data->mac_addr, 6, NET_LINK_ETHERNET);
