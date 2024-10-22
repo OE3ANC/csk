@@ -18,7 +18,7 @@ The sample can be built and flashed as follows:
 
 .. code-block:: console
 
-   west build -b csk6002_c3_nano samples/boards/csk6/wifi_mgr
+   west build -b csk6002_c3_nano samples/network/wifi_mgr
    west flash
 
 Sample Output

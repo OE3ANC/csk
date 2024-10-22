@@ -16,6 +16,7 @@ tests:
       - lpcxpresso55s69_cpu0
       - csk6011a_nano
       - csk6012_nano
+      - csk6_duomotai_devkit
     tags: filesystem
     integration_platforms:
       - nrf52840dk_nrf52840

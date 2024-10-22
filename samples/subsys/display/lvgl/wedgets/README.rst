@@ -12,34 +12,20 @@ is supported, such as the touch panel controller on mimxrt10{50,60,64}_evk
 boards, "Hello World" is enclosed in a button that changes to the toggled state
 when touched.
 
+Building and Running
+********************
+
+Make sure you have the CSK6 connected over USB port.
+
+The sample can be built and flashed as follows:
+
+.. code-block:: console
+
+   west build -b csk6 samples/subsys/csk_malloc
+   west flash
+
 Requirements
 ************
-
-Display shield and a board which provides a configuration
-for Arduino connectors, for example:
-
-- :ref:`adafruit_2_8_tft_touch_v2` and :ref:`nrf52840dk_nrf52840`
-- :ref:`buydisplay_2_8_tft_touch_arduino` and :ref:`nrf52840dk_nrf52840`
-- :ref:`ssd1306_128_shield` and :ref:`frdm_k64f`
-
-or a board with an integrated display:
-
-- :ref:`esp_wrover_kit`
-
-or a simulated display environment in a native Posix application:
-
-- :ref:`native_posix`
-- `SDL2`_
-
-or
-
-- :ref:`mimxrt1050_evk`
-- `RK043FN02H-CT`_
-
-or
-
-- :ref:`mimxrt1060_evk`
-- `RK043FN02H-CT`_
 
 Building and Running
 ********************
@@ -53,7 +39,7 @@ Building and Running
 Example building for :ref:`nrf52840dk_nrf52840`:
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/subsys/display/lvgl
+   :zephyr-app: samples/subsys/display/lvgl/wedgets
    :board: nrf52840dk_nrf52840
    :shield: adafruit_2_8_tft_touch_v2
    :goals: build flash
@@ -61,7 +47,7 @@ Example building for :ref:`nrf52840dk_nrf52840`:
 Example building for :ref:`native_posix`:
 
 .. zephyr-app-commands::
-   :zephyr-app: samples/subsys/display/lvgl
+   :zephyr-app: samples/subsys/display/lvgl/wedgets
    :board: native_posix
    :goals: build run
 
