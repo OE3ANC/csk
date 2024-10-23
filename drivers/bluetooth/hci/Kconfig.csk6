@@ -1,0 +1,17 @@
+# Copyright 2020 Espressif Systems (Shanghai) PTE LTD
+
+choice BT_HCI_BUS_TYPE
+	prompt "Bluetooth HCI driver"
+
+config CSK_BLE_ESP32C3
+	bool "CSK-ESP32C3 BLE Driver"
+
+endchoice
+
+if CSK_BLE_ESP32C3
+
+config BT_HCI_RESERVE
+	int
+	default 1
+
+endif #CSK_BLE_ESP32C3
