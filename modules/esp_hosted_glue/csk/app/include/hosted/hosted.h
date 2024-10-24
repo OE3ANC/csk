@@ -12,6 +12,7 @@ typedef enum {
 	HOSTED_WIFI_EVT_AP_STACONNECTED = BIT(1),
 	HOSTED_WIFI_EVT_AP_STADISCONNECTED = BIT(2),
 	HOSTED_WIFI_EVT_STA_DISCONNECTED = BIT(3),
+	HOSTED_WIFI_EVT_STA_CONNECTED = BIT(4),
 } hosted_event_t;
 
 typedef void (*hosted_event_cb_t)(hosted_event_t event, void *arg);

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +16,8 @@
 
 /** Includes **/
 #include "string.h"
-#include "serial_drv.h"
 #include "serial_ll_if.h"
 #include "adapter.h"
-#include "spi_drv.h"
 #include "trace.h"
 #include "platform_wrapper.h"
 

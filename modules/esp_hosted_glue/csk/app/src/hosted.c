@@ -3,10 +3,11 @@
 #include "util.h"
 
 #include "hosted_hw_drv.h"
-#include "spi_drv.h"
+#include "transport_drv.h"
 #include "netdev_api.h"
 #include "vhci_if.h"
 #include "adapter.h"
+#include "stats.h"
 
 #include "hosted/hosted.h"
 
@@ -34,14 +35,14 @@ static sys_slist_t hosted_callback_list;
 static uint8_t hosted_init_status = 0;
 
 static void reset_slave(void);
-static void spi_driver_event_handler(uint8_t event);
+static void transport_driver_event_handler(uint8_t event);
 
 int hosted_init()
 {
 	reset_slave();
 	network_init();	 // init virturl network interface for wifi
 	ble_vhci_init(); // init virturl hci interface for ble
-	spi_link_init(spi_driver_event_handler);
+	transport_init(transport_driver_event_handler);
 	hosted_init_status = 1;
 	return SUCCESS;
 }
@@ -138,19 +139,30 @@ static int ctrl_app_event_callback(ctrl_cmd_t *app_event)
 		hosted_fire_callbacks(&hosted_callback_list, HOSTED_WIFI_EVT_STA_DISCONNECTED);
 		break;
 	}
-	case CTRL_EVENT_STATION_CONNECT_FROM_ESP_SOFTAP: {
-		char *p = app_event->u.e_sta_disconnected.mac;
-		if (p && strlen(p)) {
-			printk("App EVENT: SoftAP mode: Connect MAC[%s]\n\r", p);
-		}
+        case CTRL_EVENT_STATION_CONNECTED_TO_AP: {
+                event_sta_conn_t *p_e = &app_event->u.e_sta_conn;
+                printk("App EVENT: STA-Connected ssid[%s] bssid[%s] channel[%d] auth[%d] aid[%d]\n",
+                        p_e->ssid,p_e->bssid, p_e->channel, p_e->authmode, p_e->aid);
+                hosted_fire_callbacks(&hosted_callback_list, HOSTED_WIFI_EVT_STA_CONNECTED);
+                break;
+        }
+	case CTRL_EVENT_STATION_CONNECTED_TO_ESP_SOFTAP: {
+                event_softap_sta_conn_t *p_e = &app_event->u.e_softap_sta_conn;
+                char *p = (char *)p_e->mac;
+                if (p && strlen(p)) {
+                        printk("App EVENT: SoftAP mode: Connected MAC[%s] aid[%d] is_mesh_child[%d]\n",
+                                p, p_e->aid, p_e->is_mesh_child);
+                }
 		hosted_fire_callbacks(&hosted_callback_list, HOSTED_WIFI_EVT_AP_STACONNECTED);
 		break;
 	}
 	case CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP: {
-		char *p = app_event->u.e_sta_disconnected.mac;
-		if (p && strlen(p)) {
-			printk("App EVENT: SoftAP mode: Disconnect MAC[%s]\n\r", p);
-		}
+                event_softap_sta_disconn_t *p_e = &app_event->u.e_softap_sta_disconn;
+                char *p = (char *)p_e->mac;
+                if (p && strlen(p)) {
+                        printk("App EVENT: SoftAP mode: Disconnect MAC[%s] reason[%d] aid[%d] is_mesh_child[%d]\n",
+                                p, p_e->reason, p_e->aid, p_e->is_mesh_child);
+                }
 		hosted_fire_callbacks(&hosted_callback_list, HOSTED_WIFI_EVT_AP_STADISCONNECTED);
 		break;
 	}
@@ -177,7 +189,7 @@ int register_event_callbacks(void)
 		{CTRL_EVENT_HEARTBEAT, ctrl_app_event_callback},
 		{CTRL_EVENT_STATION_DISCONNECT_FROM_AP, ctrl_app_event_callback},
 		{CTRL_EVENT_STATION_DISCONNECT_FROM_ESP_SOFTAP, ctrl_app_event_callback},
-		{CTRL_EVENT_STATION_CONNECT_FROM_ESP_SOFTAP, ctrl_app_event_callback},
+		{CTRL_EVENT_STATION_CONNECTED_TO_ESP_SOFTAP, ctrl_app_event_callback},
 	};
 
 	for (evt = 0; evt < sizeof(events) / sizeof(event_callback_table_t); evt++) {
@@ -226,11 +238,14 @@ static void reset_slave(void)
 	hosted_wait_sync(K_SECONDS(CONFIG_HOSTED_INIT_TIMEOUT));
 }
 
-static void spi_driver_event_handler(uint8_t event)
+static void transport_driver_event_handler(uint8_t event)
 {
 	switch (event) {
-	case SPI_DRIVER_ACTIVE: {
+	case TRANSPORT_ACTIVE: {
 		/* Initiate control path now */
+#if DEBUG_TRANSPORT
+		printk("Base transport is set-up\n\r");
+#endif
 		control_path_init(); // init control path and control task
 		// hosted_fire_callbacks(&hosted_callback_list, HOSTED_LINK_EVT_ACTIVE);
 		break;

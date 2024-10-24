@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -381,7 +382,7 @@ uint8_t *serial_drv_read(struct serial_drv_handle_t *serial_drv_handle, uint32_t
 	print_hex_dump(read_buf, rx_buf_len, "Serial read data");
 
 	/*
-	 * Read Operation happens in two steps because total read length is unkown
+	 * Read Operation happens in two steps because total read length is unknown
 	 * at first read.
 	 *      1) Read fixed length of RX data
 	 *      2) Read variable length of RX data

@@ -1,5 +1,5 @@
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
-/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
+/* SPDX-License-Identifier: GPL-2.0-only OR Apache-2.0 */
 
 #ifndef __PLATFORM_WRAPPER_H
 #define __PLATFORM_WRAPPER_H
@@ -11,6 +11,7 @@
 #include <zephyr/posix/unistd.h>
 #include <sys/types.h>
 
+#define MCU_SYS	1
 #define TIMEOUT_PSERIAL_RESP 30
 
 #define CTRL__TIMER_ONESHOT  0

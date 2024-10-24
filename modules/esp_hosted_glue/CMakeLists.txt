@@ -13,7 +13,8 @@ zephyr_include_directories(
     csk/driver/netif
     csk/driver/network
     csk/driver/serial
-    csk/driver/spi
+    csk/driver/transport
+    csk/driver/transport/spi
     csk/driver/vhci
     csk/driver/hw_driver
     csk/os/include
@@ -27,7 +28,8 @@ zephyr_library_sources(
     csk/driver/network/netdev_api.c
     csk/driver/network/netdev_stub.c
     csk/driver/serial/serial_ll_if.c
-    csk/driver/spi/spi_drv.c
+    csk/driver/transport/transport_drv.c
+    csk/driver/transport/spi/spi_drv.c
     csk/driver/hw_driver/hosted_hw_drv.c
     csk/driver/vhci/vhci_if.c
     csk/os/src/csk_os_memory.c

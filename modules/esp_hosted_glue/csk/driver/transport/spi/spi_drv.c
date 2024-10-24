@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +21,7 @@
 #include "serial_drv.h"
 #include "netdev_if.h"
 #include "vhci_if.h"
+#include "stats.h"
 
 #include "hosted_hw_drv.h"
 #include "hosted/hosted.h"
@@ -44,10 +46,6 @@ static csk_os_thread_t process_thread = NULL;
 #define MAX_PAYLOAD_SIZE (MAX_SPI_BUFFER_SIZE - sizeof(struct esp_payload_header))
 
 static stm_ret_t spi_transaction_esp32(uint8_t *txbuff);
-
-static int esp_netdev_open(netdev_handle_t netdev);
-static int esp_netdev_close(netdev_handle_t netdev);
-static int esp_netdev_xmit(netdev_handle_t netdev, struct net_pbuf *net_buf);
 
 static struct esp_private *esp_priv[MAX_NETWORK_INTERFACES];
 static char version_info[ESP_FW_VERSION_LEN + 1] = {0};
@@ -89,6 +87,7 @@ uint8_t esp_get_version(void)
 	return c3_major*10 + c3_minor;
 }
 
+/** Local Functions **/
 /**
  * @brief  get private interface of expected type and number
  * @param  if_type - interface type
@@ -106,50 +105,6 @@ static struct esp_private *get_priv(uint8_t if_type, uint8_t if_num)
 	}
 
 	return NULL;
-}
-
-/**
- * @brief  open virtual network device
- * @param  netdev - network device
- * @retval 0 on success
- */
-static int esp_netdev_open(netdev_handle_t netdev)
-{
-	return STM_OK;
-}
-
-/**
- * @brief  close virtual network device
- * @param  netdev - network device
- * @retval 0 on success
- */
-static int esp_netdev_close(netdev_handle_t netdev)
-{
-	return STM_OK;
-}
-
-/**
- * @brief  transmit on virtual network device
- * @param  netdev - network device
- *         net_buf - buffer to transmit
- * @retval None
- */
-static int esp_netdev_xmit(netdev_handle_t netdev, struct net_pbuf *net_buf)
-{
-	struct esp_private *priv;
-	int ret;
-
-	if (!netdev || !net_buf)
-		return STM_FAIL;
-	priv = (struct esp_private *)netdev_get_priv(netdev);
-
-	if (!priv)
-		return STM_FAIL;
-
-	ret = send_to_slave(priv->if_type, priv->if_num, net_buf->payload, net_buf->len);
-	csk_os_free(net_buf);
-
-	return ret;
 }
 
 /**
@@ -219,11 +174,11 @@ static void deinit_netdev(void)
 
 /** Exported Functions **/
 /**
- * @brief  spi driver initialize
- * @param  spi_drv_evt_handler - event handler of type spi_drv_events_e
- * @retval None
- */
-void spi_link_init(void (*spi_drv_evt_handler)(uint8_t))
+  * @brief  transport initializes
+  * @param  transport_evt_handler_fp - event handler
+  * @retval None
+  */
+void transport_init(void(*transport_evt_handler_fp)(uint8_t))
 {
 	int ret = hosted_spi_init();
 	if (ret != 0) {
@@ -233,11 +188,11 @@ void spi_link_init(void (*spi_drv_evt_handler)(uint8_t))
 	stm_ret_t retval = STM_OK;
 
 	/* register callback */
-	spi_drv_evt_handler_fp = spi_drv_evt_handler;
+	spi_drv_evt_handler_fp = transport_evt_handler_fp;
 
 	retval = init_netdev();
 	if (retval) {
-		printf("netdev failed to init\n\r");
+		printk("netdev failed to init\n");
 		hosted_assert(retval == STM_OK);
 	}
 
@@ -347,7 +302,7 @@ stm_ret_t send_to_slave(uint8_t iface_type, uint8_t iface_num, uint8_t *wbuffer,
 	interface_buffer_handle_t buf_handle = {0};
 
 	if (!wbuffer || !wlen || (wlen > MAX_PAYLOAD_SIZE)) {
-		printf("write fail: buff(%p) 0? OR (0<len(%u)<=max_poss_len(%u))?\n\r", wbuffer,
+		printk("write fail: buff(%p) 0? OR (0<len(%u)<=max_poss_len(%u))?\n", wbuffer,
 		       wlen, MAX_PAYLOAD_SIZE);
 		if (wbuffer) {
 			csk_os_free(wbuffer);
@@ -553,7 +508,19 @@ static void process_rx_task(void *arg)
 			vhci_rx_handler(buf_handle.if_num, vhci_buf, buf_handle.payload_len);
 
 		} else if (buf_handle.if_type == ESP_PRIV_IF) {
+			buffer = (struct net_pbuf *)csk_os_malloc(sizeof(struct net_pbuf));
+			hosted_assert(buffer);
+
+			buffer->len = buf_handle.payload_len;
+			buffer->payload = csk_os_malloc(buf_handle.payload_len);
+			hosted_assert(buffer->payload);
+
+			memcpy(buffer->payload, buf_handle.payload,
+							buf_handle.payload_len);
+
+			process_priv_communication(buffer);
 			/* priv transaction received */
+			printk("Received INIT event\n");
 
 			event = (struct esp_priv_event *)(payload);
 			if (event->event_type == ESP_PRIV_EVENT_INIT) {
@@ -574,11 +541,17 @@ static void process_rx_task(void *arg)
 					} else {
 						printk("Firmware Version not found, please update fw\n");
 					}
-					spi_drv_evt_handler_fp(SPI_DRIVER_ACTIVE);
+					spi_drv_evt_handler_fp(TRANSPORT_ACTIVE);
 				}
 			} else {
 				/* User can re-use this type of transaction */
 			}
+		} else if (buf_handle.if_type == ESP_TEST_IF) {
+#if TEST_RAW_TP
+			update_test_raw_tp_rx_len(buf_handle.payload_len);
+#endif
+		} else {
+			printk("unknown type %d \n", buf_handle.if_type);
 		}
 
 		/* Free buffer handle */

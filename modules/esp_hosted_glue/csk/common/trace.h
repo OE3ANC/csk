@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +26,7 @@ extern "C" {
 #include <stdint.h>
 
 /** constants/macros **/
+#define DEBUG_TRANSPORT	1
 #define DEBUG_HEX_STREAM_PRINT 0
 #define hosted_assert(x)                                                                           \
 	do {                                                                                       \

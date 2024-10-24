@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,11 +23,9 @@ extern "C" {
 
 /** Includes **/
 #include "common.h"
+#include "transport_drv.h"
 
 /** constants/macros **/
-#define MAX_NETWORK_INTERFACES 2
-#define STA_INTERFACE	       "ESP_STATION"
-#define SOFTAP_INTERFACE       "ESP_SOFTAP"
 
 /* NSS or CS0 configuration (Pin 11) */
 /* In case of different board than STM32F469I,
@@ -38,10 +37,6 @@ extern "C" {
 #define USR_SPI_CS_Pin GPIO_PIN_15
 #endif
 
-typedef enum spi_drv_events_s {
-	SPI_DRIVER_ACTIVE
-} spi_drv_events_e;
-
 /** Exported Structures **/
 
 /** Exported variables **/
@@ -49,15 +44,8 @@ typedef enum spi_drv_events_s {
 /** Inline functions **/
 
 /** Exported Functions **/
-void spi_link_init(void (*spi_drv_evt_handler)(uint8_t));
-stm_ret_t send_to_slave(uint8_t iface_type, uint8_t iface_num, uint8_t *wbuffer, uint16_t wlen);
 int hosted_get_fw_version(uint8_t *major, uint8_t *minor, char commit[7]);
 uint8_t esp_get_version(void);
-struct esp_private {
-	uint8_t if_type;
-	uint8_t if_num;
-	void *netdev;
-};
 
 #ifdef __cplusplus
 }

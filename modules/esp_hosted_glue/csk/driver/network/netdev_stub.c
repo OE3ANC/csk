@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 // Copyright 2015-2021 Espressif Systems (Shanghai) PTE LTD
 //
 
@@ -13,7 +14,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "trace.h"
 #include "string.h"
 #include "netdev_stub.h"
 #include "csk_os_common/csk_os_memory.h"
