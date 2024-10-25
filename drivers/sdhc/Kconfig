@@ -1,0 +1,8 @@
+# Copyright (c) 2021 listenai Systems (anhui) Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+
+if SDHC
+
+source "Kconfig.csk6"
+
+endif # SDHC

@@ -1,0 +1,12 @@
+# Copyright (c) 2021 listenai Systems (anhui) Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+
+config CSK6_SDHC
+	bool "CSK6 SDHC Driver"
+	default n
+	select SDHC_SUPPORTS_UHS
+	select SDHC_SUPPORTS_NATIVE_MODE
+	select PINCTRL
+	help
+	  Enable the CSK6 SD Host controller driver
+
