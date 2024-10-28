@@ -5,6 +5,7 @@
  */
 
 #include "test_csk_wifi.h"
+#include <zephyr/ztest.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(test_csk6_wifi, CONFIG_LOG_DEFAULT_LEVEL);
@@ -44,8 +45,8 @@ int csk_wifi_msgq_give(struct k_msgq *msgq, csk_wifi_event_t events)
 	return k_msgq_put(msgq, &events, K_NO_WAIT);
 }
 
-
-static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32_t data_len, void *arg)
+static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32_t data_len,
+			       void *arg)
 {
 	int reason = 0;
 	if (events & CSK_WIFI_EVT_STA_CONNECTED) {
@@ -55,14 +56,15 @@ static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32
 		csk_wifi_disconnected_msgq_give(events);
 		LOG_DBG("file:%s, func:%s, disconnected\n", __FILE__, __FUNCTION__);
 	} else if (events & CSK_WIFI_EVT_STA_CONNECTION_FAILED) {
-		reason = *((int *) (event_data));
+		reason = *((int *)(event_data));
 		csk_wifi_msgq_give(&test_csk_wifi_connection_failed_msgq, events);
-		LOG_DBG("file:%s, func:%s, connection failed, reason: %d\n", __FILE__, __FUNCTION__, reason);
+		LOG_DBG("file:%s, func:%s, connection failed, reason: %d\n", __FILE__, __FUNCTION__,
+			reason);
 	} else {
 	}
 }
 
-void test_csk_wifi_setup(void)
+ZTEST(csk_wifi_test, test_csk_wifi_setup)
 {
 	int ret = -1;
 	int sta_status = CSK_WIFI_STATUS_STA_UNKNOWN;
@@ -70,7 +72,8 @@ void test_csk_wifi_setup(void)
 	ret = csk_wifi_init();
 	zassert_equal(ret, 0, "csk_wifi_init failed");
 	wifi_event_cb.handler = &wifi_event_handler;
-	wifi_event_cb.events = CSK_WIFI_EVT_STA_CONNECTED | CSK_WIFI_EVT_STA_DISCONNECTED | CSK_WIFI_EVT_STA_CONNECTION_FAILED;
+	wifi_event_cb.events = CSK_WIFI_EVT_STA_CONNECTED | CSK_WIFI_EVT_STA_DISCONNECTED |
+			       CSK_WIFI_EVT_STA_CONNECTION_FAILED;
 	wifi_event_cb.arg = NULL;
 	csk_wifi_add_callback(&wifi_event_cb);
 
@@ -79,17 +82,16 @@ void test_csk_wifi_setup(void)
 		      "csk_wifi_sta_get_status sta_status: %d", sta_status);
 }
 
-void test_csk_wifi_get_mac(void)
+ZTEST(csk_wifi_test, test_csk_wifi_get_mac)
 {
 	uint8_t mac_addr[6] = {0};
 	int ret = csk_wifi_get_mac(CSK_WIFI_MODE_STA, mac_addr);
 	zassert_equal(ret, 0, "csk_wifi_get_mac failed, %d", ret);
-	LOG_INF("wifi station mac addr: %x:%x:%x:%x:%x:%x",
-			mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3],
-			mac_addr[4], mac_addr[5]);
+	LOG_INF("wifi station mac addr: %x:%x:%x:%x:%x:%x", mac_addr[0], mac_addr[1], mac_addr[2],
+		mac_addr[3], mac_addr[4], mac_addr[5]);
 }
 
-void test_csk_wifi_scan(void)
+ZTEST(csk_wifi_test, test_csk_wifi_scan)
 {
 	int ap_num = 0;
 	csk_wifi_result_t result;
@@ -105,17 +107,13 @@ void test_csk_wifi_scan(void)
 	LOG_DBG("result: %d", result);
 	zassert_equal(result, CSK_WIFI_SUCCESS, "scan failed");
 	zassert_not_null(aps_info, "aps_info is null");
-
-
 }
 
 static void test_csk_wifi_connect_with_correct_ssid_and_pwd(bool async)
 {
-	csk_wifi_sta_config_t sta_config = {
-		.ssid = CONFIG_TEST_VALID_WIFI_SSID,
-		.pwd = CONFIG_TEST_VALID_WIFI_PASSWORD,
-		.encryption_mode = CSK_WIFI_AUTH_WPA2_PSK
-	};
+	csk_wifi_sta_config_t sta_config = {.ssid = CONFIG_TEST_VALID_WIFI_SSID,
+					    .pwd = CONFIG_TEST_VALID_WIFI_PASSWORD,
+					    .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK};
 	csk_wifi_event_t event = CSK_WIFI_EVT_AP_STARTED;
 	int ret = 0;
 	csk_wifi_result_t result = CSK_WIFI_ERR_STA_FAILED;
@@ -135,17 +133,17 @@ static void test_csk_wifi_connect_with_correct_ssid_and_pwd(bool async)
 	ret = csk_wifi_connected_msgq_take(&event, K_SECONDS(20));
 	zassert_equal(ret, 0, "csk wifi msg take failed");
 
-	zassert_equal(event, CSK_WIFI_EVT_STA_CONNECTED, "connect to target wifi failed, event: 0x%X", event);
+	zassert_equal(event, CSK_WIFI_EVT_STA_CONNECTED,
+		      "connect to target wifi failed, event: 0x%X", event);
 
 	sta_status = csk_wifi_sta_get_status();
 	zassert_equal(sta_status, CSK_WIFI_STATUS_STA_CONNECTED,
 		      "csk_wifi_sta_get_status sta_status: %d", sta_status);
 
-	LOG_DBG("ssid: %s  pwd: %s  bssid: %s  channel: %d  rssi: %d",
-		sta_config.ssid, sta_config.pwd, sta_config.bssid, sta_config.channel,
-		sta_config.rssi);
+	LOG_DBG("ssid: %s  pwd: %s  bssid: %s  channel: %d  rssi: %d", sta_config.ssid,
+		sta_config.pwd, sta_config.bssid, sta_config.channel, sta_config.rssi);
 
-	ret = csk_wifi_sta_connect(&sta_config, &result, timeout);	
+	ret = csk_wifi_sta_connect(&sta_config, &result, timeout);
 	zassert_not_equal(ret, 0, "csk_wifi_sta_connect shouldn't success, ret: %d", ret);
 
 	char ssid[CSK_WIFI_SSID_LEN + 1] = CONFIG_TEST_VALID_WIFI_SSID;
@@ -153,7 +151,8 @@ static void test_csk_wifi_connect_with_correct_ssid_and_pwd(bool async)
 
 	zassert_mem_equal(sta_config.ssid, ssid, sizeof(sta_config.rssi), NULL);
 	zassert_mem_equal(sta_config.pwd, pwd, sizeof(sta_config.pwd), NULL);
-	zassert_equal(sta_config.encryption_mode, CSK_WIFI_AUTH_WPA2_PSK, "connected with wrong encryption mode");
+	zassert_equal(sta_config.encryption_mode, CSK_WIFI_AUTH_WPA2_PSK,
+		      "connected with wrong encryption mode");
 
 	ret = csk_wifi_sta_disconnect(&result, K_FOREVER);
 	zassert_equal(ret, 0, "csk wifi disconnect failed, ret: %d", ret);
@@ -164,46 +163,40 @@ static void test_csk_wifi_connect_with_correct_ssid_and_pwd(bool async)
 		      "csk_wifi_sta_get_status sta_status: %d", sta_status);
 }
 
-void test_csk_wifi_sync_connect_with_correct_ssid_and_pwd(void) {
+ZTEST(csk_wifi_test, test_csk_wifi_sync_connect_with_correct_ssid_and_pwd)
+{
 	test_csk_wifi_connect_with_correct_ssid_and_pwd(false);
 }
 
-void test_csk_wifi_async_connect_with_correct_ssid_and_pwd(void) {
+ZTEST(csk_wifi_test, test_csk_wifi_async_connect_with_correct_ssid_and_pwd)
+{
 	test_csk_wifi_connect_with_correct_ssid_and_pwd(true);
 }
 
-
-void test_csk_wifi_connect_with_not_exist_ssid(void)
+ZTEST(csk_wifi_test, test_csk_wifi_connect_with_not_exist_ssid)
 {
 	csk_wifi_result_t wifi_result;
-	csk_wifi_sta_config_t sta_config = {
-		.ssid = CONFIG_TEST_INVALID_WIFI_SSID,
-		.pwd = CONFIG_TEST_INVALID_WIFI_PASSWORD,
-		.encryption_mode = CSK_WIFI_AUTH_WPA2_PSK
-	};
+	csk_wifi_sta_config_t sta_config = {.ssid = CONFIG_TEST_INVALID_WIFI_SSID,
+					    .pwd = CONFIG_TEST_INVALID_WIFI_PASSWORD,
+					    .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK};
 	csk_wifi_event_t event = -1;
 	int ret = 0;
 
 	ret = csk_wifi_sta_connect(&sta_config, &wifi_result, K_FOREVER);
-	zassert_equal(wifi_result, CSK_WIFI_ERR_AP_NOT_FOUND, "event not equal ssid not found, result: %d", wifi_result);
+	zassert_equal(wifi_result, CSK_WIFI_ERR_AP_NOT_FOUND,
+		      "event not equal ssid not found, result: %d", wifi_result);
 	ret = csk_wifi_connected_msgq_take(&event, K_NO_WAIT);
 	zassert_equal(ret, -ENOMSG, "event not equal disconnected %d", ret);
 
-	LOG_DBG("ssid: %s  pwd: %s  bssid: %s  channel: %d  rssi: %d",
-		sta_config.ssid, sta_config.pwd, sta_config.bssid, sta_config.channel,
-		sta_config.rssi);
-
-
+	LOG_DBG("ssid: %s  pwd: %s  bssid: %s  channel: %d  rssi: %d", sta_config.ssid,
+		sta_config.pwd, sta_config.bssid, sta_config.channel, sta_config.rssi);
 }
-
-void test_csk_wifi_connect_with_correct_ssid_but_wrong_pwd(void)
+ZTEST(csk_wifi_test, test_csk_wifi_connect_with_correct_ssid_but_wrong_pwd)
 {
 	csk_wifi_result_t wifi_result;
-	csk_wifi_sta_config_t sta_config = {
-		.ssid = CONFIG_TEST_VALID_WIFI_SSID,
-		.pwd = CONFIG_TEST_INVALID_WIFI_PASSWORD,
-		.encryption_mode = CSK_WIFI_AUTH_WPA2_PSK
-	};
+	csk_wifi_sta_config_t sta_config = {.ssid = CONFIG_TEST_VALID_WIFI_SSID,
+					    .pwd = CONFIG_TEST_INVALID_WIFI_PASSWORD,
+					    .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK};
 	csk_wifi_event_t event = CSK_WIFI_EVT_AP_STARTED;
 	int ret = 0;
 	int sta_status;
@@ -213,8 +206,10 @@ void test_csk_wifi_connect_with_correct_ssid_but_wrong_pwd(void)
 		      "csk_wifi_sta_get_status sta_status: %d", sta_status);
 
 	ret = csk_wifi_sta_connect(&sta_config, &wifi_result, K_FOREVER);
-	zassert_equal(wifi_result, CSK_WIFI_ERR_INVALID_PASSWORD, "ret is not equal to CSK_WIFI_ERR_INVALID_PASSWORD, wifi_result: %d", wifi_result);
-	
+	zassert_equal(wifi_result, CSK_WIFI_ERR_INVALID_PASSWORD,
+		      "ret is not equal to CSK_WIFI_ERR_INVALID_PASSWORD, wifi_result: %d",
+		      wifi_result);
+
 	ret = csk_wifi_msgq_take(&test_csk_wifi_connection_failed_msgq, &event, K_NO_WAIT);
 	zassert_equal(ret, 0, "connection failed ret: %d", ret);
 
@@ -223,21 +218,6 @@ void test_csk_wifi_connect_with_correct_ssid_but_wrong_pwd(void)
 
 	ret = csk_wifi_sta_disconnect(&wifi_result, K_FOREVER);
 	zassert_not_equal(ret, 0, "csk wifi disconnect shouldn't success, ret: %d", ret);
-
 }
 
-
-void test_main(void)
-{
-	ztest_test_suite(csk_wifi_test,
-			 ztest_unit_test(test_csk_wifi_setup),
-			 ztest_unit_test(test_csk_wifi_get_mac),
-			 ztest_unit_test(test_wifi_timeout_para),
-			 ztest_unit_test(test_csk_wifi_scan),
-			 ztest_unit_test(test_csk_wifi_connect_with_correct_ssid_but_wrong_pwd),
-			 ztest_unit_test(test_csk_wifi_connect_with_not_exist_ssid),
-			 ztest_unit_test(test_csk_wifi_sync_connect_with_correct_ssid_and_pwd),
-			 ztest_unit_test(test_csk_wifi_async_connect_with_correct_ssid_and_pwd)
-			 );
-	ztest_run_test_suite(csk_wifi_test);
-}
+ZTEST_SUITE(csk_wifi_test, NULL, NULL, NULL, NULL, NULL);
