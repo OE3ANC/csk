@@ -3,3 +3,6 @@
 config BOARD_CSK6_DUOMOTAI_DEVKIT
    bool
    select SOC_CSK6011A
+   imply GPIO_CSK6_CH32V003
+   imply ADC_CSK6_CH32V003
+   imply PWM_CSK6_CH32V003
