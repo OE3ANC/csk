@@ -1,6 +1,6 @@
 tests:
   sample.board.csk6.network.wifi_mgr:
-    platform_allow: csk6011a_c3_nano wifi_softap_sta csk6_duomotai_devkit
+    platform_allow: csk6011a_c3_nano csk6_duomotai_devkit
     tags: csk6
     harness: console
     skip: true
