@@ -1,0 +1,7 @@
+tests:
+  tests.drivers.sdtest:
+    tags: drivers exmcu_adc
+    platform_allow: csk6_duomotai_devkit
+    harness: ztest
+    harness_config:
+      fixture: ch32v003

@@ -1,0 +1,8 @@
+tests:
+  tests.drivers.sdtest:
+    depends_on: sdmmc
+    tags: drivers exmcu_pwm
+    platform_allow: csk6_duomotai_devkit
+    harness: ztest
+    harness_config:
+      fixture: ch32v003
