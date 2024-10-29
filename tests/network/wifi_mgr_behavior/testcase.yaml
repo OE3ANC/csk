@@ -2,6 +2,6 @@ common:
   depends_on: csk_wifi
 tests:
   tests.network.wifi_mgr_behavior:
-    platform_allow: csk6002_c3_nano csk6011a_9s_nano csk6011a_c3_nano
+    platform_allow: csk6_duomotai_devkit
     timeout: 300
     tags: lib wifimanager
