@@ -65,7 +65,7 @@ int esp_netdev_xmit(netdev_handle_t netdev, struct net_pbuf *net_buf)
 
 	ret = send_to_slave(priv->if_type, priv->if_num,
 			net_buf->payload, net_buf->len);
-	free(net_buf);
+	hosted_free(net_buf);
 
 	return ret;
 }
@@ -100,6 +100,7 @@ void process_priv_communication(struct net_pbuf *pbuf)
 		process_event(payload, len);
 	}
 
+	hosted_free(pbuf->payload);
 	hosted_free(pbuf);
 }
 

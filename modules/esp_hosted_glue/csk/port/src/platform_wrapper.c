@@ -271,7 +271,7 @@ void *hosted_timer_start(int duration, int type, void (*timeout_handler)(void co
 	csk_os_timer_type_t timer_type =
 		(type == CTRL__TIMER_ONESHOT) ? CSK_OS_TIMER_ONESHOT : CSK_OS_TIMER_PERIODIC;
 	ret = csk_os_timer_create(&timer_handle->timer_id, timer_type,
-				  (csk_os_timer_handler_t)timeout_handler, arg, duration);
+				  (csk_os_timer_handler_t)timeout_handler, arg, duration * 1000);
 
 	if (ret) {
 		printf("Failed to create timer\n");
