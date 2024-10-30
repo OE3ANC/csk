@@ -35,7 +35,7 @@ extern "C" {
  *    This is opposite of TEST_RAW_TP__ESP_TO_HOST. when (a) TEST_RAW_TP__ESP_TO_HOST
  *    is disabled, it will automatically mean throughput to be measured from host to ESP
  */
-#define TEST_RAW_TP                    0
+#define TEST_RAW_TP                    CONFIG_HOSTED_RAW_THROUGHPUT_TEST_ENABLE
 
 
 /* TEST_RAW_TP is disabled on production.
@@ -58,7 +58,7 @@ extern "C" {
  * i.e. ESP to Host OR
  * Host to ESP
  */
-#define TEST_RAW_TP__ESP_TO_HOST     1
+#define TEST_RAW_TP__ESP_TO_HOST     CONFIG_HOSTED_RAW_THROUGHPUT_TEST_ESP_TO_HOST
 #define TEST_RAW_TP__HOST_TO_ESP     !TEST_RAW_TP__ESP_TO_HOST
 
 #define TEST_RAW_TP__TIMEOUT         1

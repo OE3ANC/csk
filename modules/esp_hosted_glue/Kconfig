@@ -6,6 +6,10 @@ menuconfig ESP_HOSTED
 
 if ESP_HOSTED
 
+module = ESP_HOSTED
+module-str = esp-hosted
+source "subsys/logging/Kconfig.template.log_config"
+
 config HOSTED_INIT_TIMEOUT
 	int "Hosted Init Timeout(s)"
 	default 3
@@ -41,5 +45,28 @@ config HOSTED_SERIALIF_QUEUE_LEN
 config HOSTED_NETIF_QUEUE_LEN
 	int "Hosted Net if queue len"
 	default 50
+
+config HOSTED_RAW_THROUGHPUT_TEST_ENABLE
+	bool "Esp-Hosted Raw throughput testing enable"
+	default false
+
+if HOSTED_RAW_THROUGHPUT_TEST_ENABLE
+
+config HOSTED_RAW_THROUGHPUT_TEST_ESP_TO_HOST
+	bool "test ESP -> host raw throughput"
+	default true
+	help
+	  if true, test ESP -> host raw throughput
+	  else, test Host -> ESP raw throughput
+
+config HOSTED_RAW_THROUGHPUT_TEST_HOST_TO_ESP_STACK
+	int "Host to ESP raw throughput test thread stack"
+	default 4096
+
+config HOSTED_RAW_THROUGHPUT_TEST_HOST_TO_ESP_PRIORITY
+	int "Host to ESP raw throughput test thread prority"
+	default -1
+
+endif # HOSTED_RAW_THROUGHPUT_TEST_ENABLE
 
 endif # ESP_HOSTED

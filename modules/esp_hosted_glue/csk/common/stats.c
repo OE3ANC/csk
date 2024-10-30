@@ -20,9 +20,13 @@
 #if TEST_RAW_TP
 #include "platform_wrapper.h"
 #include "transport_drv.h"
+#include "trace.h"
+
+#include "csk_os_common/csk_os_thread.h"
 #endif
 /** Constants/Macros **/
-#define RAW_TP_TX_TASK_STACK_SIZE        4096
+#define RAW_TP_TX_TASK_STACK_SIZE	CONFIG_HOSTED_RAW_THROUGHPUT_TEST_HOST_TO_ESP_STACK
+#define RAW_TP_TX_TASK_PRIORITY		CONFIG_HOSTED_RAW_THROUGHPUT_TEST_HOST_TO_ESP_PRIORITY
 
 /** Exported variables **/
 
@@ -36,7 +40,7 @@ static int test_raw_tp__host_to_esp = 0;
 static uint8_t log_raw_tp_stats_timer_running = 0;
 static uint32_t raw_tp_timer_count = 0;
 void *hosted_timer_handler = NULL;
-static osThreadId raw_tp_tx_task_id = 0;
+static csk_os_thread_t raw_tp_tx_thread = NULL;
 static uint64_t test_raw_tp_len = 0;
 
 void test_raw_tp_cleanup(void)
@@ -51,9 +55,9 @@ void test_raw_tp_cleanup(void)
 		raw_tp_timer_count = 0;
 	}
 
-	if (raw_tp_tx_task_id) {
-		ret = osThreadTerminate(raw_tp_tx_task_id);
-		raw_tp_tx_task_id = 0;
+	if (raw_tp_tx_thread) {
+		csk_os_thread_delete(raw_tp_tx_thread);
+		raw_tp_tx_thread = NULL;
 	}
 }
 
@@ -73,7 +77,7 @@ static void raw_tp_tx_task(void const* pvParameters)
 	int ret;
 	static uint16_t seq_num = 0;
 	uint8_t *raw_tp_tx_buf = NULL;
-	sleep(5);
+	csk_os_thread_sleep(5000);
 	while (1) {
 
 		raw_tp_tx_buf = (uint8_t*)hosted_calloc(1, TEST_RAW_TP__BUF_SIZE);
@@ -100,10 +104,8 @@ static void process_raw_tp_flags(void)
 		log_raw_tp_stats_timer_running = 1;
 
 		if (test_raw_tp__host_to_esp) {
-			osThreadDef(raw_tp_tx_thread, raw_tp_tx_task,
-					osPriorityAboveNormal, 0, RAW_TP_TX_TASK_STACK_SIZE);
-			raw_tp_tx_task_id = osThreadCreate(osThread(raw_tp_tx_thread), NULL);
-			assert(raw_tp_tx_task_id);
+			csk_os_thread_create(&raw_tp_tx_thread, "raw_tp_tx_task", raw_tp_tx_task, NULL, RAW_TP_RX_TASK_PRIORITY, RAW_TP_TX_TASK_STACK_SIZE);
+			hosted_assert(raw_tp_tx_thread);
 		}
 	}
 }

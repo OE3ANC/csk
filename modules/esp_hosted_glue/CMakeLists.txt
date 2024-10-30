@@ -24,6 +24,7 @@ zephyr_library_sources(
     csk/app/src/hosted.c
     csk/common/common.c
     csk/common/util.c
+    csk/common/stats.c
     csk/port/src/platform_wrapper.c
     csk/driver/network/netdev_api.c
     csk/driver/network/netdev_stub.c
