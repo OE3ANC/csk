@@ -48,7 +48,6 @@ static csk_os_thread_t process_thread = NULL;
 static stm_ret_t spi_transaction_esp32(uint8_t *txbuff);
 
 static struct esp_private *esp_priv[MAX_NETWORK_INTERFACES];
-static char version_info[ESP_FW_VERSION_LEN + 1] = {0};
 
 static struct netdev_ops esp_net_ops = {
 	.netdev_open = esp_netdev_open,
@@ -76,16 +75,6 @@ static void transaction_task(void *arg);
 static void process_rx_task(void *arg);
 static uint8_t *get_tx_buffer(uint8_t *is_valid_tx_buf);
 static void deinit_netdev(void);
-static uint8_t c3_major, c3_minor;
-/**
- * @brief  esp_get_version
- * @param  
- * @retval esp version
- */
-uint8_t esp_get_version(void)
-{
-	return c3_major*10 + c3_minor;
-}
 
 /** Local Functions **/
 /**
@@ -530,17 +519,6 @@ static void process_rx_task(void *arg)
 				k_msleep(50); // Fixme: remove delay, waiting for esp32 spi slave
 					      // init done
 				if (spi_drv_evt_handler_fp) {
-					if (event->event_len == (ESP_FW_VERSION_LEN + 9)) {
-						memcpy(version_info, &event->event_data[9], ESP_FW_VERSION_LEN);
-						uint8_t major, minor;
-						char commit[8] = {0};
-						hosted_get_fw_version(&major, &minor, commit);
-						c3_major = major;
-						c3_minor = minor;
-						printk("Firmware Version: %d.%d, commit: %s\n", major, minor, commit);
-					} else {
-						printk("Firmware Version not found, please update fw\n");
-					}
 					spi_drv_evt_handler_fp(TRANSPORT_ACTIVE);
 				}
 			} else {
@@ -620,15 +598,4 @@ done:
 		buf_handle.free_buf_handle(buf_handle.priv_buffer_handle);
 
 	return sendbuf;
-}
-
-int hosted_get_fw_version(uint8_t *major, uint8_t *minor, char commit[7])
-{
-	*major = version_info[0] - '0';
-	*minor = version_info[2] - '0';
-
-	if (commit) {
-		memcpy(commit, &version_info[3], 7);
-	}
-	return 0;
 }

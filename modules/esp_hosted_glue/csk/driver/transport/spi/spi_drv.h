@@ -44,8 +44,6 @@ extern "C" {
 /** Inline functions **/
 
 /** Exported Functions **/
-int hosted_get_fw_version(uint8_t *major, uint8_t *minor, char commit[7]);
-uint8_t esp_get_version(void);
 
 #ifdef __cplusplus
 }

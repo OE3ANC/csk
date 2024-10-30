@@ -46,6 +46,7 @@ struct esp_private {
 };
 
 /* netdev APIs*/
+uint8_t esp_get_version(void);
 int esp_netdev_open(netdev_handle_t netdev);
 int esp_netdev_close(netdev_handle_t netdev);
 int esp_netdev_xmit(netdev_handle_t netdev, struct net_pbuf *net_buf);
