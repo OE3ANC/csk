@@ -279,10 +279,10 @@ static int ch32v003_pin_config(const struct device *dev, gpio_pin_t pin, gpio_fl
 		dir |= BIT(pin);
 		dir_update = true;
 		if (flags & GPIO_OUTPUT_INIT_HIGH) {
-			output &= ~BIT(pin);
+			output |= BIT(pin);
 			out_update = true;
 		} else if (flags & GPIO_OUTPUT_INIT_LOW) {
-			output |= BIT(pin);
+			output &= ~BIT(pin);
 			out_update = true;
 		}
 	} else if (flags & GPIO_INPUT) {
