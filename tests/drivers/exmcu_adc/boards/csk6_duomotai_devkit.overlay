@@ -1,5 +1,5 @@
 / {
     zephyr,user {
-        io-channels = <&exadc 3>, <&exadc 4>, <&exadc 7>;
+        io-channels = <&exadc 6>;
     };
 };
