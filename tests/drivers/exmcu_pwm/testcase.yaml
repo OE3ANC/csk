@@ -1,5 +1,5 @@
 tests:
-  tests.drivers.pwm:
+  tests.drivers.exmcu_pwm:
     tags: drivers exmcu_pwm
     platform_allow: csk6_duomotai_devkit
     harness: ztest
