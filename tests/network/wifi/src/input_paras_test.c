@@ -1,6 +1,6 @@
 #include "test_csk_wifi.h"
 
-void test_wifi_timeout_para(void)
+ZTEST(csk_wifi_test,test_wifi_timeout_para)
 {
     int ret;
     csk_wifi_result_t result;

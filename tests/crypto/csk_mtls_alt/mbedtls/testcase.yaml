@@ -6,4 +6,4 @@ common:
 tests:
   crypto.csk_mtls_alt.mbedtls:
     depends_on: crypto
-    platform_allow: csk6002_9s_nano csk6002_c3_nano
+    platform_allow: csk6011a_nano csk6_duomotai_devkit

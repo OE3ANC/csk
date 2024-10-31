@@ -3,7 +3,6 @@
 
 config SOC_FAMILY_LISTENAI_CSK
 	bool
-	default y
 
 config SOC_FAMILY
 	default "listenai_csk" if SOC_FAMILY_LISTENAI_CSK

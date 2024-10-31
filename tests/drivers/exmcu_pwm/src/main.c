@@ -9,32 +9,17 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/kernel.h>
+#include <zephyr/ztest.h>
 
-/* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS 1000
-
-int main(void)
+ZTEST(exmcu_pwd_test, test_exmcu_pwm_api)
 {
+	int err;
 	const struct pwm_dt_spec spec = PWM_DT_SPEC_GET(DT_NODELABEL(motor_pwm));
 
-	if (!device_is_ready(spec.dev)) {
-		printk("device: %s is not ready\n", spec.dev->name);
-	}
+	zassert_true(device_is_ready(spec.dev), "device: %s is not ready", spec.dev->name);
 
-	printk("name: %s \n", spec.dev->name);
-	printk("channel: %d \n", spec.channel);
-	printk("period: %d \n", spec.period);
-	printk("flag: %d \n", spec.flags);
-
-	int r = pwm_set_dt(&spec, 1000 * 1000 * 1000, 500 * 1000 * 1000);
-
-	if (r) {
-		printk("pwm set dt failed, r:%d\n", r);
-	}
-
-	while (1) {
-		k_msleep(SLEEP_TIME_MS);
-	}
-
-	return 0;
+	err = pwm_set_dt(&spec, 1000 * 1000 * 1000, 500 * 1000 * 1000);
+	zassert_ok(err, "pwm set dt failed, r:%d", err);
 }
+
+ZTEST_SUITE(exmcu_pwd_test, NULL, NULL, NULL, NULL, NULL);

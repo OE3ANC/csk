@@ -447,9 +447,9 @@
 #endif
 
 /* CSK6 config file */
-#ifdef CONFIG_CSK_MBEDTLS_HARDWARE_AES
-#include CONFIG_CSK_MBEDTLS_CONFIG_FILE
-#endif
+// #ifdef CONFIG_CSK_MBEDTLS_HARDWARE_AES
+// #include CONFIG_CSK_MBEDTLS_CONFIG_FILE
+// #endif
 
 #include "csk_mtls_config.h"
 
