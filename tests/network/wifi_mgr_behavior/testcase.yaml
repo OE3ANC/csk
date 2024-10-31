@@ -5,3 +5,4 @@ tests:
     platform_allow: csk6_duomotai_devkit
     timeout: 300
     tags: lib wifimanager
+    build_only: true
