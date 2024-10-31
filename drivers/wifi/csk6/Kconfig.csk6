@@ -29,10 +29,10 @@ choice CSK_WIFI_OFFLOAD_MODULE
 endchoice
 
 config CSK_WIFI_STATION
-	bool "WiFi Station Enable"
+	bool "Set wifi to Station mode by default"
 
 config CSK_WIFI_SOFTAP
-	bool "WiFi SoftAP Enable"
+	bool "Set wifi to SoftAP mode by default"
 
 config WIFI_CTRL_STACK_SIZE
 	int "Control Task Stack Size"
