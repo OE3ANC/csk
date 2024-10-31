@@ -8,6 +8,7 @@
 #include <string.h>
 #include <zephyr/sys/math_extras.h>
 #include "priv_heap.c"
+#include "heap.h"
 
 void csk_free(void *ptr)
 {
@@ -69,8 +70,6 @@ size_t csk_heap_free_size(void)
 {
 	size_t alloc_bytes, free_bytes = 0;
     struct sys_heap *heap = &(_PRIVATE_SYS_HEAP)->heap;
-    extern void get_alloc_info(struct z_heap *h, size_t *alloc_bytes,
-			   size_t *free_bytes);
 	get_alloc_info(heap->heap, &alloc_bytes, &free_bytes);
     return free_bytes;
 }

@@ -1,0 +1,9 @@
+/{
+    motor {
+        motor_pwm: motor_pwm {
+            compatible = "vnd,phandle-holder";
+            status = "okay";
+            pwms = <&expwm 0 1000 0x0 100>;
+        };
+    };
+};
