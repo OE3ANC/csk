@@ -1,0 +1,7 @@
+
+
+/{
+    zephyr,user {
+        io-channels = <&exadc 6>;
+    };
+};
