@@ -1,6 +1,5 @@
 tests:
-  tests.drivers.sdtest:
-    depends_on: sdmmc
+  tests.drivers.pwm:
     tags: drivers exmcu_pwm
     platform_allow: csk6_duomotai_devkit
     harness: ztest
