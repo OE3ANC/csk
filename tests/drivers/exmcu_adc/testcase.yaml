@@ -1,5 +1,5 @@
 tests:
-  tests.drivers.sdtest:
+  tests.drivers.exmcu_adc:
     tags: drivers exmcu_adc
     platform_allow: csk6_duomotai_devkit
     harness: ztest

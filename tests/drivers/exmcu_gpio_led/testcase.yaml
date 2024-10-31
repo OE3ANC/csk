@@ -1,5 +1,5 @@
 tests:
-  tests.drivers.sdtest:
+  tests.drivers.exmcu_gpio:
     tags: drivers exmcu_gpio
     platform_allow: csk6_duomotai_devkit
     harness: ztest
