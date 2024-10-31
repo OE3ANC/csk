@@ -44,7 +44,7 @@ struct adc_sequence sequence = {
 static const struct device *dev_adc = DEVICE_DT_GET(ADC_NODE);
 static const struct device *dev_gpio = DEVICE_DT_GET(DT_NODELABEL(gpioa));
 
-#define TEST_GPIO_PIN 0
+#define TEST_GPIO_PIN 7
 
 static void *exmcu_adc_test_setup(void)
 {
