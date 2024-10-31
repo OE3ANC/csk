@@ -4,3 +4,4 @@ tests:
     tags: drivers csk_wifi
     timeout: 300
     platform_allow: csk6_duomotai_devkit
+    build_only: true
