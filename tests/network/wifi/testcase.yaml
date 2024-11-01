@@ -2,6 +2,5 @@ tests:
   tests.network.wifi:
     depends_on: csk_wifi
     tags: drivers csk_wifi
-    timeout: 300
+    timeout: 60000
     platform_allow: csk6_duomotai_devkit
-    build_only: true
