@@ -50,3 +50,17 @@
 	>;
 	pinctrl-names = "default";
 };
+
+/{
+	aliases {
+		sd-switch = &sd_switch;
+	};
+
+	gpio,user {
+		compatible = "listenai,csk-gpio-user";
+		sd_switch: sd_switch {
+			gpios = <&exgpioc 0x1 0x0>;
+			label = "sd_switch";
+		};
+	};
+};
