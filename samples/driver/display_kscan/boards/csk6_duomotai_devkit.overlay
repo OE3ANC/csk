@@ -1,0 +1,7 @@
+
+/{
+    mipi_dbi {
+		compatible = "zephyr,mipi-dbi-spi";
+        /delete-property/ rotate;
+    };
+};

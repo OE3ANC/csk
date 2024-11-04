@@ -8,6 +8,7 @@
 #include "zephyr/kernel.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <zephyr/logging/log.h>
 #include <zephyr/net/net_context.h>
@@ -68,8 +69,7 @@ int wifi_init(void)
 }
 
 
-
-int wifi_sta_connect(void)
+int wifi_sta_connect(char *ssid, char *pwd)
 {
 	int ret;
 	uint8_t mac_addr[6] = {0};
@@ -87,9 +87,10 @@ int wifi_sta_connect(void)
 	LOG_INF("wifi station mac addr: %x:%x:%x:%x:%x:%x", mac_addr[0], mac_addr[1], mac_addr[2],
 		mac_addr[3], mac_addr[4], mac_addr[5]);
 
-	csk_wifi_sta_config_t sta_config = {.ssid = CONFIG_EXAMPLE_WIFI_STA_SSID,
-					    .pwd = CONFIG_EXAMPLE_WIFI_STA_PASSWORD,
-					    .encryption_mode = CSK_WIFI_AUTH_WPA2_PSK};
+	csk_wifi_sta_config_t sta_config = {0};
+	sta_config.encryption_mode = CSK_WIFI_AUTH_WPA2_PSK;
+	strcpy(sta_config.ssid, ssid);
+	strcpy(sta_config.pwd, pwd);
 
 	int retry_count = 0;
 
