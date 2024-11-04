@@ -145,12 +145,10 @@ int main(void)
 	uint32_t x_res, y_res, depth;
 	fill_buffer fill_buffer_fnc = NULL;
 
-	LOG_INF("Display sample for %s", CONFIG_DISPLAY_DEV_NAME);
-
-	display_dev = device_get_binding(CONFIG_DISPLAY_DEV_NAME);
+	display_dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
 	if (display_dev == NULL) {
-		LOG_ERR("Device %s not found. Aborting sample.", CONFIG_DISPLAY_DEV_NAME);
+		LOG_ERR("Device not found. Aborting sample.");
 		return -1;
 	}
 
