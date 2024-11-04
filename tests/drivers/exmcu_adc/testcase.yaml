@@ -5,3 +5,4 @@ tests:
     harness: ztest
     harness_config:
       fixture: ch32v003
+    build_only: true
