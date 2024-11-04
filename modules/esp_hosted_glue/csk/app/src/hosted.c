@@ -219,7 +219,7 @@ static void reset_slave(void)
 	hosted_gpio_init();
 	hosted_gpio_write_reset(0);
 
-	k_msleep(4);
+	k_msleep(400);
 	hosted_gpio_write_reset(1);
 
 	/* stop spi transactions short time to avoid slave sync issues */
