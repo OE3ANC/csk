@@ -4,11 +4,11 @@ menu "Example Configuration"
 
     config CORRECT_WIFI_SSID
         string "WiFi SSID"
-        default "listenai.com-Guest"
+        default "listenai_wifi_test"
 
     config CORRECT_WIFI_PASSWORD
         string "WiFi password"
-        default "Listenai2024#"
+        default "wifitest"
 
     config WRONG_WIFI_SSID
         string "WiFi SSID"
