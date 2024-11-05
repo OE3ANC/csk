@@ -1,0 +1,10 @@
+config MIPI_DBI_SPI_CSK
+	bool
+	default y
+	depends on DT_HAS_LISTENAI_MIPI_DBI_SPI_ENABLED
+	depends on MIPI_DBI
+	select SPI
+	help
+	  Enable support for MIPI DBI SPI driver. This driver implements
+	  a MIPI-DBI mode C compatible controller using a SPI device, as well
+	  as GPIO outputs for the reset and D/C signals

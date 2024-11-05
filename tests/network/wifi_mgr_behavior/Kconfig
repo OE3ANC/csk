@@ -4,11 +4,11 @@ menu "Example Configuration"
 
     config CORRECT_WIFI_SSID
         string "WiFi SSID"
-        default "xiaowei-yyds"
+        default "listenai_wifi_test"
 
     config CORRECT_WIFI_PASSWORD
         string "WiFi password"
-        default "xiaowei-yyds"
+        default "wifitest"
 
     config WRONG_WIFI_SSID
         string "WiFi SSID"

@@ -37,7 +37,7 @@ int calculate_fps(struct video_buffer *vbuf)
 	return fps;
 }
 
-void main(void)
+int main(void)
 {
 	struct video_buffer *buffers[VBUF_NUM], *vbuf;
 	struct video_format fmt;
@@ -53,7 +53,7 @@ void main(void)
 			"fallback to software generator.",
 			"dvp");
 
-		return;
+		return -1;
 	}
 
 	printk("- Device name: %s\n", video->name);
@@ -61,7 +61,7 @@ void main(void)
 	// /* Get capabilities */
 	if (video_get_caps(video, VIDEO_EP_OUT, &caps)) {
 		LOG_ERR("Unable to retrieve video capabilities");
-		return;
+		return -1;
 	}
 
 	printk("- Capabilities:\n");
@@ -82,7 +82,7 @@ void main(void)
 	fmt.pitch = fmt.width * 2;
 	if (video_set_format(video, VIDEO_EP_OUT, &fmt)) {
 		LOG_ERR("Unable to set video format");
-		return;
+		return -1;
 	}
 
 	/* Size to allocate for each buffer */
@@ -94,7 +94,7 @@ void main(void)
 		buffers[i] = video_buffer_alloc(bsize);
 		if (buffers[i] == NULL) {
 			LOG_ERR("Unable to alloc video buffer");
-			return;
+			return -1;
 		}
 
 		video_enqueue(video, VIDEO_EP_OUT, buffers[i]);
@@ -103,7 +103,7 @@ void main(void)
 	/* Start video capture */
 	if (video_stream_start(video)) {
 		LOG_ERR("Unable to start capture (interface)");
-		return;
+		return -1;
 	}
 
 	printk("Capture started\n");
@@ -114,7 +114,7 @@ void main(void)
 		err = video_dequeue(video, VIDEO_EP_OUT, &vbuf, K_FOREVER);
 		if (err) {
 			LOG_ERR("Unable to dequeue video buf");
-			return;
+			return -1;
 		}
 
 #if USE_SERIAL_PROTOCOL
@@ -128,7 +128,9 @@ void main(void)
 		err = video_enqueue(video, VIDEO_EP_OUT, vbuf);
 		if (err) {
 			LOG_ERR("Unable to requeue video buf");
-			return;
+			return -1;
 		}
 	}
+
+	return 0;
 }

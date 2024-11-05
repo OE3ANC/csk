@@ -70,7 +70,7 @@ int main(void)
 
 	if (!hs_dev) {
 		LOG_ERR("Device USB Headset is not ready");
-		return 0;
+		return -1;
 	}
 
 	LOG_INF("Found USB Headset Device");
@@ -80,9 +80,10 @@ int main(void)
 	ret = usb_enable(NULL);
 	if (ret != 0) {
 		LOG_ERR("Failed to enable USB");
-		return 0;
+		return -1;
 	}
 
 	LOG_INF("USB enabled");
+
 	return 0;
 }

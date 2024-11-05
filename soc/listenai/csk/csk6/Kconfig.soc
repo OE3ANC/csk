@@ -1,0 +1,28 @@
+# Copyright (c) 2024 ListenAI
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_SERIES_CSK6
+	bool
+	select SOC_FAMILY_LISTENAI_CSK
+	help
+	  Enable support for ListenAI CSK6 MCU series
+
+config SOC_SERIES
+	default "csk6" if SOC_SERIES_CSK6
+
+config SOC_CSK6011A
+	bool
+	select SOC_SERIES_CSK6
+
+config SOC_CSK6011B
+	bool
+	select SOC_SERIES_CSK6
+
+config SOC_CSK6012
+	bool
+	select SOC_SERIES_CSK6
+
+config SOC
+	default "csk6011a" if SOC_CSK6011A
+	default "csk6011b" if SOC_CSK6011B
+	default "csk60112" if SOC_CSK6012

@@ -1,0 +1,32 @@
+# Copyright (c) 2022 LISTENAI Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+config CSK_HEAP
+	bool "Use Private Memory Pool"
+	depends on SOC_SERIES_CSK6
+	default n
+	help
+	  Enable the use of private memory pool.
+
+if CSK_HEAP
+
+config CSK_HEAP_MEM_POOL_SIZE
+	int "Private heap memory pool size (in bytes)"
+	default 4096
+	help
+	  This option specifies the size of the heap memory pool used when
+	  dynamically allocating memory using csk_malloc(). The maximum size of
+	  the memory pool is only limited to available memory. A size of zero
+	  means that no heap memory pool is defined.
+
+config CSK_HEAP_MEM_POOL_SECTION_NAME
+	string "Private heap memory pool section name"
+	default ".psram_section" if (SOC_SERIES_CSK6 && CSK6_PSRAM)
+	default ".bss"
+	help
+	  This option specifies the size of the heap memory pool used when
+	  dynamically allocating memory using csk_malloc(). The maximum size of
+	  the memory pool is only limited to available memory. A size of zero
+	  means that no heap memory pool is defined.
+
+endif # CSK_HEAP

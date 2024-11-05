@@ -26,13 +26,19 @@ static void handler_cb(struct net_mgmt_event_callback *cb, uint32_t mgmt_event,
 
 	char buf[NET_IPV4_ADDR_LEN];
 
-	printk("Your address: %s\n",
-	       net_addr_ntop(AF_INET, &iface->config.dhcpv4.requested_ip, buf, sizeof(buf)));
+	struct in_addr *ip = net_if_ipv4_get_global_addr(iface, NET_ADDR_PREFERRED);
+
+	printk("IPv4 address: %s\n",
+	       net_addr_ntop(AF_INET, ip, buf, NET_IPV4_ADDR_LEN));
 	printk("Lease time: %u seconds\n", iface->config.dhcpv4.lease_time);
+
+	struct in_addr netmask = net_if_ipv4_get_netmask_by_addr(iface, ip);
+	
 	printk("Subnet: %s\n",
-	       net_addr_ntop(AF_INET, &iface->config.ip.ipv4->netmask, buf, sizeof(buf)));
+	       net_addr_ntop(AF_INET, &netmask, buf, NET_IPV4_ADDR_LEN));
+
 	printk("Router: %s\n",
-	       net_addr_ntop(AF_INET, &iface->config.ip.ipv4->gw, buf, sizeof(buf)));
+	       net_addr_ntop(AF_INET, &iface->config.ip.ipv4->gw, buf, NET_IPV4_ADDR_LEN));
 }
 
 static void wifi_event_handler(csk_wifi_event_t events, void *event_data, uint32_t data_len,

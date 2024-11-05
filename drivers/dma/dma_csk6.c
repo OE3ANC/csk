@@ -505,5 +505,5 @@ static struct csk_dma_config csk_dma_0_config = {};
 
 static struct csk_dma_data csk_dma_0_data;
 
-DEVICE_DT_INST_DEFINE(0, &csk_dma_init, NULL, &csk_dma_0_data, &csk_dma_0_config, POST_KERNEL,
+DEVICE_DT_INST_DEFINE(0, &csk_dma_init, NULL, &csk_dma_0_data, &csk_dma_0_config, PRE_KERNEL_1,
 		      CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &csk_dma_driver_api);

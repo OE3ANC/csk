@@ -1,0 +1,8 @@
+tests:
+  tests.drivers.exmcu_gpio:
+    tags: drivers exmcu_gpio
+    build_only: true
+    platform_allow: csk6_duomotai_devkit
+    harness: ztest
+    harness_config:
+      fixture: ch32v003

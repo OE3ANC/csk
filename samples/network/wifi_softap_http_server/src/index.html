@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wifi HTTP Configuration Sample</title>
+</head>
+<body>
+    <h1>Wifi HTTP Configuration Sample</h1>
+    <form action="/submit" method="POST">
+        ssid    : <input type="text" name="ssid"><br>
+        password: <input type="text" name="password"><br>
+        <label for="auth">auth:</label>
+        <select id="auth" name="auth">
+            <option value="WPA2_PSK">WPA2_PSK</option>
+        </select>
+        </br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+

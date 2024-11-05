@@ -1,0 +1,15 @@
+sample:
+  description: Sample with MCUboot built through sysbuild
+  name: with mcuboot
+tests:
+  csk.sample.sysbuild.with_mcuboot:
+    sysbuild: true
+    platform_allow:
+      - csk6011a_nano
+    tags: mcuboot
+    harness: console
+    harness_config:
+      type: multi_line
+      regex:
+        - "Address of sample(.*)"
+        - "Hello sysbuild with mcuboot!(.*)"

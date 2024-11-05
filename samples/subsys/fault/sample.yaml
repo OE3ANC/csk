@@ -4,5 +4,5 @@ sample:
 tests:
   samples.subsys.fault:
     build_only: true
-    platform_allow: csk6011a_nano
+    platform_allow: csk6011a_nano csk6_duomotai_devkit
 

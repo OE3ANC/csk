@@ -1,0 +1,3 @@
+zephyr_sources_ifdef(CONFIG_MIPI_DBI_SPI_CSK mipi_dbi_spi_csk.c display_csk6_lcd.c)
+
+zephyr_include_directories_ifdef(CONFIG_MIPI_DBI_SPI_CSK ./)
