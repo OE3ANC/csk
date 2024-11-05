@@ -9,7 +9,7 @@ manifest:
   projects:
     - name: zephyr
       repo-path: zephyr_downstream
-      revision: feat/zephyr3.7_ada
+      revision: 4e31ced682bed1a5b929d85681e135204d4fda24
       import:
         name-allowlist:
           - cmsis
@@ -20,7 +20,7 @@ manifest:
           - lvgl
     - name: csk6_cm33
       url: https://cloud.listenai.com/listenai/driver/csk6_cm33
-      revision: feat/zephyr3.7
+      revision: 20ffba1293099ddda0ba70baa321f900634df18b
       path: modules/hal/listenai/csk6_cm33
       groups:
         - hal
