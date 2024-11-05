@@ -1,0 +1,58 @@
+&flash0 {
+    /*
+     * For more information, see:
+     * http: //docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
+     */
+    reg = <0x18000000 DT_SIZE_M(16)>;
+    write-block-size = <4>;
+    erase-block-size = <4096>;
+    partitions {
+            compatible = "fixed-partitions";
+            #address-cells = <1>;
+            #size-cells = <1>;
+
+            /* 256KB for bootloader */
+            boot_partition: partition@0 {
+                    reg = <0x0 0x40000>;
+                    read-only;
+            };
+
+            /* application image slot: 512KB */
+            slot0_partition: partition@40000 {
+                    reg = <0x40000 0x80000>;
+            };
+
+            /* backup slot: 512KB */
+            slot1_partition: partition@c0000 {
+                    reg = <0xc0000 0x80000>;
+            };
+
+            /* swap slot: 128KB */
+            scratch_partition: partition@140000 {
+                    reg = <0x140000 0x20000>;
+            };
+
+            /* wifi driver private storage: 8Kb */
+            wifi_driver_storage: partition@6ee000 {
+                    reg = <0x6ee000 0x2000>;
+            };
+
+            /* wifi_nvs_storage: 20Kb */
+            wifi_nvs_storage: partition@6F0000 {
+                    reg = <0x6F0000 0x10000>;
+            };
+
+            /* storage: 6.625MB for storage */
+            storage_partition: partition@700000 {
+                    reg = <0x700000 0x100000>;
+            };
+
+
+    };
+};
+
+/ {
+    chosen {
+        zephyr,code-partition = &slot0_partition;
+    };
+};
