@@ -38,7 +38,7 @@ manifest:
       path: modules/lib/wifi_manager
     - name: csk_sqlite3
       remote: listenai
-      revision: 72303f6cbe848a94c665f6d1dc3817526deceacb
+      revision: cf382c66d68136866e0b7b1f385ecb196936249c
       path: modules/lib/csk_sqlite3
     - name: fatfs
       remote: listenai
