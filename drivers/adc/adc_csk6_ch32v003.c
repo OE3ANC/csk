@@ -14,7 +14,7 @@
 #include "adc_context.h"
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(csk6_adc_ch32v003, 4);
+LOG_MODULE_REGISTER(csk6_adc_ch32v003, CONFIG_ADC_LOG_LEVEL);
 
 #include "exmcu_comm.h"
 
