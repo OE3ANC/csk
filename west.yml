@@ -29,7 +29,7 @@ manifest:
       path: modules/lib/protobuf-c
     - name: esp-hosted
       remote: listenai
-      revision: 77c953eecdcd023c10fae2fdf98a0350d070766a
+      revision: 66105b4139d5751b066c5df0b00448a1ea219ea7
       path: modules/lib/esp-hosted
     - name: wifi_manager
       remote: listenai
