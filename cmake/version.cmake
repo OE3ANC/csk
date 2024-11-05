@@ -25,7 +25,7 @@ set(CSK_SDK_VERSION_STRING ${VERSION_FROM_FILE})
 find_package(Git QUIET)
 if(GIT_FOUND)
 execute_process(
-    COMMAND git rev-parse --short HEAD
+    COMMAND git describe --always --dirty --tag --abbrev=8
     OUTPUT_VARIABLE                  CSK_SDK_GIT_COMMIT
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_STRIP_TRAILING_WHITESPACE
