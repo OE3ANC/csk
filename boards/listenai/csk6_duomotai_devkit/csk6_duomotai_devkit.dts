@@ -98,7 +98,7 @@
 
         inputs {
                 adc-keys {
-                        compatible = "zephyr,adc-keys";
+                        compatible = "adc-keys";
                         io-channels = <&exadc 2>;
                         sample-period-ms = <100>;
                         keyup-threshold-mv = <0>;
@@ -117,7 +117,7 @@
                 };
 
                 gpio-keys {
-                        compatible = "zephyr,gpio-keys";
+                        compatible = "gpio-keys";
 
                         key-3 {
                                 gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
