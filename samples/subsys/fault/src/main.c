@@ -82,10 +82,12 @@ K_THREAD_DEFINE(fault_thread_id, 4096,
                 fault_thread, NULL, NULL, NULL,
                 1, 0, 0);
 				
-__no_optimization void main(void)
+__no_optimization int main(void)
 {
 	// func3();
 	while(1){
 		k_msleep(1000);
 	}
+
+	return -1;
 }

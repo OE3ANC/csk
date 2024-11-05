@@ -1,0 +1,13 @@
+
+config CSK6_SDHC_CLK_FREQ
+    int "sdhc clk frequency(Mhz) for csk6"
+    default 25
+    help
+        "sdch clk frequency for csk6"
+
+config CSK6_SDHC_SDMA_LINE_BOUND
+    int "sdhc sdma line bound for csk6"
+    default 4
+    range 0 7
+    help 
+        sdhc sdma line bound for csk6

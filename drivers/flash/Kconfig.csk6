@@ -5,6 +5,7 @@ config SOC_FLASH_CSK6
 	bool "Listenai CSK6 flash driver"
 	default y
 	select FLASH_HAS_DRIVER_ENABLED
+	select FLASH_HAS_EXPLICIT_ERASE
 	select FLASH_HAS_PAGE_LAYOUT
 	select FLASH_JESD216
 	imply FLASH_JESD216_API

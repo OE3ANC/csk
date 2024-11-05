@@ -1,5 +1,0 @@
-# SPDX-License-Identifier: Apache-2.0
-
-config BOARD_CSK6_DUOMOTAI_DEVKIT
-   bool "csk6_duomotai_devkit Board"
-   depends on SOC_CSK6

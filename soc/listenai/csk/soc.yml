@@ -1,0 +1,8 @@
+family:
+- name: csk
+  series:
+  - name: csk6
+    socs:
+    - name: csk6011a
+    - name: csk6011b
+    - name: csk6012

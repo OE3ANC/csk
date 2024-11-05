@@ -6,8 +6,10 @@
 #include "csk_os_common/csk_os_memory.h"
 #include "csk_os_common/csk_os_thread.h"
 
+#ifndef Z_THREAD_STACK_SIZE_ADJUST
 #define Z_THREAD_STACK_SIZE_ADJUST(size)                                                           \
 	(ROUND_UP((size), ARCH_STACK_PTR_ALIGN) + K_THREAD_STACK_RESERVED)
+#endif
 
 typedef struct {
 	struct k_thread thread;

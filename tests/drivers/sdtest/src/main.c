@@ -8,11 +8,16 @@
 #include <zephyr/device.h>
 #include <zephyr/timing/timing.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/gpio.h>
+#include "zephyr/init.h"
+
 LOG_MODULE_REGISTER(sample, LOG_LEVEL_DBG);
 
 /* 最大支持block size为512字节 */
 #define SECTOR_SIZE 512
 
+#define SD_SWITCH_NODE DT_ALIAS(sd_switch)
+static const struct gpio_dt_spec sd_switch = GPIO_DT_SPEC_GET(SD_SWITCH_NODE, gpios);
 
 #define TEST_CNT	(10U)
 static const char *disk_pdrv = CONFIG_SDMMC_VOLUME_NAME;
@@ -90,7 +95,7 @@ error:
 	return ret;
 }
 
-void test_csk_sdcard_setup(void)
+void *test_csk_sdcard_setup(void)
 {
 	int rc;
 	uint32_t cmd_buf;
@@ -114,9 +119,11 @@ void test_csk_sdcard_setup(void)
 
 	zassert_true(cmd_buf <= SECTOR_SIZE,
 		"Test will fail, SECTOR_SIZE definition must be increased");
+
+	return NULL;
 }
 
-void test_csk_sdcard_wr(void)
+ZTEST(csk_sdcard_test, test_csk_sdcard_wr)
 {
 	int ret = 0;
 
@@ -128,11 +135,21 @@ void test_csk_sdcard_wr(void)
 	}
 }
 
-void test_main(void)
+ZTEST_SUITE(csk_sdcard_test, NULL, test_csk_sdcard_setup, NULL, NULL, NULL);
+
+/*
+    电路设计：需要将该引脚配置为低电平，SD引脚才能正常使用
+*/
+static int sd_switch_enable(void)
 {
-	ztest_test_suite(csk_sdcard_test,
-			 ztest_unit_test(test_csk_sdcard_setup),
-			 ztest_unit_test(test_csk_sdcard_wr)
-			 );
-	ztest_run_test_suite(csk_sdcard_test);
+    gpio_pin_configure_dt(&sd_switch, GPIO_OUTPUT_ACTIVE);
+
+    gpio_pin_set_dt(&sd_switch, 0);
+
+    return 0;
 }
+
+/*
+	选择SD引脚复用，需要在CH32驱动初始化之后，同时又要保障在disk驱动初始化之前
+*/
+SYS_INIT(sd_switch_enable, POST_KERNEL, 89);

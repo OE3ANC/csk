@@ -1,0 +1,5 @@
+board:
+  name: csk6_duomotai_devkit
+  vendor: listenai
+  socs:
+    - name: csk6011a
