@@ -7,3 +7,4 @@ tests:
       type: one_line
       regex:
         - "\\[WiFi sta\\] connected"
+    build_only: csk6_duomotai_devkit

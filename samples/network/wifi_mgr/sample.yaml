@@ -9,3 +9,4 @@ tests:
       regex:
         - "WiFi scan done"
         - "Connected to AP successfully"
+    build_only: csk6_duomotai_devkit
