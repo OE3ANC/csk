@@ -1,0 +1,595 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/dts-v1/;
+#include <csk/csk6011a.dtsi>
+#include <zephyr/dt-bindings/dt-util.h>
+#include <zephyr/dt-bindings/adc/adc.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include "csk6_duomotai_devkit_pinctrl.dtsi"
+#include <zephyr/dt-bindings/mipi_dbi/mipi_dbi.h>
+
+/ {
+        model = "csk6 duomotai devkit";
+        compatible = "csk,csk6_duomotai_devkit";
+
+        chosen {
+                zephyr,console = &uart0;
+                zephyr,shell-uart = &uart0;
+                zephyr,sram = &sram0;
+                zephyr,itcm = &itcm0;
+                zephyr,dtcm = &dtcm0;
+                zephyr,flash = &flash0;
+                zephyr,flash_controller = &flash;
+                zephyr,entropy = &trng;
+                zephyr,display=&st7789v;
+                zephyr,keyboard_scan=&ft5336;
+                /* other chosen settings  for your hardware */
+        };
+
+        aliases {
+                sw0 = &user_button_0;
+                csk6-exmcu = &csk6_ch32v003;
+                led-rgb-red = &led_rgb_red;
+                led-rgb-green = &led_rgb_green;
+                led-rgb-blue = &led_rgb_blue;
+                lcd-pwm-ctl = &lcd_pwm_ctl;
+                camera-ir-led = &camera_ir_led;
+                led0 = &led_rgb_green;
+        };
+
+        /*
+         * Your board-specific hardware: buttons, LEDs, sensors, etc.
+         */
+
+        gpio_keys {
+                compatible = "gpio-keys";
+                user_button_0: button_0 {
+                        gpios = <&gpiob 0x0 0x0>;
+                        zephyr,code = <INPUT_KEY_0>;
+                };
+        };
+
+        leds {
+                compatible = "gpio-leds";
+                led_rgb_red: led_rgb_red {
+                        gpios = <&exgpiod 3 GPIO_ACTIVE_LOW>;
+                };
+                led_rgb_green: led_rgb_green {
+                        gpios = <&exgpiod 4 GPIO_ACTIVE_LOW>;
+                };
+                led_rgb_blue: led_rgb_blue {
+                        gpios = <&exgpioc 7 GPIO_ACTIVE_LOW>;
+                };
+                lcd_pwm_ctl: lcd_pwm_ctl {
+                        gpios = <&exgpiod 2 GPIO_ACTIVE_LOW>;
+                };
+                camera_ir_led: camera_ir_led {
+                        gpios = <&exgpioc 0 GPIO_ACTIVE_LOW>;
+                };
+        };
+        
+        /**
+         *
+         * external adc channel map
+         *
+         * CH0 --> PA2
+         * CH1 --> PA1
+         * CH2 --> PC4
+         * CH3 --> PD2
+         * CH4 --> PD3
+         * CH5 --> PD5
+         * CH6 --> PD6
+         * CH7 --> PD4
+         *
+         */
+        zephyr,user {
+                io-channels = <&exadc 2>;
+        };
+
+        pwms {
+                lcd_pwm: lcd_pwm {
+                        compatible = "vnd,phandle-holder";
+                        status = "okay";
+                        pwms = <&expwm 0 12 0x0 100>;
+                };
+        };
+
+        inputs {
+                adc-keys {
+                        compatible = "adc-keys";
+                        io-channels = <&exadc 2>;
+                        sample-period-ms = <100>;
+                        keyup-threshold-mv = <0>;
+
+                        key-1 {
+                                press-thresholds-mv = <1650>,  /* K1 */
+                                                      <2536>;  /* K1 + K2 */
+                                zephyr,code = <INPUT_KEY_1>;
+                        };
+
+                        key-2 {
+                                press-thresholds-mv = <2300>,  /* K2 */
+                                                      <2536>;  /* K1 + K2 */
+                                zephyr,code = <INPUT_KEY_2>;
+                        };
+                };
+
+                gpio-keys {
+                        compatible = "gpio-keys";
+
+                        key-3 {
+                                gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+                                zephyr,code = <INPUT_KEY_3>;
+                        };
+
+                        key-boot {
+                                gpios = <&gpiob 1 GPIO_ACTIVE_LOW>;
+                                zephyr,code = <INPUT_KEY_B>;
+                        };
+                };
+        };
+
+        pointer {
+                compatible = "zephyr,lvgl-pointer-input";
+                input = <&ft5336>;
+                invert-x;
+        };
+
+        mipi_dbi {
+                compatible = "listenai,mipi-dbi-spi";
+                dc-gpios = <&gpioa 18 GPIO_ACTIVE_HIGH>;
+                // reset-gpios = <&exgpioc 2 1>;
+                spi-dev = <&spi1>;
+                write-only;
+                rotate = <90>;
+                #address-cells = <1>;
+                #size-cells = <0>;
+                st7789v: st7789v@0 {
+                        compatible = "sitronix,st7789v";
+                        status = "okay";
+                        mipi-max-frequency = <50000000>;
+                        mipi-mode = <MIPI_DBI_MODE_SPI_4WIRE>;
+                        mipi-hold-cs;
+                        reg = <0>;
+                        width = <240>;
+                        height = <320>;
+                        x-offset = <0>;
+                        y-offset = <0>;
+                        // reg: 0xBB
+                        vcom = <0x1e>;
+                        // reg: 0xB7
+                        gctrl = <0x35>;
+                        // reg: 0xC3
+                        vrhs = <0x0b>;
+                        // reg: 0xC4
+                        vdvs = <0x20>;
+                        // reg: 0x36
+                        mdac = <0xC0>;
+                        // reg: 0x26
+                        gamma = <0x01>;
+                        // reg: 0x3a
+                        colmod = <0x05>;
+                        // reg: 0xc0
+                        lcm = <0x3c>;
+                        // reg: 0xb2
+                        porch-param = [ 0c 0c 00 33 33  ];
+                        // reg: 0xDF
+                        cmd2en-param = [ 5a 69 02 01  ];
+                        // reg: 0xD0
+                        pwctrl1-param = [ a4 a1  ];
+                        // reg: 0xE0
+                        pvgam-param = [ d0 06 0b 07 07 24 2e 32 46 37 13 13 2d 33  ];
+                        // reg: 0xE1
+                        nvgam-param = [ d0 02 06 09 08 05 29 44 42 38 14 14 2a 30  ];
+                        // reg: b0
+                        ram-param = [ 00 F0  ];
+                        // reg: b1
+                        rgb-param = [ CD 08 14  ];
+                };
+        };
+};
+
+&gpt0 {
+        status = "okay";
+};
+
+&gpioa {
+        status = "okay";
+};
+
+&gpiob {
+        status = "okay";
+};
+
+&uart0 {
+        pinctrl-0 = <&pinctrl_uart0_rx_default &pinctrl_uart0_tx_default>;
+        pinctrl-names = "default";
+        current-speed = <115200>;
+        status = "okay";
+};
+
+&uart1 {
+        status = "disabled";
+};
+
+&uart2 {
+        status = "disabled";
+};
+
+&spi0 {
+        pinctrl-0 = <&pinctrl_spi0_sclk_default &pinctrl_spi0_mosi_default &pinctrl_spi0_miso_default &pinctrl_spi0_cs_default>;
+        pinctrl-names = "default";
+        status = "okay";
+        wifi_module: esp32c3@0 {
+                compatible = "espressif,esp-hosted";
+                spi-max-frequency = <25000000>;
+                reg = <0>;
+                dataready-gpios = <&gpiob 6 0>;
+                handshake-gpios = <&gpiob 1 0>;
+                reset-gpios = <&exgpioc 1 0>;
+                status = "okay";
+        };
+};
+
+&spi1 {
+        status = "disabled";
+};
+
+&i2c0 {
+        status = "disabled";
+};
+
+&i2c1 {
+        status = "disabled";
+};
+
+&mailbox0 {
+        status = "okay";
+};
+
+&dma0 {
+        dma-channels = <6>;
+        status = "okay";
+};
+
+&rtc1 {
+        status = "okay";
+};
+
+&flash0 {
+        /*
+         * For more information, see:
+         * http: //docs.zephyrproject.org/latest/guides/dts/index.html#flash-partitions
+         */
+        reg = <0x18000000 DT_SIZE_M(16)>;
+        write-block-size = <4>;
+        erase-block-size = <4096>;
+        partitions {
+                compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
+
+                /* wifi driver private storage: 8Kb */
+                wifi_driver_storage: partition@6ee000 {
+                        reg = <0x6ee000 0x2000>;
+                };
+
+                /* wifi_nvs_storage: 20Kb */
+                wifi_nvs_storage: partition@6F0000 {
+                        reg = <0x6F0000 0x10000>;
+                };
+
+                /* storage: 6.625MB for storage */
+                storage_partition: partition@700000 {
+                        reg = <0x700000 0x100000>;
+                };
+
+                /*The last 4K of flash is used for capability authentication, do not modify it*/
+                reserve_partition: partition@fff000{
+                        label = "reserve_capability_authentication";
+                        reg = <0xfff000 0x1000>;          
+                };
+        };
+};
+
+&sram0 {
+        reg = <0x80000 DT_SIZE_K(256)>;
+};
+
+&psram0 {
+        reg = <0x30000000 DT_SIZE_M(8)>;
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        /*psram for cp core slot: 6MB */
+        psram_cp: psram_cp@30000000 {
+                compatible = "listenai,csk6-psram-partition";
+                reg = <0x30000000 0x600000>;
+                status = "okay";
+        };
+
+        /*psram for ap core slot: 1MB */
+        psram_ap: psram_ap@30600000 {
+                compatible = "zephyr,memory-region",
+                             "listenai,csk6-psram-partition";
+                reg = <0x30600000 0x100000>;
+                status = "okay";
+                zephyr,memory-region = "PSRAMAP";
+        };
+
+        /*psram for ap share with cp slot: 512KB */
+        psram_share: psram_share@30700000 {
+                compatible = "listenai,csk6-psram-partition";
+                reg = <0x30700000 0x80000>;
+                status = "okay";
+        };
+};
+
+zephyr_udc0: &usbotg {
+        status = "okay";
+        num-bidir-endpoints = <6>;
+        num-in-endpoints = <6>;
+        num-out-endpoints = <6>;
+};
+
+&wdt {
+        status = "okay";
+};
+
+&ap_wdt {
+        status = "okay";
+};
+
+&adc0 {
+        status = "disabled";
+};
+
+&crypto {
+        status = "okay";
+};
+
+&sdmmc {
+        status = "okay";
+        bit-bus = <4>;
+        pinctrl-0 = <
+        &pinctrl_sdio_cmd_default
+        &pinctrl_sdio_clk_default
+        &pinctrl_sdio_dat0_default
+        &pinctrl_sdio_dat1_default
+        &pinctrl_sdio_dat2_default
+        &pinctrl_sdio_dat3_default
+        >;
+        pinctrl-names = "default";
+};
+
+&pinctrl {
+        pinctrl_dvp_clkout_default: dvp_clkout_default{
+                pinctrls = <CLKP_OUT_GPIOA_11>;
+        };
+
+        pinctrl_dvp_vsync_default: dvp_vsync_default{
+                pinctrls = <I_V_SYNC_GPIOA_14>;
+        };
+
+        pinctrl_dvp_hsync_default: dvp_hync_default{
+                pinctrls = <I_H_SYNC_GPIOA_13>;
+        };
+
+        pinctrl_dvp_pclk_default: dvp_pclk_default{
+                pinctrls = <I_PIXEL_CLK_GPIOA_12>;
+        };
+
+        pinctrl_dvp_d4_default: dvp_d4_default{
+                pinctrls = <I_PIXEL_DATA4_GPIOA_04>;
+        };
+
+        pinctrl_dvp_d5_default: dvp_d5_default{
+                pinctrls = <I_PIXEL_DATA5_GPIOA_05>;
+        };
+
+        pinctrl_dvp_d6_default: dvp_d6_default{
+                pinctrls = <I_PIXEL_DATA6_GPIOA_06>;
+        };
+
+        pinctrl_dvp_d7_default: dvp_d7_default{
+                pinctrls = <I_PIXEL_DATA7_GPIOA_10>;
+        };
+
+
+        pinctrl_dvp_d8_default: dvp_d8_default{
+                pinctrls = <I_PIXEL_DATA8_GPIOA_19>;
+        };
+
+
+        pinctrl_dvp_d9_default: dvp_d9_default{
+                pinctrls = <I_PIXEL_DATA9_GPIOA_20>;
+        };
+
+
+        pinctrl_dvp_d10_default: dvp_d10_default{
+                pinctrls = <I_PIXEL_DATA10_GPIOA_08>;
+        };
+
+
+        pinctrl_dvp_d11_default: dvp_d11_default{
+                pinctrls = <I_PIXEL_DATA11_GPIOA_09>;
+        };
+
+        pinctrl_i2c1_scl_default: i2c1_scl_default{
+                pinctrls = <I2C1_SCL_GPIOB_09>;
+        };
+
+        pinctrl_i2c1_sda_default: i2c1_sda_default{
+                pinctrls = <I2C1_SDA_GPIOB_08>;
+        };
+
+        pinctrl_spi1_sclk_default: spi1_sclk_default {
+                pinctrls = <SPI1_CLK_GPIOA_16>;
+        };
+        pinctrl_spi1_mosi_default: spi1_mosi_default {
+                pinctrls = <SPI1_MOSI_GPIOA_15>;
+        };
+        pinctrl_spi1_cs_default: spi1_cs_default {
+                pinctrls = <SPI1_CS_N_GPIOA_17>;
+        };
+};
+
+&dvp {
+        status = "okay";
+        sensor = <&gc0328>;
+        clock-prescaler = <20>;
+        data-align-type = "high_align";
+        pclk-polarity = "post_edge_sampling";
+        hsync-polarity = "active_high";
+        vsync-polarity = "active_low";
+
+        pinctrl-0 = <
+        &pinctrl_dvp_clkout_default
+        &pinctrl_dvp_vsync_default
+        &pinctrl_dvp_hsync_default
+        &pinctrl_dvp_pclk_default
+        &pinctrl_dvp_d4_default
+        &pinctrl_dvp_d5_default
+        &pinctrl_dvp_d6_default
+        &pinctrl_dvp_d7_default
+        &pinctrl_dvp_d8_default
+        &pinctrl_dvp_d9_default
+        &pinctrl_dvp_d10_default
+        &pinctrl_dvp_d11_default
+        >;
+        pinctrl-names = "default";
+
+};
+
+&uart1 {
+        pinctrl-0 = <&pinctrl_uart1_tx_default>;
+        pinctrl-names = "default";
+        current-speed = <2000000>;
+        status = "okay";
+};
+
+
+&i2c1 {
+        status = "okay";
+        pinctrl-0 = <&pinctrl_i2c1_scl_default &pinctrl_i2c1_sda_default>;
+        pinctrl-names = "default";
+
+	gc0328: gc0328@21 {
+		compatible = "galaxyc,gc0328";
+		status = "okay";
+		reg = <0x21>;
+		// reset-gpios = <&gpioa 6 0>;
+	};
+
+        ft5336: ft5336@38 {
+                compatible = "focaltech,ft5336";
+                reg = <0x38>;
+                status = "okay";
+                int-gpios = <&gpiob 7 0>;
+        };
+
+        csk6_ch32v003: csk6_ch32v003@6c {
+                /**
+                 * Please make sure that the external MCU firmware has been loaded
+                 * SCL --> external MCU PC5
+                 * SDA --> external MCU PC6
+                 */
+                compatible = "listenai,csk-i2c-ch32v003";
+                reg = <0x6c>;
+                status = "okay";
+                #address-cells = <1>;
+                #size-cells = <0>;
+
+                /* CH32V003-GPIOA */
+                exgpioa: gpio@0 {
+                        compatible = "listenai,csk-gpio-ch32003-port";
+                        reg = <0x00>;
+                        status = "okay";
+                        ngpios = <8>;
+                        #gpio-cells = <2>;
+                        gpio-controller;
+                        pin_mask = <0x00>;
+                };
+
+                /* CH32V003-GPIOB */
+                exgpiob: gpio@1 {
+                        compatible = "listenai,csk-gpio-ch32003-port";
+                        reg = <0x01>;
+                        status = "okay";
+                        ngpios = <8>;
+                        #gpio-cells = <2>;
+                        gpio-controller;
+                        pin_mask = <0x00>;
+                };
+
+                /* CH32V003-GPIOC */
+                exgpioc: gpio@2 {
+                        compatible = "listenai,csk-gpio-ch32003-port";
+                        reg = <0x02>;
+                        status = "okay";
+                        ngpios = <8>;
+                        #gpio-cells = <2>;
+                        gpio-controller;
+                        pin_mask = <0x00>;
+                };
+
+                /* CH32V003-GPIOD */
+                exgpiod: gpio@3 {
+                        compatible = "listenai,csk-gpio-ch32003-port";
+                        reg = <0x03>;
+                        status = "okay";
+                        ngpios = <8>;
+                        #gpio-cells = <2>;
+                        gpio-controller;
+                        pin_mask = <0x00>;
+                };
+
+                exadc: adc@4 {
+                        /**
+                         * external adc channel map
+                         *
+                         * CH0 --> PA2
+                         * CH1 --> PA1
+                         * CH2 --> PC4
+                         * CH3 --> PD2
+                         * CH4 --> PD3
+                         * CH5 --> PD5
+                         * CH6 --> PD6
+                         * CH7 --> PD4
+                         *
+                         */
+
+                        compatible = "listenai,csk-adc-ch32v003";
+                        reg = <0x4>;
+                        status = "okay";
+                        #io-channel-cells = <1>;
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        channel@2 {
+                                reg = <2>;
+                                zephyr,gain = "ADC_GAIN_1";
+                                zephyr,reference = "ADC_REF_INTERNAL";
+                                zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+                                zephyr,resolution = <10>;
+                        };
+                };
+
+                expwm: pwm-controller@5 {
+                        compatible = "listenai,csk-ch32v003-pwm";
+                        reg = <0x5>;
+                        status = "okay";
+                        clock-prescaler = <480>;
+                        clock-frequency = <48000000>;
+                        #pwm-cells = <4>;
+                };
+        };
+};
+
+&spi1 {
+        status = "okay";
+        pinctrl-0 = <&pinctrl_spi1_sclk_default &pinctrl_spi1_mosi_default &pinctrl_spi1_cs_default>;
+        pinctrl-names = "default";
+};

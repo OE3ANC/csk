@@ -1,0 +1,5 @@
+board:
+  name: csk6012_c3_nano
+  vendor: listenai
+  socs:
+    - name: csk6012

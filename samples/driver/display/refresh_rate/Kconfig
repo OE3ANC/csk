@@ -18,10 +18,6 @@ menu "Example Configuration"
         bool "Image data is stored in SRAM"
         default n
 
-    config DISPLAY_DEV_NAME
-        string "display device name"
-        default "DISPLAY"
-
 endmenu
 
 source "Kconfig.zephyr"

@@ -18,8 +18,8 @@
 #include <zephyr/linker/sections.h>
 #include <errno.h>
 
-#include <tc_util.h>
-#include <ztest.h>
+#include <zephyr/tc_util.h>
+#include <zephyr/ztest.h>
 
 #define MBEDTLS_ALLOW_PRIVATE_ACCESS
 
@@ -106,7 +106,7 @@ static int run_test_snprintf(void)
 ZTEST_BMEM unsigned char buf[16000];
 #endif
 
-void test_mbedtls(void)
+ZTEST(mbedtls_test, test_mbedtls)
 {
 	int v, suites_tested = 0, suites_failed = 0;
 
@@ -156,3 +156,5 @@ void test_mbedtls(void)
 	}
 
 }
+
+ZTEST_SUITE(mbedtls_test, NULL, NULL, NULL, NULL, NULL);

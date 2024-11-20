@@ -24,7 +24,7 @@ int main(void)
 	ptr = csk_malloc(MALLOC_SIZE);
 	if (ptr == NULL) {
 		printk("csk_malloc size %d failed!\n", MALLOC_SIZE);
-		return 0;
+		return -1;
 	}
 	printk("Malloc success ptr %p\n", ptr);
 
@@ -35,7 +35,7 @@ int main(void)
 	ptr = csk_realloc(ptr, REALLOC_SIZE);
 	if (ptr == NULL) {
 		printk("csk_realloc size %d failed!\n", REALLOC_SIZE);
-		return 0; 
+		return -1;
 	}
 	printk("csk_realloc success ptr %p\n", ptr);
 	printk("After realloc %d bytes ,heap info:\n", REALLOC_SIZE);
@@ -45,7 +45,7 @@ int main(void)
 	ptr_calloc = csk_calloc(CALLOC_NUM, CALLOC_NUM_SIZE);
 	if (ptr_calloc == NULL) {
 		printk("csk_calloc numb %d size %d failed!\n", CALLOC_NUM, CALLOC_NUM_SIZE);
-		return 0;
+		return -1;
 	}
 	printk("csk_calloc success ptr_calloc %p,data[0...7]={%d,%d,%d,%d,%d,%d,%d,%d}\n",
 	       ptr_calloc, ptr_calloc[0], ptr_calloc[1], ptr_calloc[2], ptr_calloc[3],

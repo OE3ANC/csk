@@ -86,3 +86,28 @@ int main(void)
 
 	return 0;
 }
+
+#if CONFIG_BOARD_CSK6_DUOMOTAI_DEVKIT
+
+#include <zephyr/drivers/gpio.h>
+
+#define SD_SWITCH_NODE DT_ALIAS(sd_switch)
+static const struct gpio_dt_spec sd_switch = GPIO_DT_SPEC_GET(SD_SWITCH_NODE, gpios);
+
+/*
+    电路设计：需要将该引脚配置为低电平，SD引脚才能正常使用
+*/
+static int sd_switch_enable(void)
+{
+    gpio_pin_configure_dt(&sd_switch, GPIO_OUTPUT_ACTIVE);
+
+    gpio_pin_set_dt(&sd_switch, 0);
+
+    return 0;
+}
+
+/*
+	选择SD引脚复用，需要在CH32驱动初始化之后，同时又要保障在disk驱动初始化之前
+*/
+SYS_INIT(sd_switch_enable, POST_KERNEL, 89);
+#endif

@@ -1,7 +1,0 @@
-sample:
-  description: LVGL sample application
-  name: lvgl
-tests:
-  sample.display.lvgl.gui.wedgets:
-    build_only: true
-    platform_allow: csk6011a_nano csk6_duomotai_devkit
