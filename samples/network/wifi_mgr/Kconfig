@@ -4,11 +4,11 @@ menu "Example Configuration"
 
     config EXAMPLE_WIFI_SSID
         string "WiFi SSID"
-        default "listenai.com"
+        default "mywifi"
 
     config EXAMPLE_WIFI_PASSWORD
         string "WiFi password"
-        default "Listenai@work"
+        default "12345678"
 
 endmenu
 
