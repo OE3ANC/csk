@@ -1,10 +1,5 @@
 tests:
   sample.board.csk6.network.wifi_sta:
     platform_allow: csk6011a_c3_nano csk6_duomotai_devkit
-    tags: csk6
-    harness: console
     build_only: true
-    harness_config:
-      type: one_line
-      regex:
-        - "\\[WiFi sta\\] connected"
+    tags: csk6

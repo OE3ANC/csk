@@ -2,3 +2,4 @@ tests:
   sample.board.csk6.driver.i2c.i2c_master:
     platform_allow: csk6_duomotai_devkit
     build_only: true
+    tags: csk6
