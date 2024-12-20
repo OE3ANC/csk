@@ -36,215 +36,54 @@
 #define FLASH_TEST_PAGE_IDX 37
 
 #define FLASH_WRITE_DATA_STORE_INTERNAL_FLASH (1)
-
+#define FLASH_SIZE_2MB			      (2 * 1024 * 1024) // 擦除2MB大小
 int main(void)
 {
 	const struct device *flash_dev;
-	uint32_t buf_array_1[4] = {TEST_DATA_WORD_0, TEST_DATA_WORD_1, TEST_DATA_WORD_2,
-				   TEST_DATA_WORD_3};
-	uint32_t buf_array_2[4] = {TEST_DATA_WORD_3, TEST_DATA_WORD_1, TEST_DATA_WORD_2,
-				   TEST_DATA_WORD_0};
-	uint32_t buf_array_3[8] = {TEST_DATA_WORD_0, TEST_DATA_WORD_1, TEST_DATA_WORD_2,
-				   TEST_DATA_WORD_3, TEST_DATA_WORD_0, TEST_DATA_WORD_1,
-				   TEST_DATA_WORD_2, TEST_DATA_WORD_3};
-	uint32_t buf_word = 0U;
-	uint32_t i, offset;
-
+	uint8_t write_data = 0x55; // 要写入的数据 0x55
+	uint32_t offset;
+	int ret;
+	uint32_t start_time, end_time, elapsed_time;
 	printf("\nLitenai CSK6 Flash Testing\n");
 	printf("=========================\n");
-
+	start_time = k_uptime_get_32();
+	GPIO_SetDir(GPIOA(), (1 << 7), 1);
+	k_msleep(1000);
+	GPIO_PinWrite(GPIOA(), (1 << 7), 0);
+	k_msleep(500);
+	GPIO_PinWrite(GPIOA(), (1 << 7), 1);
 	flash_dev = DEVICE_DT_GET(DT_INST(0, listenai_csk_flash_controller));
 
 	if (!device_is_ready(flash_dev)) {
 		printf("Litenai CSK6 flash driver was not found!\n");
 		return -1;
 	}
-	
-#ifdef CONFIG_FLASH_CSK6_LOCK
-
-	uint32_t id = 0;
-	flash_read_jedec_id(flash_dev, (uint8_t*)&id);
-	printk("Flash ID: 0x%x\n", id);
-
-	flash_lock(flash_dev);
-
-	printk("==main write flash==\n");
-	int test_data = 0x12;
-	if(flash_write(flash_dev, FLASH_TEST_OFFSET, &test_data, sizeof(int)) != 0) {
-		printf("Flash write failed!\n");
-		printf("Flash flash_lock succeeded!\n");
-	} else {
-		printf("Flash write succeeded!\n");
-		printf("Flash flash_lock failed!\n");
-		flash_unlock(flash_dev);
-		return -1;
-	}
-	
-	flash_unlock(flash_dev);
-	if(flash_write(flash_dev, FLASH_TEST_OFFSET, &test_data, sizeof(int)) != 0) {
-		printf("Flash write failed!\n");
-		printf("Flash flash_unlock failed!\n");
-		return -1;
-	} else {
-		printf("Flash write succeeded!\n");
-		printf("Flash flash_unlock succeeded!\n");
-	}
-#endif
 
 	printf("\nTest 1: Flash erase page at 0x%x\n", FLASH_TEST_OFFSET);
-	if (flash_erase(flash_dev, FLASH_TEST_OFFSET, FLASH_PAGE_SIZE) != 0) {
+	if (flash_erase(flash_dev, FLASH_TEST_OFFSET, 1024 * 1024 * 2) != 0) {
 		printf("   Flash erase failed!\n");
 	} else {
 		printf("   Flash erase succeeded!\n");
 	}
-
-	printf("\nTest 2: Flash write (word array 1)\n");
-	for (i = 0U; i < ARRAY_SIZE(buf_array_1); i++) {
-		offset = FLASH_TEST_OFFSET + (i << 2);
-		printf("   Attempting to write %x at 0x%x\n", buf_array_1[i], offset);
-		if (flash_write(flash_dev, offset, &buf_array_1[i], sizeof(uint32_t)) != 0) {
-			printf("   Flash write failed!\n");
+	GPIO_PinWrite(GPIOA(), (1 << 7), 0);
+	k_msleep(500);
+	GPIO_PinWrite(GPIOA(), (1 << 7), 1);
+	printf("\nTest: Flash write 0x55 to the 2MB region starting at offset 0x%x\n",
+	       FLASH_TEST_OFFSET);
+	for (offset = FLASH_TEST_OFFSET; offset < FLASH_TEST_OFFSET + FLASH_SIZE_2MB;
+	     offset += FLASH_PAGE_SIZE) {
+		ret = flash_write(flash_dev, offset, &write_data, sizeof(write_data));
+		if (ret != 0) {
+			printf("   Flash write failed at offset 0x%x!\n", offset);
 			return -1;
 		}
-		printf("   Attempting to read 0x%x\n", offset);
-		if (flash_read(flash_dev, offset, &buf_word, sizeof(uint32_t)) != 0) {
-			printf("   Flash read failed!\n");
-			return -1;
-		}
-		printf("   Data read: %x\n", buf_word);
-		if (buf_array_1[i] == buf_word) {
-			printf("   Data read matches data written. Good!\n");
-		} else {
-			printf("   Data read does not match data written!\n");
-		}
 	}
-
-	offset = FLASH_TEST_OFFSET - FLASH_PAGE_SIZE * 2;
-	printf("\nTest 3: Flash erase (4 pages at 0x%x)\n", offset);
-	if (flash_erase(flash_dev, offset, FLASH_PAGE_SIZE * 4) != 0) {
-		printf("   Flash erase failed!\n");
-	} else {
-		printf("   Flash erase succeeded!\n");
-	}
-
-	printf("\nTest 4: Flash write (word array 2)\n");
-	for (i = 0U; i < ARRAY_SIZE(buf_array_2); i++) {
-		offset = FLASH_TEST_OFFSET + (i << 2);
-		printf("   Attempting to write %x at 0x%x\n", buf_array_2[i], offset);
-		if (flash_write(flash_dev, offset, &buf_array_2[i], sizeof(uint32_t)) != 0) {
-			printf("   Flash write failed!\n");
-			return -1;
-		}
-		printf("   Attempting to read 0x%x\n", offset);
-		if (flash_read(flash_dev, offset, &buf_word, sizeof(uint32_t)) != 0) {
-			printf("   Flash read failed!\n");
-			return -1;
-		}
-		printf("   Data read: %x\n", buf_word);
-		if (buf_array_2[i] == buf_word) {
-			printf("   Data read matches data written. Good!\n");
-		} else {
-			printf("   Data read does not match data written!\n");
-		}
-	}
-
-	printf("\nTest 5: Flash erase page at 0x%x\n", FLASH_TEST_OFFSET);
-	if (flash_erase(flash_dev, FLASH_TEST_OFFSET, FLASH_PAGE_SIZE) != 0) {
-		printf("   Flash erase failed!\n");
-	} else {
-		printf("   Flash erase succeeded!\n");
-	}
-
-	printf("\nTest 6: Non-word aligned write (word array 3)\n");
-	for (i = 0U; i < ARRAY_SIZE(buf_array_3); i++) {
-		offset = FLASH_TEST_OFFSET + (i << 2) + 1;
-		printf("   Attempting to write %x at 0x%x\n", buf_array_3[i], offset);
-		if (flash_write(flash_dev, offset, &buf_array_3[i], sizeof(uint32_t)) != 0) {
-			printf("   Flash write failed!\n");
-			return -1;
-		}
-		printf("   Attempting to read 0x%x\n", offset);
-		if (flash_read(flash_dev, offset, &buf_word, sizeof(uint32_t)) != 0) {
-			printf("   Flash read failed!\n");
-			return -1;
-		}
-		printf("   Data read: %x\n", buf_word);
-		if (buf_array_3[i] == buf_word) {
-			printf("   Data read matches data written. Good!\n");
-		} else {
-			printf("   Data read does not match data written!\n");
-		}
-	}
-
-#if defined(CONFIG_FLASH_PAGE_LAYOUT)
-	struct flash_pages_info info;
-	int rc;
-
-	rc = flash_get_page_info_by_offs(flash_dev, FLASH_TEST_OFFSET2, &info);
-
-	printf("\nTest 7: Page layout API\n");
-
-	if (!rc) {
-		printf("   Offset  0x%08x:\n", FLASH_TEST_OFFSET2);
-		printf("     belongs to the page %u of start offset 0x%lx\n", info.index,
-		       info.start_offset);
-		printf("     and the size of 0x%08x B.\n", info.size);
-	} else {
-		printf("   Error: flash_get_page_info_by_offs returns %d\n", rc);
-	}
-
-	rc = flash_get_page_info_by_idx(flash_dev, FLASH_TEST_PAGE_IDX, &info);
-
-	if (!rc) {
-		printf("   Page of number %u has start offset 0x%lx\n", FLASH_TEST_PAGE_IDX,
-		       info.start_offset);
-		printf("     and size of 0x%x B.\n", info.size);
-		if (info.index == FLASH_TEST_PAGE_IDX) {
-			printf("     Page index resolved properly\n");
-		} else {
-			printf("     ERROR: Page index resolved to %u\n", info.index);
-		}
-
-	} else {
-		printf("   Error: flash_get_page_info_by_idx returns %d\n", rc);
-	}
-
-	printf("   SoC flash consists of %u pages.\n", flash_get_page_count(flash_dev));
-
-#endif
-
-	printf("\nTest 8: Write block size API\n");
-	printf("   write-block-size = %u\n", flash_get_write_block_size(flash_dev));
-
-#if defined(FLASH_WRITE_DATA_STORE_INTERNAL_FLASH)
-	char flashStr[128];
-	const char *pstring = "This is a string stored in the internal Flash space that will be "
-			      "further written to the internal Flash";
-	printf("\nTest 9: Write data form internal flash address area\n");
-	if (flash_erase(flash_dev, FLASH_TEST_OFFSET, FLASH_PAGE_SIZE) != 0) {
-		printf("   Flash erase failed!\n");
-		return -1;
-	} else {
-		printf("   Flash erase succeeded!\n");
-	}
-
-	offset = FLASH_TEST_OFFSET;
-	if (flash_write(flash_dev, offset, pstring, strlen(pstring) + 1) != 0) {
-		printf("   Flash write failed!\n");
-		return -1;
-	}
-	printf("   Attempting to read 0x%x\n", offset);
-	if (flash_read(flash_dev, offset, flashStr, sizeof(flashStr)) != 0) {
-		printf("   Flash read failed!\n");
-		return -1;
-	}
-
-	if (0 == strcmp(pstring, flashStr)) {
-		printf("   Data read matches data written. Good!\n");
-	} else {
-		printf("   Data read does not match data written!\n");
-	}
-#endif
-
+	end_time = k_uptime_get_32();
+	elapsed_time = end_time - start_time;
+	printf("\nTotal time taken: %u milliseconds\n", elapsed_time);
+	printf("   Flash write succeeded!\n");
+	GPIO_PinWrite(GPIOA(), (1 << 7), 0);
+	k_msleep(500);
+	GPIO_PinWrite(GPIOA(), (1 << 7), 1);
 	return 0;
 }

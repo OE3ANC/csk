@@ -13,14 +13,14 @@
 		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		filesystem_part: partition@160000 {
-			reg = <0x160000 0x00600000>;
+		filesystem_part: partition@100000 {
+			reg = <0x100000 0x200000>;
 		};
 		/*
 		 * Reserve the final 640 KiB for file system partition
 		 */
-		storage_partition: partition@760000 {
-			reg = <0x760000 0x00a0000>;
+		storage_partition: partition@600000 {
+			reg = <0x600000 0x200000>;
 		};
 	};
 };
