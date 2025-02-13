@@ -111,7 +111,7 @@ __attribute__((section(".itcm"))) static int32_t st7789v_transmit(const struct d
 static void st7789v_exit_sleep(const struct device *dev)
 {
 	st7789v_transmit(dev, ST7789V_CMD_SLEEP_OUT, NULL, 0);
-	// k_sleep(K_MSEC(120));
+	// k_sleep(K_MSEC(10));
 }
 
 static void st7789v_reset_display(const struct device *dev)
@@ -122,9 +122,9 @@ static void st7789v_reset_display(const struct device *dev)
 	if (config->reset_gpio.port != NULL) {
 		k_sleep(K_MSEC(1));
 		gpio_pin_set_dt(&config->reset_gpio, 1);
-		k_sleep(K_MSEC(6));
+		k_sleep(K_MSEC(3));
 		gpio_pin_set_dt(&config->reset_gpio, 0);
-		k_sleep(K_MSEC(20));
+		k_sleep(K_MSEC(5));
 	} else {
 		st7789v_transmit(dev, ST7789V_CMD_SW_RESET, NULL, 0);
 		k_sleep(K_MSEC(5));
