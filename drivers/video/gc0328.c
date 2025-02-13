@@ -412,7 +412,8 @@ static int gc0328_write_all(const struct device *dev, const struct gc0328_reg *r
 
 	for (i = 0; i < reg_num; i++) {
 		err = gc0328_write_reg(dev, regs[i].addr, regs[i].value);
-		k_sleep(K_MSEC(1));
+		// k_sleep(K_MSEC(1));
+		k_usleep(105);
 		if (err) {
 			return err;
 		}
@@ -602,6 +603,7 @@ static int gc0328_reg_init(const struct device *dev)
 		LOG_ERR("Unable to write sco30iot config");
 		return ret;
 	}
+	LOG_INF("Galaxyc GC0328 init ok !!!, pid 0x%X", pid);
 	return ret;
 }
 
