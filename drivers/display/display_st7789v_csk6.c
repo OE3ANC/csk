@@ -111,7 +111,7 @@ __attribute__((section(".itcm"))) static int32_t st7789v_transmit(const struct d
 static void st7789v_exit_sleep(const struct device *dev)
 {
 	st7789v_transmit(dev, ST7789V_CMD_SLEEP_OUT, NULL, 0);
-	k_sleep(K_MSEC(120));
+	// k_sleep(K_MSEC(120));
 }
 
 static void st7789v_reset_display(const struct device *dev)
