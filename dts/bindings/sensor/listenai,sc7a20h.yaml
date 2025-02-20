@@ -1,0 +1,13 @@
+description: SC7A20H 3-axis accelerometer
+
+compatible: "listenai,sc7a20h"
+
+include: [sensor-device.yaml, i2c-device.yaml]
+
+properties:
+  int-gpios:
+    type: phandle-array
+    description: |
+      The INT signal default configuration is active-high.
+      The property value should ensure the flags properly describe
+      the signal that is presented to the driver.

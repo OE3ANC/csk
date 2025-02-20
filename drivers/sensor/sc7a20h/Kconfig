@@ -1,0 +1,49 @@
+# SC7A20H Three-Axis Accelerometer configuration options
+
+# Copyright (c) 2025 Anhui(Shenzhen) Listenai Co., Ltd.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config SC7A20H
+	bool "SC7A20H Three-Axis Accelerometer"
+	default y
+	depends on DT_HAS_LISTENAI_SC7A20H_ENABLED
+	select I2C
+	help
+	  Enable driver for SC7A20H I2C-based three-axis accelerometer.
+
+if SC7A20H
+
+config SC7A20H_TRIGGER_MODE
+	int "Trigger mode"
+	range 0 2
+	default 0
+	help
+	  Specify the type of triggering to be used by the driver.
+	  0 - No trigger
+	  1 - Global thread
+	  2 - Own thread
+
+config SC7A20H_THREAD_PRIORITY
+	int "Thread priority"
+	depends on SC7A20H_TRIGGER_MODE = 2
+	default 10
+	help
+	  Priority of thread used by the driver to handle interrupts.
+
+config SC7A20H_THREAD_STACK_SIZE
+	int "Thread stack size"
+	depends on SC7A20H_TRIGGER_MODE = 2
+	default 1024
+	help
+	  Stack size of thread used by the driver to handle interrupts.
+
+config SC7A20H_ACCEL_FS
+	int "Accelerometer full-scale range"
+	default 2
+	help
+	  Accelerometer full-scale range.
+	  An X value for the config represents a range of +/- X g.
+	  Valid values are 2, 4, 8 and 16.
+
+endif # SC7A20H

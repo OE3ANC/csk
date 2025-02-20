@@ -1,0 +1,7 @@
+menu "CSK SENSOR Drivers"
+
+rsource "mpu6050/Kconfig"
+
+rsource "sc7a20h/Kconfig"
+
+endmenu
