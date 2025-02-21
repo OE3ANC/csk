@@ -14,10 +14,17 @@ config SC7A20H
 
 if SC7A20H
 
+config SC7A20H_TRIGGER
+	bool "Enable trigger support"
+	depends on GPIO
+	help
+	  Enable trigger support (interrupts) for SC7A20H accelerometer.
+
 config SC7A20H_TRIGGER_MODE
 	int "Trigger mode"
 	range 0 2
 	default 0
+	depends on SC7A20H_TRIGGER
 	help
 	  Specify the type of triggering to be used by the driver.
 	  0 - No trigger

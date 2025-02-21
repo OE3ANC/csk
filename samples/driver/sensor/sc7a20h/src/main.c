@@ -73,9 +73,9 @@ int main(void)
     // 这个可以用 但是是搜索全局兼容性获得的 如果重复定义了sc7a20h 就会有报错
     //const struct device *const sc7a20h = DEVICE_DT_GET_ANY(sc7a20);
     //不可用 获取不了
-    //const struct device *const sc7a20h = DEVICE_DT_GET(DT_ALIAS(sc7a20h_csk6));
-    const struct device *const sc7a20h = DEVICE_DT_GET((DT_NODELABEL(sc7a20h)));
-    
+    //const struct device *const sc7a20h = DEVICE_DT_GET(DT_ALIAS(sc7a20h_csk6)); 
+    const struct device *const sc7a20h = DEVICE_DT_GET(DT_NODELABEL(sc7a20h));
+
     if (!device_is_ready(sc7a20h)) {
         printf("Device %s is not ready\n", sc7a20h->name);
         return 0;

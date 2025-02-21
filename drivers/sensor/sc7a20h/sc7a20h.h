@@ -42,6 +42,7 @@ struct sc7a20h_data {
 
 struct sc7a20h_config {
     struct i2c_dt_spec i2c;
+    //如果传感器中断触发的时候 这需要用到IO口去中断触发
 #ifdef CONFIG_SC7A20H_TRIGGER
     struct gpio_dt_spec int_gpio;
 #endif /* CONFIG_SC7A20H_TRIGGER */
