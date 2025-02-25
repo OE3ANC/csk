@@ -4,4 +4,6 @@ rsource "mpu6050/Kconfig"
 
 rsource "sc7a20h/Kconfig"
 
+rsource "qmi8658c/Kconfig"
+
 endmenu

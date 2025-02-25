@@ -70,10 +70,6 @@ static void handle_sc7a20h_drdy(const struct device *dev,
 
 int main(void)
 {
-    // 这个可以用 但是是搜索全局兼容性获得的 如果重复定义了sc7a20h 就会有报错
-    //const struct device *const sc7a20h = DEVICE_DT_GET_ANY(sc7a20);
-    //不可用 获取不了
-    //const struct device *const sc7a20h = DEVICE_DT_GET(DT_ALIAS(sc7a20h_csk6)); 
     const struct device *const sc7a20h = DEVICE_DT_GET(DT_NODELABEL(sc7a20h));
 
     if (!device_is_ready(sc7a20h)) {
@@ -93,14 +89,23 @@ int main(void)
     printk("Configured for triggered sampling.\n");
 #endif
 
-    while (!IS_ENABLED(CONFIG_SC7A20H_TRIGGER)) {
+    // 修改循环逻辑，使其在任何情况下都能工作
+#ifdef CONFIG_SC7A20H_TRIGGER
+    // 触发模式下，主线程可以休眠
+    while (1) {
+        k_sleep(K_SECONDS(10));  // 主线程每10秒醒来一次，可以用于监控或其他任务
+    }
+#else
+    // 非触发模式下，使用轮询方式
+    while (1) {
         int rc = process_sc7a20h(sc7a20h);
         if (rc != 0) {
+            printf("Error in polling mode: %d\n", rc);
             break;
         }
         k_sleep(K_SECONDS(2));
     }
+#endif
 
-    /* triggered runs with its own thread after exit */
     return 0;
 }

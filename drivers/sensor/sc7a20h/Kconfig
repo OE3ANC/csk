@@ -20,28 +20,36 @@ config SC7A20H_TRIGGER
 	help
 	  Enable trigger support (interrupts) for SC7A20H accelerometer.
 
-config SC7A20H_TRIGGER_MODE
-	int "Trigger mode"
-	range 0 2
-	default 0
+choice
+	prompt "触发模式选择"
+	default SC7A20H_TRIGGER_THREAD
 	depends on SC7A20H_TRIGGER
+
+config SC7A20H_TRIGGER_THREAD
+	bool "线程模式"
 	help
-	  Specify the type of triggering to be used by the driver.
-	  0 - No trigger
-	  1 - Global thread
-	  2 - Own thread
+		使用独立线程处理传感器触发事件
+
+config SC7A20H_TRIGGER_GLOBAL_THREAD
+	bool "全局线程模式"
+	help
+		使用系统全局线程处理触发事件
+
+endchoice
 
 config SC7A20H_THREAD_PRIORITY
 	int "Thread priority"
-	depends on SC7A20H_TRIGGER_MODE = 2
 	default 10
+	depends on SC7A20H_TRIGGER_THREAD
+	range 0 255
 	help
 	  Priority of thread used by the driver to handle interrupts.
 
 config SC7A20H_THREAD_STACK_SIZE
 	int "Thread stack size"
-	depends on SC7A20H_TRIGGER_MODE = 2
 	default 1024
+	depends on SC7A20H_TRIGGER_THREAD
+	range 512 4096
 	help
 	  Stack size of thread used by the driver to handle interrupts.
 

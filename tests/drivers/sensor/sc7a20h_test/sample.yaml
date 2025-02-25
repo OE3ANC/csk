@@ -1,9 +1,14 @@
-sample:
-  name: SC7A20H Sensor Sample
 tests:
-  sample.sensor.sc7a20h:
-    build_only: true
+  sample.drivers.sensor.sc7a20h:
     platform_allow: csk6_duomotai_devkit
     tags: sensors
-    integration_platforms:
-      - csk6_duomotai_devkit
+    harness: console
+    harness_config:
+      type: multi_line
+      regex:
+        - "I2C connection test passed!"
+        - "SC7A20H CHECK SUCCESS, 1"
+        - "SC7A20H CHECK SUCCESS, 2"
+        - "SC7A20H CHECK SUCCESS, 3"
+        - "SC7A20H CHECK SUCCESS, 4"
+        - "SC7A20H CHECK SUCCESS, 5"

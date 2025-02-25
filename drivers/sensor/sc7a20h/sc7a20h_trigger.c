@@ -42,7 +42,7 @@ static void sc7a20h_gpio_callback(const struct device *dev,
                                   struct gpio_callback *cb, uint32_t pins)
 {
     struct sc7a20h_data *drv_data =
-        CONTAINER_OF(cb, struct sc7a20h_data, gpio_cb);
+        CONTAINER_OF(cb, struct sc7a20h_data, gpio_cb);//使用这个宏回调结构体指针cb获取sc7a20h_data结构体指针drv_data
     const struct sc7a20h_config *cfg = drv_data->dev->config;
 
     ARG_UNUSED(pins);

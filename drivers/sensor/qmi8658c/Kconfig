@@ -1,0 +1,68 @@
+# QMI8658C 6-axis IMU configuration options
+
+config QMI8658C
+    bool "QMI8658C 6-Axis IMU"
+    default y
+    depends on DT_HAS_LISTENAI_QMI8658C_ENABLED
+    select I2C
+    help
+      Enable driver for QMI8658C 6-axis IMU sensor.
+
+if QMI8658C
+
+config QMI8658C_TRIGGER
+    bool "使用中断触发模式"
+    default n
+    depends on GPIO
+    help
+      选择 Y 启用中断触发模式，选择 N 使用普通 I2C 轮询模式。
+      需要正确配置 GPIO 中断引脚。
+
+if QMI8658C_TRIGGER
+
+choice QMI8658C_TRIGGER_MODE
+    prompt "触发模式选择"
+    default QMI8658C_TRIGGER_GLOBAL_THREAD
+    help
+      选择中断触发的处理方式。
+
+config QMI8658C_TRIGGER_THREAD
+    bool "独立线程模式"
+    help
+      使用独立的线程处理传感器中断事件，
+      可以设置独立的优先级和栈大小。
+
+config QMI8658C_TRIGGER_GLOBAL_THREAD
+    bool "全局线程模式"
+    help
+      使用系统全局工作队列处理中断事件，
+      与其他设备共享系统工作线程。
+
+endchoice
+
+config QMI8658C_THREAD_PRIORITY
+    int "线程优先级"
+    default 10
+    depends on QMI8658C_TRIGGER_THREAD
+    range 0 255
+    help
+      独立线程模式下的线程优先级。
+
+config QMI8658C_THREAD_STACK_SIZE
+    int "线程栈大小"
+    default 1024
+    depends on QMI8658C_TRIGGER_THREAD
+    range 512 4096
+    help
+      独立线程模式下的线程栈大小。
+
+endif # QMI8658C_TRIGGER
+
+config QMI8658C_ACCEL_FS
+    int "加速度计量程范围"
+    default 2
+    help
+      加速度计满量程范围设置，单位为 g。
+      可选值为 2、4、8、16，表示 ±2g、±4g、±8g、±16g。
+
+endif # QMI8658C

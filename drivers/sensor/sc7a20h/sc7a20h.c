@@ -10,24 +10,33 @@
 
 LOG_MODULE_REGISTER(SC7A20H_CSK6, CONFIG_SENSOR_LOG_LEVEL);
 
+// 添加比例因子定义
+#define SENSITIVITY_2G    1024  // LSB/g
+#define SENSITIVITY_4G    512   // LSB/g
+#define SENSITIVITY_8G    256   // LSB/g
+#define SENSITIVITY_16G   128   // LSB/g
+
 static void sc7a20h_convert_accel(struct sensor_value *val, int16_t raw_val)
 {
+    // 使用8g量程的灵敏度
     int64_t conv_val;
-    // 将原始加速度值转换为标准加速度值
-    conv_val = ((int64_t)raw_val * SENSOR_G) / 16384;
-    //val1 存储整数部分，val2 存储小数部分
+    conv_val = ((int64_t)raw_val * SENSOR_G) / SENSITIVITY_8G;
     val->val1 = conv_val / 1000000;
     val->val2 = conv_val % 1000000;
 }
-//chan为读取哪个轴的值 val为存储读取值的指针
+
 static int sc7a20h_channel_get(const struct device *dev,
                                enum sensor_channel chan,
                                struct sensor_value *val)
 {
     struct sc7a20h_data *drv_data = dev->data;
 
+    // 确保数据有效
+    if (!drv_data) {
+        return -EINVAL;
+    }
+
     switch (chan) {
-        //zephyr 的sensor驱动有
     case SENSOR_CHAN_ACCEL_XYZ:
         sc7a20h_convert_accel(val, drv_data->accel_x);
         sc7a20h_convert_accel(val + 1, drv_data->accel_y);
@@ -54,17 +63,42 @@ static int sc7a20h_sample_fetch(const struct device *dev,
 {
     struct sc7a20h_data *drv_data = dev->data;
     const struct sc7a20h_config *cfg = dev->config;
-    int16_t buf[3];
-    //从寄存器读取数据 读取到原始数据 转换为CPU字节序 然后存储到drv_data中 就是存储在设备数据结构中
-    if (i2c_burst_read_dt(&cfg->i2c, SC7A20H_REG_DATA_START, (uint8_t *)buf,
-                          6) < 0) {
-        LOG_ERR("Failed to read data sample.");
-        return -EIO;
+    uint8_t buf[6];
+    int ret;
+
+    // 确保数据有效
+    if (!drv_data || !cfg) {
+        return -EINVAL;
     }
 
-    drv_data->accel_x = sys_le16_to_cpu(buf[0]);
-    drv_data->accel_y = sys_le16_to_cpu(buf[1]);
-    drv_data->accel_z = sys_le16_to_cpu(buf[2]);
+    // 先读取状态寄存器确保数据就绪
+    uint8_t status;
+    ret = i2c_reg_read_byte_dt(&cfg->i2c, SC7A20H_REG_STATUS, &status);
+    if (ret < 0) {
+        LOG_ERR("Failed to read status register");
+        return ret;
+    }
+
+    if (!(status & 0x08)) {  // 检查数据就绪位
+        return -EBUSY;
+    }
+
+    // 使用多字节读取确保数据一致性
+    ret = i2c_burst_read_dt(&cfg->i2c, SC7A20H_REG_OUT_X_L, buf, 6);
+    if (ret < 0) {
+        LOG_ERR("Failed to read acceleration data");
+        return ret;
+    }
+
+    // 组合数据，注意字节序
+    drv_data->accel_x = (int16_t)((buf[1] << 8) | buf[0]);
+    drv_data->accel_y = (int16_t)((buf[3] << 8) | buf[2]);
+    drv_data->accel_z = (int16_t)((buf[5] << 8) | buf[4]);
+
+    LOG_DBG("x: %d, y: %d, z: %d",
+            drv_data->accel_x,
+            drv_data->accel_y,
+            drv_data->accel_z);
 
     return 0;
 }
@@ -85,6 +119,7 @@ int sc7a20h_init(const struct device *dev)
     //I2C设备配置
     const struct sc7a20h_config *cfg = dev->config;
     uint8_t id;
+    int ret;
 
     if (!device_is_ready(cfg->i2c.bus)) {
         //这里要加入处理I2C设备未准备好的代码 LOG也行
@@ -92,29 +127,40 @@ int sc7a20h_init(const struct device *dev)
         return -ENODEV;
     }
 
+    // 初始化 drv_data
+    drv_data->accel_x = 0;
+    drv_data->accel_y = 0;
+    drv_data->accel_z = 0;
+
     /* check chip ID */
     //IICinit 对OXOF的寄存器进行读取 确认读取的ID是否与预期值匹配 看看芯片手册
-    if (i2c_reg_read_byte_dt(&cfg->i2c, SC7A20H_REG_CHIP_ID, &id) < 0) {
-        LOG_ERR("Failed to read chip ID.");
-        return -EIO;
+    ret = i2c_reg_read_byte_dt(&cfg->i2c, SC7A20H_REG_CHIP_ID, &id);
+    if (ret < 0) {
+        LOG_ERR("Failed to read chip ID");
+        return ret;
     }
 
     if (id != SC7A20H_CHIP_ID) {
-        LOG_ERR("Invalid chip ID.");
+        LOG_ERR("Invalid chip ID: 0x%02x", id);
         return -EINVAL;
     }
 
-    /* configure control registers 
-        CTRL1寄存器（0x20）配置为0x57：启用XYZ轴、设置100Hz输出数据率
-        CTRL4寄存器（0x23）配置为0x00：禁用中断、设置±2g量程
-    */
-    if (i2c_reg_write_byte_dt(&cfg->i2c, SC7A20H_REG_CTRL1, 0x57) < 0) {
-        LOG_ERR("Failed to configure control register 1.");
+    // 复位芯片
+    if (i2c_reg_write_byte_dt(&cfg->i2c, SC7A20H_REG_CTRL2, 0x40) < 0) {
+        return -EIO;
+    }
+    k_msleep(10);  // 等待复位完成
+
+    // 配置CTRL1：使能XYZ轴，设置50Hz采样率
+    if (i2c_reg_write_byte_dt(&cfg->i2c, SC7A20H_REG_CTRL1, 
+        SC7A20H_CTRL1_XEN | SC7A20H_CTRL1_YEN | SC7A20H_CTRL1_ZEN | 
+        SC7A20H_CTRL1_ODR_50HZ) < 0) {
         return -EIO;
     }
 
-    if (i2c_reg_write_byte_dt(&cfg->i2c, SC7A20H_REG_CTRL4, 0x00) < 0) {
-        LOG_ERR("Failed to configure control register 4.");
+    // 配置CTRL4：设置±2g量程，高分辨率模式
+    if (i2c_reg_write_byte_dt(&cfg->i2c, SC7A20H_REG_CTRL4, 
+        SC7A20H_CTRL4_FS_2G | BIT(3)) < 0) {
         return -EIO;
     }
 

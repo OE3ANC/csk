@@ -16,7 +16,7 @@
 
 
 &i2c1 {
-	mpu6050_sensor: mpu6050@68 {
+	mpu6050: mpu6050@68 {
 		compatible = "listenai,mpu6050";
 		reg = <0x68>;
 		status = "okay";
