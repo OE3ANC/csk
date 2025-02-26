@@ -14,6 +14,7 @@
 
 #include "qmi8658c.h"
 
+// 确保主模块的日志注册使用相同的名称
 LOG_MODULE_REGISTER(QMI8658C_CSK6, CONFIG_SENSOR_LOG_LEVEL);
 
 static void qmi8658c_convert_accel(struct sensor_value *val, int16_t raw_val,
@@ -146,26 +147,26 @@ static int qmi8658c_init(const struct device *dev)
         return -EIO;
     }
 
-    /* 配置 Ctrl1: 使能中断和基本设置 */
+    /* 配置中断 */
+    /* CTRL1: 使能数据就绪中断，设置为下降沿触发 */
     ret = i2c_reg_write_byte_dt(&cfg->i2c, QMI8658C_CTRL1, 
-                               0x60 | QMI8658C_INT2_ENABLE | QMI8658C_INT1_ENABLE);
+                               0x60 | QMI8658C_INT1_ENABLE | 0x04); // 0x04 设置为下降沿
     if (ret < 0) return ret;
 
-    /* 配置加速度计: ±8g, 500Hz */
+    /* 配置加速度计和陀螺仪 */
     ret = i2c_reg_write_byte_dt(&cfg->i2c, QMI8658C_CTRL2, 
                                QMI8658C_ACCRANGE_8G | QMI8658C_ODR_500HZ);
     if (ret < 0) return ret;
 
-    /* 配置陀螺仪: ±512dps, 500Hz */
     ret = i2c_reg_write_byte_dt(&cfg->i2c, QMI8658C_CTRL3, 
                                QMI8658C_GYRORANGE_512DPS | QMI8658C_ODR_500HZ);
     if (ret < 0) return ret;
 
-    /* 配置低通滤波器 */
+    /* 配置低通滤波器和其他设置 */
     ret = i2c_reg_write_byte_dt(&cfg->i2c, QMI8658C_CTRL5, 0x03);
     if (ret < 0) return ret;
 
-    /* 配置传感器使能 */
+    /* 使能传感器和中断功能 */
     ret = i2c_reg_write_byte_dt(&cfg->i2c, QMI8658C_CTRL7,
                                QMI8658C_ACC_ENABLE | QMI8658C_GYR_ENABLE);
     if (ret < 0) return ret;

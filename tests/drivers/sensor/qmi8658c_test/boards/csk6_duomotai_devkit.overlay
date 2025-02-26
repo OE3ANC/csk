@@ -30,6 +30,6 @@
         compatible = "listenai,qmi8658c";
         reg = <0x6b>;          // I2C地址：0x6B (SDO/SA0引脚接GND时)
         status = "okay";
-        int-gpios = <&gpiob 10 GPIO_ACTIVE_HIGH>;
+        int-gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
     };
 };

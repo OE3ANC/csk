@@ -9,7 +9,7 @@
 #include <zephyr/logging/log.h>
 #include "qmi8658c.h"
 
-LOG_MODULE_DECLARE(QMI8658C, CONFIG_SENSOR_LOG_LEVEL);
+LOG_MODULE_DECLARE(QMI8658C_CSK6, CONFIG_SENSOR_LOG_LEVEL);
 
 int qmi8658c_trigger_set(const struct device *dev,
                       const struct sensor_trigger *trig,
@@ -91,7 +91,9 @@ int qmi8658c_init_interrupt(const struct device *dev)
         return -ENODEV;
     }
 
-    gpio_pin_configure_dt(&cfg->int_gpio, GPIO_INPUT);
+    /* 配置 GPIO 为下降沿触发 */
+    gpio_pin_configure_dt(&cfg->int_gpio, GPIO_INPUT | GPIO_PULL_UP);
+    gpio_pin_interrupt_configure_dt(&cfg->int_gpio, GPIO_INT_EDGE_FALLING);
 
     gpio_init_callback(&drv_data->gpio_cb,
                       qmi8658c_gpio_callback,
