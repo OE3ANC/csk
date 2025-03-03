@@ -64,16 +64,10 @@ static int process_qmi8658c(const struct device *dev)
 int main(void)
 {
     const struct device *dev = DEVICE_DT_GET(DT_NODELABEL(qmi8658c));
-    const struct device *i2c_dev = DEVICE_DT_GET(DT_NODELABEL(i2c1));
     uint32_t cnt = 0;
     int ret;
 
     printk("QMI8658C Sample start\n");
-
-    if (!device_is_ready(i2c_dev)) {
-        printk("I2C bus not ready\n");
-        return -1;
-    }
 
     if (!device_is_ready(dev)) {
         printk("QMI8658C device not found\n");
@@ -85,7 +79,7 @@ int main(void)
 
     while (1) {
         cnt++;
-        printk("\n----- QMI8658C TEST Round %d -----\n", cnt);
+        printk("\n----- QMI8658C Round %d -----\n", cnt);
 
         ret = process_qmi8658c(dev);
         if (ret != 0) {

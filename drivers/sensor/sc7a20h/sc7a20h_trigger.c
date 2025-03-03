@@ -6,7 +6,8 @@
 #include <zephyr/logging/log.h>
 #include "sc7a20h.h"
 
-LOG_MODULE_DECLARE(SC7A20H, CONFIG_SENSOR_LOG_LEVEL);
+
+LOG_MODULE_DECLARE(SC7A20H_CSK6, CONFIG_SENSOR_LOG_LEVEL);
 
 int sc7a20h_trigger_set(const struct device *dev,
                         const struct sensor_trigger *trig,
@@ -86,7 +87,10 @@ static void sc7a20h_work_cb(struct k_work *work)
     struct sc7a20h_data *drv_data =
         CONTAINER_OF(work, struct sc7a20h_data, work);
 
-    sc7a20h_thread_cb(drv_data->dev);
+    if (drv_data->data_ready_handler) {
+        drv_data->data_ready_handler(drv_data->dev,
+                                   drv_data->data_ready_trigger);
+    }
 }
 #endif
 
@@ -102,7 +106,7 @@ int sc7a20h_init_interrupt(const struct device *dev)
 
     drv_data->dev = dev;
 
-    gpio_pin_configure_dt(&cfg->int_gpio, GPIO_INPUT);
+    gpio_pin_configure_dt(&cfg->int_gpio, GPIO_INPUT | GPIO_PULL_UP);
 
     gpio_init_callback(&drv_data->gpio_cb,
                        sc7a20h_gpio_callback,
@@ -132,8 +136,7 @@ int sc7a20h_init_interrupt(const struct device *dev)
     drv_data->work.handler = sc7a20h_work_cb;
 #endif
 
-    gpio_pin_interrupt_configure_dt(&cfg->int_gpio,
-                                    GPIO_INT_EDGE_TO_ACTIVE);
+    gpio_pin_interrupt_configure_dt(&cfg->int_gpio, GPIO_INT_EDGE_FALLING);
 
     return 0;
 }

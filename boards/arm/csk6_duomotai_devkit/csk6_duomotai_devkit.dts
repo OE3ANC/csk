@@ -534,6 +534,16 @@ zephyr_udc0: &usbotg {
                         #pwm-cells = <4>;
                 };
         };
+
+        sc7a20h_csk6_test: sc7a20h@18 {
+                compatible = "listenai,sc7a20h";
+                reg = <0x18>;
+                status = "okay";
+                
+#ifdef CONFIG_SC7A20H_TRIGGER
+                int-gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
+#endif
+        };
 };
 
 &spi1 {

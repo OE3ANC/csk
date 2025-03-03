@@ -126,7 +126,7 @@ static void trigger_handler(const struct device *dev,
     int ret;
     struct sensor_value accel[3], gyro[3], temperature;
 
-    /* 在中断触发时读取数据 */
+   
     ret = sensor_sample_fetch(dev);
     if (ret != 0) {
         printk("sensor_sample_fetch failed: %d\n", ret);

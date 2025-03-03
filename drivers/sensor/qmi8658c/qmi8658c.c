@@ -14,7 +14,7 @@
 
 #include "qmi8658c.h"
 
-// 确保主模块的日志注册使用相同的名称
+
 LOG_MODULE_REGISTER(QMI8658C_CSK6, CONFIG_SENSOR_LOG_LEVEL);
 
 static void qmi8658c_convert_accel(struct sensor_value *val, int16_t raw_val,
@@ -138,7 +138,7 @@ static int qmi8658c_init(const struct device *dev)
         LOG_ERR("Failed to reset device");
         return ret;
     }
-    k_msleep(50);  // 等待复位完成
+    k_msleep(50);  
 
     /* 检查芯片 ID */
     ret = i2c_reg_read_byte_dt(&cfg->i2c, QMI8658C_WHO_AM_I, &chip_id);

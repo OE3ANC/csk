@@ -11,7 +11,7 @@ if(NOT ${BOARD} IN_LIST SUPPORT_BOARDS)
     message(FATAL_ERROR "\nThe project does not support the ${BOARD}")
 endif()
 
-find_package(Zephyr HINTS $ENV{ZEPHYR_BASE})
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(sc7a20h_test)
 
 target_sources(app PRIVATE src/main.c)

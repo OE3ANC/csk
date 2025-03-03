@@ -1,4 +1,8 @@
-# QMI8658C 6-axis IMU configuration options
+# QMI8658C configuration options
+
+# Copyright (c) 2025 Anhui(Shenzhen) Listenai Co., Ltd.
+#
+# SPDX-License-Identifier: Apache-2.0
 
 config QMI8658C
     bool "QMI8658C 6-Axis IMU"

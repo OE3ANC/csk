@@ -47,13 +47,21 @@
 #define SC7A20H_CTRL4_FS_8G      (0x2 << 4)
 #define SC7A20H_CTRL4_FS_16G     (0x3 << 4)
 
+// 添加灵敏度定义
+#define SC7A20H_SENSITIVITY_2G    1024  // LSB/g
+#define SC7A20H_SENSITIVITY_4G    512   // LSB/g
+#define SC7A20H_SENSITIVITY_8G    256   // LSB/g
+#define SC7A20H_SENSITIVITY_16G   128   // LSB/g
+
 struct sc7a20h_data {
     int16_t accel_x;
     int16_t accel_y;
     int16_t accel_z;
 
+    uint16_t sensitivity;  // 添加灵敏度配置
+    const struct device *dev;  // 添加设备指针
+
 #ifdef CONFIG_SC7A20H_TRIGGER
-    const struct device *dev;
     struct gpio_callback gpio_cb;
 
     const struct sensor_trigger *data_ready_trigger;
@@ -72,7 +80,7 @@ struct sc7a20h_data {
 
 struct sc7a20h_config {
     struct i2c_dt_spec i2c;
-    //如果传感器中断触发的时候 这需要用到IO口去中断触发
+    
 #ifdef CONFIG_SC7A20H_TRIGGER
     struct gpio_dt_spec int_gpio;
 #endif /* CONFIG_SC7A20H_TRIGGER */
