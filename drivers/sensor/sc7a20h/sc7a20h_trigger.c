@@ -7,7 +7,7 @@
 #include "sc7a20h.h"
 
 
-LOG_MODULE_DECLARE(SC7A20H_CSK6, CONFIG_SENSOR_LOG_LEVEL);
+LOG_MODULE_DECLARE(SC7A20H_CSK6, CONFIG_LOG_DEFAULT_LEVEL);
 
 int sc7a20h_trigger_set(const struct device *dev,
                         const struct sensor_trigger *trig,

@@ -5,7 +5,7 @@
 
 config MPU6050
 	bool "MPU6050 Six-Axis Motion Tracking Device"
-	default y
+	default n
 	depends on DT_HAS_LISTENAI_MPU6050_ENABLED
 	select I2C
 	help

@@ -8,7 +8,7 @@
 
 #include "sc7a20h.h"
 
-LOG_MODULE_REGISTER(SC7A20H_CSK6, CONFIG_SENSOR_LOG_LEVEL);
+LOG_MODULE_REGISTER(SC7A20H_CSK6, CONFIG_LOG_DEFAULT_LEVEL);
 
 static void sc7a20h_convert_accel(struct sensor_value *val, int16_t raw_val, uint16_t sensitivity)
 {
@@ -164,10 +164,11 @@ static int sc7a20h_init(const struct device *dev)
                                                       { 0 }),))               \
     };                                                                        \
                                                                               \
-    SENSOR_DEVICE_DT_INST_DEFINE(inst, sc7a20h_init, NULL,                   \
-                               &sc7a20h_data_##inst,                         \
-                               &sc7a20h_config_##inst, POST_KERNEL,          \
-                               CONFIG_SENSOR_INIT_PRIORITY,                   \
-                               &sc7a20h_driver_api);
+    DEVICE_DT_INST_DEFINE(inst,                                              \
+                         sc7a20h_init, NULL,                                 \
+                         &sc7a20h_data_##inst,                               \
+                         &sc7a20h_config_##inst,                             \
+                         POST_KERNEL, 75,                                     \
+                         &sc7a20h_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(SC7A20H_DEFINE)
