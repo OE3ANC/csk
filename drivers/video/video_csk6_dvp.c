@@ -407,6 +407,13 @@ static int video_csk6_dvp_init(const struct device *dev)
 		ret = video_set_ctrl(config->sensor_dev, VIDEO_CID_INIT, (void *)1);
 	}
 
+	#if CONFIG_VEDIO_DIRECTION_ROTATION_HORIZONT
+		ret = video_set_ctrl(config->sensor_dev, VIDEO_CID_HFLIP, (void *)1);
+	#endif
+	#if CONFIG_VEDIO_DIRECTION_ROTATION_VERTICAL
+		ret = video_set_ctrl(config->sensor_dev, VIDEO_CID_VFLIP, (void *)1);
+	#endif
+
 	return 0;
 }
 

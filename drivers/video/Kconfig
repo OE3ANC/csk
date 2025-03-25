@@ -13,6 +13,14 @@ menuconfig VIDEO
 
 if VIDEO
 
+config VEDIO_DIRECTION_ROTATION_HORIZONT
+	bool "vedio horizontal direction rotation"
+	default n
+
+config VEDIO_DIRECTION_ROTATION_VERTICAL
+	bool "vedio vertical direction rotation"
+	default n
+
 config VIDEO_INIT_PRIORITY
 	int "Video initialization priority"
 	default 90
