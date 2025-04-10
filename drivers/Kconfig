@@ -54,4 +54,6 @@ rsource "rtc/Kconfig"
 
 rsource "bluetooth/Kconfig"
 
+rsource "sensor/Kconfig"
+
 endmenu

@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2025 Anhui(Shenzhen) Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+&pinctrl {
+    pinctrl_i2c1_scl_default: i2c1_scl_default {
+        pinctrls = <I2C1_SCL_GPIOB_09>;
+    };
+
+    pinctrl_i2c1_sda_default: i2c1_sda_default {
+        pinctrls = <I2C1_SDA_GPIOB_08>;
+    };
+};
+
+/ {
+    aliases {
+        sc7a20h-csk6-test = &sc7a20h_csk6_test;
+    };
+};
+
+&i2c1 {
+    status = "okay";
+    clock-frequency = <400000>;
+    pinctrl-0 = <&pinctrl_i2c1_scl_default &pinctrl_i2c1_sda_default>;
+    pinctrl-names = "default";
+
+    sc7a20h_csk6_test: sc7a20h@18 {
+        compatible = "listenai,sc7a20h";
+        reg = <0x18>;
+        status = "okay";
+        int-gpios = <&gpiob 0 GPIO_ACTIVE_LOW>;
+    };
+};
+
