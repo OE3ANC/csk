@@ -1,0 +1,16 @@
+# Copyright (c) 2025 LISTENAI (ShenZhen) Co., Ltd.
+# SPDX-License-Identifier: Apache-2.0
+description: SC7A20H 3-axis accelerometer sensor
+
+compatible: "listenai,sc7a20h"
+
+include: [sensor-device.yaml, i2c-device.yaml]
+
+properties:
+  int-gpios:
+    type: phandle-array
+    required: false
+    description: |
+      The INT pin defaults to active low when produced by the sensor.
+      The property value should ensure the flags properly describe
+      the signal that is presented to the driver.
