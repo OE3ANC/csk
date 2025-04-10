@@ -1,0 +1,9 @@
+sample:
+  name: QMI8658C Sensor Sample
+tests:
+  sample.sensor.qmi8658c:
+    build_only: true
+    platform_allow: csk6_duomotai_devkit
+    tags: sensors
+    integration_platforms:
+      - csk6_duomotai_devkit

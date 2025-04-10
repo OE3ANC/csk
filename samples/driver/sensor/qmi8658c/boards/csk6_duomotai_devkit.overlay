@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2025 Anhui Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&pinctrl {
+    pinctrl_i2c1_scl_default: i2c1_scl_default {
+        pinctrls = <I2C1_SCL_GPIOB_09>;
+    };
+
+    pinctrl_i2c1_sda_default: i2c1_sda_default {
+        pinctrls = <I2C1_SDA_GPIOB_08>;
+    };
+};
+
+/ {
+    aliases {
+        qmi8658c = &qmi8658c;
+    };
+};
+
+&i2c1 {
+    status = "okay";
+    pinctrl-0 = <&pinctrl_i2c1_scl_default &pinctrl_i2c1_sda_default>;
+    pinctrl-names = "default";
+    clock-frequency = <400000>;  // 400KHz, QMI8658C支持的标准速率
+
+    qmi8658c: qmi8658c@6b {    // QMI8658C的I2C地址是0x6B
+        compatible = "listenai,qmi8658c";
+        reg = <0x6b>;          // I2C地址：0x6B (SDO/SA0引脚接GND时)
+        status = "okay";
+        int-gpios = <&gpiob 10 GPIO_ACTIVE_HIGH>;
+    };
+};

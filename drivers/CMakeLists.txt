@@ -3,6 +3,7 @@
 add_subdirectory(misc)
 add_subdirectory(disk)
 add_subdirectory(usb)
+add_subdirectory(sensor)
 
 add_subdirectory_ifdef(CONFIG_ADC adc)
 add_subdirectory_ifdef(CONFIG_COUNTER counter)
