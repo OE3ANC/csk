@@ -1,0 +1,13 @@
+#Copyright (c) 2025 Anhui(Shenzhen) Listenai Co., Ltd.
+
+#SPDX-License-Identifier: Apache-2.0
+
+sample:
+  name: MPU6050 Sensor Sample
+tests:
+  sample.sensor.mpu6050:
+    build_only: true
+    platform_allow: csk6_duomotai_devkit
+    tags: sensors
+    integration_platforms:
+      - csk6_duomotai_devkit
