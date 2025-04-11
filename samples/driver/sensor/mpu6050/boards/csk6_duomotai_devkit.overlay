@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2025 Anhui(Shenzhen) Listenai Co., Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+ &pinctrl {
+	/* I2C alternate function */
+	pinctrl_i2c1_scl_default: i2c1_scl_default{
+		pinctrls = <I2C1_SCL_GPIOB_09>;
+	};
+
+	pinctrl_i2c1_sda_default: i2c1_sda_default{
+		pinctrls = <I2C1_SDA_GPIOB_08>;
+	};
+};
+
+
+&i2c1 {
+	mpu6050: mpu6050@68 {
+		compatible = "listenai,mpu6050";
+		reg = <0x68>;
+		status = "okay";
+		int-gpios = <&gpiob 10 GPIO_ACTIVE_HIGH>;
+	};
+	status = "okay";
+	pinctrl-0 = <&pinctrl_i2c1_scl_default &pinctrl_i2c1_sda_default>;
+	pinctrl-names = "default";
+};
