@@ -957,7 +957,7 @@ int usb_dc_ep_enable(const uint8_t ep)
 {
 	unsigned int key = 0;
 	uint8_t ep_idx = USB_EP_GET_IDX(ep);
-	LOG_INF("usb_dc_ep_enable");
+	LOG_DBG("usb_dc_ep_enable");
 	
 	if (!usb_venus_ctrl.attached || !usb_venus_ep_is_valid(ep)) {
 		LOG_ERR("Not attached / Invalid endpoint: EP 0x%x", ep);
